@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  dsb-data-loader:
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-data-loader
+    image: dsb-data-loader
+    container_name: dsb-data-loader
+    env_file: .env.docker
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_HOSTNAME=mongodb
+      - CUSTOMER_COLLECTION_NAME=$CUSTOMER_COLLECTION_NAME
+      - PLAN_COLLECTION_NAME=$PLAN_COLLECTION_NAME
+      - MONGO_PORT=$MONGO_PORT
+      - MONGO_DB=$MONGO_DB
+    networks:
+      - app-network
+
+  dsb-test-data-server:
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-test-data-server
+    image: dsb-test-data-server
+    container_name: dsb-test-data-server
+    restart: unless-stopped
+    env_file: .env.docker
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_HOSTNAME=mongodb
+      - CUSTOMER_COLLECTION_NAME=$CUSTOMER_COLLECTION_NAME
+      - PLAN_COLLECTION_NAME=$PLAN_COLLECTION_NAME
+      - MONGO_USERNAME=$MONGO_USERNAME
+      - MONGO_PASSWORD=$MONGO_PASSWORD  
+      - MONGO_PORT=$MONGO_PORT
+      - MONGO_DB=$MONGO_DB
+    ports:
+      - "3005:3005"
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:     
+      - dbdata:/usr/local/var/mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network  
+
+networks:
+  app-network:
+    name: dsb-net
+    driver: bridge
+
+volumes:
+  dbdata:
+  node_modules:

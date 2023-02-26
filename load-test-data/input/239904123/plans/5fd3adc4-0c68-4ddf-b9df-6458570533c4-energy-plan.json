@@ -1,0 +1,176 @@
+{
+  "brand": "ORIGIN",
+  "brandName": "ORIGIN",
+  "fuelType": "GAS",
+  "lastUpdated": "2021-07-19T21:56:47.885Z",
+  "planId": "5fd3adc4-0c68-4ddf-b9df-6458570533c4",
+  "type": "STANDING",
+  "effectiveFrom": "2024-10-06T00:22:15.357Z",
+  "effectiveTo": "2025-02-28T00:00:00.000Z",
+  "displayName": "Energy Plan 3",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://guilty-quiver.info",
+  "customerType": "RESIDENTIAL",
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "15",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "BPAY"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-09-21T13:32:00.628Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-06-08T00:01:46.356Z",
+        "dailySupplyCharges": "2.08",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.36",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "FRI",
+              "TUE",
+              "SAT"
+            ],
+            "measurementPeriod": "DAY",
+            "chargePeriod": "DAY"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-04-02T07:15:23.451Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2021-04-09T07:48:29.161Z",
+        "timeZone": "LOCAL",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "3.8122",
+          "rates": [
+            {
+              "unitPrice": "1.64",
+              "measureUnit": "KVARH",
+              "description": "Optional description for single rate",
+              "volume": 0.93
+            },
+            {
+              "unitPrice": "2.22",
+              "measureUnit": "KW",
+              "volume": 0.76
+            },
+            {
+              "unitPrice": "2.07",
+              "measureUnit": "DAYS",
+              "description": "Optional description for single rate",
+              "volume": 1.4
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.05",
+            "amount": "2.97"
+          },
+          {
+            "percentGreen": "0.14",
+            "amount": "2.22"
+          }
+        ],
+        "type": "FIXED_PER_MONTH"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.28",
+            "amount": "0.90"
+          },
+          {
+            "percentGreen": "0.36",
+            "amount": "2.86"
+          }
+        ],
+        "type": "FIXED_PER_WEEK"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SENIOR_CARD"
+      }
+    ],
+    "fees": [
+      {
+        "term": "MONTHLY",
+        "type": "RECONNECTION",
+        "description": "Optional description for this fee",
+        "amount": "5.70"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "PREMIUM",
+        "tariffUType": "timeVaryingTariffs",
+        "description": "Optional description for Solar Feed Tariff",
+        "timeVaryingTariffs": {
+          "type": "OFF_PEAK",
+          "amount": "1.45",
+          "timeVariations": [
+            {
+              "startTime": "2022-08-21T14:56:33.198Z",
+              "days": [
+                "PUBLIC_HOLIDAYS"
+              ]
+            },
+            {
+              "startTime": "2021-10-02T08:11:26.053Z",
+              "endTime": "2023-09-25T14:38:54.282Z",
+              "days": [
+                "FRI",
+                "TUE",
+                "TUE",
+                "THU"
+              ]
+            },
+            {
+              "endTime": "2023-05-02T13:18:42.603Z",
+              "days": [
+                "SUN"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "3_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "239904123"
+}

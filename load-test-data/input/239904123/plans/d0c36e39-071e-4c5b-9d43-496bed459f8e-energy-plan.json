@@ -1,0 +1,227 @@
+{
+  "brand": "ERGON",
+  "brandName": "ALINTA ENERGY",
+  "fuelType": "GAS",
+  "lastUpdated": "2021-07-08T04:50:20.667Z",
+  "planId": "d0c36e39-071e-4c5b-9d43-496bed459f8e",
+  "type": "STANDING",
+  "effectiveFrom": "2023-05-19T19:09:44.478Z",
+  "effectiveTo": "2023-10-17T00:00:00.000Z",
+  "displayName": "Energy Plan 0",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://unsteady-component.name",
+  "customerType": "RESIDENTIAL",
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "10",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "DIRECT_DEBIT"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-01-25T21:55:11.186Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2022-05-29T21:29:26.924Z",
+        "dailySupplyCharges": "0.89",
+        "timeZone": "LOCAL",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "2.24",
+                "volume": 1.39
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "FRI",
+                  "TUE",
+                  "THU"
+                ],
+                "startTime": "2021-06-30T06:49:06.099Z",
+                "endTime": "2023-03-28T13:11:18.043Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "WED",
+                  "SAT"
+                ],
+                "startTime": "2021-02-27T23:36:58.104Z",
+                "endTime": "2023-12-24T01:06:17.496Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "MON",
+                  "SUN"
+                ],
+                "startTime": "2022-11-12T23:32:47.113Z",
+                "endTime": "2023-08-31T20:10:17.934Z"
+              },
+              {
+                "days": [
+                  "FRI",
+                  "TUE",
+                  "THU"
+                ],
+                "startTime": "2021-06-30T06:49:06.099Z",
+                "endTime": "2023-03-28T13:11:18.043Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "WED",
+                  "SAT"
+                ],
+                "startTime": "2021-02-27T23:36:58.104Z",
+                "endTime": "2023-12-24T01:06:17.496Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "MON",
+                  "SUN"
+                ],
+                "startTime": "2022-11-12T23:32:47.113Z",
+                "endTime": "2023-08-31T20:10:17.934Z"
+              }
+            ],
+            "type": "SHOULDER1"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-06-13T15:15:07.402Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-10-13T02:04:05.983Z",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "generalUnitPrice": "0.9685",
+          "rates": [
+            {
+              "unitPrice": "1.54",
+              "description": "Optional description for single rate",
+              "volume": 1.16
+            },
+            {
+              "unitPrice": "2.15",
+              "description": "Optional description for single rate",
+              "volume": 1.29
+            },
+            {
+              "unitPrice": "1.45",
+              "volume": 1.4
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-06-14T19:24:13.073Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-08-23T09:39:27.495Z",
+        "dailySupplyCharges": "1.99",
+        "timeZone": "AEST",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "generalUnitPrice": "1.7417",
+          "rates": [
+            {
+              "unitPrice": "0.81",
+              "measureUnit": "KVAR",
+              "description": "Optional description for single rate",
+              "volume": 1.12
+            }
+          ]
+        }
+      }
+    ],
+    "variation": "Variation details for this contract",
+    "incentives": [
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.31",
+            "rate": "1.09"
+          },
+          {
+            "percentGreen": "0.34",
+            "rate": "2.84"
+          }
+        ],
+        "type": "PERCENT_OF_USE"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.42",
+            "amount": "0.73"
+          }
+        ],
+        "type": "FIXED_PER_MONTH"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "LOYALTY_MEMBER"
+      }
+    ],
+    "fees": [
+      {
+        "term": "WEEKLY",
+        "type": "LATE_PAYMENT",
+        "description": "Optional description for this fee",
+        "amount": "12.85"
+      },
+      {
+        "term": "ANNUAL",
+        "type": "CONNECTION",
+        "amount": "13.70"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "singleTariff": {
+          "amount": "1.79"
+        }
+      }
+    ],
+    "termType": "4_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "239904123"
+}
