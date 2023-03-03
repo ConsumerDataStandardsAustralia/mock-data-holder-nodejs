@@ -103,7 +103,7 @@ async function processHolder(holderPath: string): Promise<boolean> {
                     var filePath = path.join(planPath, file);
                     let fileString = fs.readFileSync(filePath).toString();
                     var data = JSON.parse(fileString);
-                    dbService.addPlan(data);
+                    await dbService.addPlan(data);
                     planAddCount++;
                     planIdList.push(data.planId);
                 };
