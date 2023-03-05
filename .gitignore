@@ -61,7 +61,5 @@ common/temp/
 common/autoinstallers/*/.npmrc
 **/.rush/temp/
 
-# data files
-output
-
+# compiled output
 dist
