@@ -1,11 +1,11 @@
 import express, { request }  from 'express';
 import {NextFunction, Request, Response} from 'express';
-//import endpoints from './data/endpoints.json';
+import endpoints from './data/endpoints.json';
 import { EndpointConfig, CdrConfig, cdrHeaderValidator, DefaultBankingEndpoints,
     DefaultEnergyEndpoints}  from '@cds-au/holder-sdk'
 import { MongoData } from './services/database.service';
 import { IDatabase } from './services/database.interface';
-import * as url from 'url';
+
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv'; 
 
@@ -24,7 +24,7 @@ const router = exp.Router();
 // this middle ware will handle the boilerplate validation and setting for a number of header parameters
 // For more information on how to use and set up refer to the js-holder demo project 
 // https://github.com/ConsumerDataStandardsAustralia/js-holder-sdk-demo
-const sampleEndpoints = [...DefaultEnergyEndpoints] as EndpointConfig[];
+const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
@@ -195,14 +195,10 @@ app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Respons
     }
 });
 
-// this endpoint requires authentication
+
 app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
-    let userId: any = user(req);
-    if (user(req) == undefined){
-        res.sendStatus(401);
-        return;
-    }
+
     let result = await dbService.getEnergyPlanDetails(req.params.planId)
     if (result == null){
         res.sendStatus(404);
@@ -212,13 +208,10 @@ app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Re
     }
 });
 
+// this endpoint does NOT require authentication
 app.get(`${standardsVersion}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
-        res.sendStatus(401);
-        return;
-    }
     let result = await dbService.getEnergyAllPlans()
     if (result == null){
         res.sendStatus(404);
@@ -505,10 +498,9 @@ dbService.connectDatabase()
         process.exit();
     })
 
-function user(req: any): string| undefined {
-        let userId = req.headers?.userid;
-        if (userId == null){
-            return;
-        };
-        return userId as string;
+
+// In the absence of an IdP we use the accessToken as userId
+function user(req: any): string| undefined {   
+        let temp = req.headers?.authorization as string;
+        return temp?.split(" ")[1];
 }
