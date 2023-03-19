@@ -5,11 +5,14 @@ Clone the repo and run `docker-compose up` from the root directory.
 
 This will create a NodeJS data server `dsb-test-data-server` interrogating a MongoDB which is initialised with generated data.
 
-The `dsb-data-loader` will run when the containers are generated and populated with the data in `load-test-data/input/HOLDER_ID` folder.
-The data in `input` the folder was generated withe DSB [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli).
+The `dsb-data-loader` program will run once when the containers are generated, and populated a MongoDB
+with the data from `load-test-data/input/HOLDER_ID` folder.
+The data in this the folder was generated withe DSB [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli).
 
-The holder generated has multiple customers with a complete set of energy data.
-The `load-test-data/output` contains the necessary ids for plans, customers, accounts, and service points. 
+The resulting database (DSB), will have a `plans` collection, and a `customers` collection.
+
+The holder data generated has multiple customers with a complete set of energy data.
+The `load-test-data/output` contains the necessary ids for plans, customers, accounts, and service points.
 
 ```
 ├── load-test-data
@@ -34,5 +37,5 @@ accounts, service points, and plans for the customer `02bce083-7e64-46e0-b373-71
 The user id for a customer MUST be passed in the header for authenticated endpoints.
 The returned datasets for authenticated endpoints will then be for that particular user.
 
-Add this to the header
-`userId=02bce083-7e64-46e0-b373-71b53189928c`.
+Ensure that the following header exists:
+`authorization: "Bearer 02bce083-7e64-46e0-b373-71b53189928c"`
