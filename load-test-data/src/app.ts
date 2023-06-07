@@ -13,9 +13,11 @@ dotenv.config();
 var dbService: IDatabase;
 dbService = new MongoData();
 
+const version = "1.24.0"
+
 const holderId = null;
-let inputPath = 'input/'
-let outputPath = 'output/'
+let inputPath = 'input/1.24.0'
+let outputPath = 'output/1.24.0'
 
 inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
@@ -41,7 +43,7 @@ dbService.connectDatabase()
             holderDirectories.forEach((dir: any) => {
                 holderPath = path.join(inputPath, dir.name);
                 const observable$ = defer(() => processHolder(holderPath));
-                observable$.subscribe((ret: boolean) => {
+                observable$.subscribe((ret: boolean) => { 
                     console.log("Loaded data: " + ret);
                     process.exit();
                 })

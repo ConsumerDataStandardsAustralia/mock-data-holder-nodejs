@@ -1,0 +1,148 @@
+{
+  "brand": "ALINTA ENERGY",
+  "brandName": "AGL",
+  "fuelType": "GAS",
+  "lastUpdated": "2021-07-17T02:50:58.469Z",
+  "planId": "c2a4553f-8638-463e-a46a-13f68323d09b",
+  "type": "REGULATED",
+  "effectiveFrom": "2024-01-18T18:17:15.544Z",
+  "effectiveTo": "2024-08-07T00:00:00.000Z",
+  "displayName": "Energy Plan 1",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://automatic-statement.com",
+  "customerType": "RESIDENTIAL",
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includePostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Ortiz, Gulgowski and Hand",
+      "Howe - Jacobi"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "97",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "PAPER_BILL"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-08-26T09:30:33.149Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2022-06-12T02:55:11.652Z",
+        "dailySupplyCharges": "2.04",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "1.41",
+                "measureUnit": "DAYS",
+                "description": "Optional description for single rate",
+                "volume": 0.72
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "WED",
+                  "FRI",
+                  "SUN"
+                ],
+                "startTime": "2023-05-10T23:51:52.789Z",
+                "endTime": "2023-06-17T10:21:22.211Z"
+              },
+              {
+                "days": [
+                  "MON",
+                  "FRI",
+                  "WED"
+                ],
+                "startTime": "2022-10-09T12:08:23.623Z",
+                "endTime": "2024-05-01T21:29:40.403Z"
+              },
+              {
+                "days": [
+                  "WED",
+                  "FRI",
+                  "SUN"
+                ],
+                "startTime": "2023-05-10T23:51:52.789Z",
+                "endTime": "2023-06-17T10:21:22.211Z"
+              },
+              {
+                "days": [
+                  "MON",
+                  "FRI",
+                  "WED"
+                ],
+                "startTime": "2022-10-09T12:08:23.623Z",
+                "endTime": "2024-05-01T21:29:40.403Z"
+              }
+            ],
+            "type": "PEAK"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-05-29T23:12:38.484Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-07-01T00:01:13.823Z",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.94",
+            "measureUnit": "KW",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      }
+    ],
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "2.88"
+    },
+    "incentives": [
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "EXISTING_CUST",
+        "description": "Energy Plan Eligibility Description"
+      }
+    ],
+    "termType": "5_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "149411639"
+}

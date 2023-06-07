@@ -1,0 +1,523 @@
+{
+  "brand": "RED ENERGY",
+  "brandName": "RED ENERGY",
+  "fuelType": "DUAL",
+  "lastUpdated": "2021-09-28T07:05:18.480Z",
+  "planId": "ddc5044a-f44e-42cc-9c51-bac9d7942600",
+  "type": "MARKET",
+  "effectiveFrom": "2024-05-10T18:23:50.274Z",
+  "effectiveTo": "2024-10-16T00:00:00.000Z",
+  "displayName": "Energy Plan 3",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://fragrant-picket.info",
+  "customerType": "BUSINESS",
+  "geography": {
+    "distributors": [
+      "Hirthe, Schimmel and Cronin",
+      "Koelpin Inc"
+    ]
+  },
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "DIRECT_DEBIT"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-02-03T10:21:30.606Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2023-03-08T03:53:49.561Z",
+        "dailySupplyCharges": "1.46",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "3.2868",
+          "rates": [
+            {
+              "unitPrice": "0.94",
+              "volume": 0.77
+            },
+            {
+              "unitPrice": "1.69",
+              "description": "Optional description for single rate",
+              "volume": 0.75
+            },
+            {
+              "unitPrice": "1.69",
+              "description": "Optional description for single rate",
+              "volume": 1.11
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-08-02T19:26:34.546Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-12-30T19:18:31.983Z",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.95",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "WED",
+              "MON",
+              "THU"
+            ],
+            "maxDemand": "6.46",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "TARIFF_PERIOD"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "0.64",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "MON",
+              "FRI",
+              "SUN"
+            ],
+            "maxDemand": "5.25",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      }
+    ],
+    "variation": "Variation details for this contract",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.35",
+            "amount": "1.45"
+          },
+          {
+            "percentGreen": "0.42",
+            "amount": "2.21"
+          }
+        ],
+        "type": "FIXED_PER_UNIT"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.05",
+            "amount": "0.71"
+          }
+        ],
+        "type": "FIXED_PER_MONTH"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "1.57",
+              "measureUnit": "KVAR"
+            },
+            {
+              "unitPrice": "1.72",
+              "measureUnit": "KW",
+              "volume": "536.59"
+            },
+            {
+              "unitPrice": "1.35",
+              "measureUnit": "METER"
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "OTHER",
+        "tariffUType": "timeVaryingTariffs",
+        "timeVaryingTariffs": {
+          "type": "PEAK",
+          "amount": "1.95",
+          "timeVariations": [
+            {
+              "endTime": "2024-10-29T16:25:15.145Z",
+              "days": [
+                "PUBLIC_HOLIDAYS",
+                "WED"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "4_YEAR",
+    "coolingOffDays": 17,
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "electricityContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "PAPER_BILL"
+    ],
+    "pricingModel": "TIME_OF_USE_CONT_LOAD",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-12-30T13:26:24.636Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2021-08-08T10:20:56.293Z",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "0.50",
+            "measureUnit": "KW",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "TUE",
+              "WED",
+              "FRI"
+            ],
+            "minDemand": "1.05",
+            "maxDemand": "6.43",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-01-14T16:44:31.016Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2021-09-16T20:51:53.459Z",
+        "dailySupplyCharges": "1.28",
+        "timeZone": "LOCAL",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "description": "Time Of Use Display Description",
+            "rates": [
+              {
+                "unitPrice": "1.19",
+                "measureUnit": "DAYS",
+                "description": "Optional description for single rate",
+                "volume": 0.58
+              },
+              {
+                "unitPrice": "1.55",
+                "description": "Optional description for single rate",
+                "volume": 1.36
+              },
+              {
+                "unitPrice": "0.56",
+                "measureUnit": "DAYS",
+                "volume": 1.05
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "SUN",
+                  "FRI",
+                  "TUE"
+                ],
+                "startTime": "2022-04-12T10:12:03.776Z",
+                "endTime": "2024-04-27T16:51:39.102Z"
+              },
+              {
+                "days": [
+                  "SAT",
+                  "SUN",
+                  "TUE"
+                ],
+                "startTime": "2022-06-09T09:13:00.604Z",
+                "endTime": "2023-07-12T18:00:30.052Z"
+              },
+              {
+                "days": [
+                  "SUN",
+                  "FRI",
+                  "TUE"
+                ],
+                "startTime": "2022-04-12T10:12:03.776Z",
+                "endTime": "2024-04-27T16:51:39.102Z"
+              },
+              {
+                "days": [
+                  "SAT",
+                  "SUN",
+                  "TUE"
+                ],
+                "startTime": "2022-06-09T09:13:00.604Z",
+                "endTime": "2023-07-12T18:00:30.052Z"
+              }
+            ],
+            "type": "SHOULDER2"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "4.75"
+    },
+    "controlledLoad": [
+      {
+        "displayName": "Display name for controlled load 0",
+        "rateBlockUType": "timeOfUseRates",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "dailySupplyCharge": "0.60",
+            "rates": [
+              {
+                "unitPrice": "1.16",
+                "measureUnit": "MONTH",
+                "description": "Optional description for single rate",
+                "volume": 0.97
+              },
+              {
+                "unitPrice": "2.22",
+                "volume": 1.05
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "TUE",
+                  "FRI",
+                  "THU"
+                ],
+                "startTime": "2022-12-28T23:09:10.566Z",
+                "endTime": "2024-06-22T03:24:55.667Z",
+                "additionalInfoUri": "http://moreinfo",
+                "additionalInfo": "Additional info for Time of Use"
+              }
+            ],
+            "type": "SHOULDER"
+          }
+        ]
+      },
+      {
+        "displayName": "Display name for controlled load 1",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2022-06-09T18:24:03.938Z",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "dailySupplyCharge": "2.07",
+            "rates": [
+              {
+                "unitPrice": "1.63",
+                "description": "Optional description for single rate",
+                "volume": 0.76
+              }
+            ],
+            "timeOfUse": [
+              {
+                "startTime": "2021-07-25T14:50:23.949Z",
+                "endTime": "2024-01-17T13:10:52.685Z",
+                "additionalInfoUri": "http://moreinfo",
+                "additionalInfo": "Additional info for Time of Use"
+              },
+              {
+                "startTime": "2022-12-14T04:41:06.976Z",
+                "endTime": "2023-09-05T16:31:54.063Z",
+                "additionalInfoUri": "http://moreinfo",
+                "additionalInfo": "Additional info for Time of Use"
+              }
+            ],
+            "type": "SOLAR_SPONGE"
+          },
+          {
+            "displayName": "Time Of Use Display Name",
+            "description": "Time Of Use Display Description",
+            "dailySupplyCharge": "1.84",
+            "rates": [
+              {
+                "unitPrice": "1.60",
+                "description": "Optional description for single rate",
+                "volume": 0.91
+              },
+              {
+                "unitPrice": "1.90",
+                "measureUnit": "KVAR",
+                "volume": 0.61
+              },
+              {
+                "unitPrice": "2.00",
+                "description": "Optional description for single rate",
+                "volume": 0.83
+              }
+            ],
+            "timeOfUse": [
+              {
+                "startTime": "2022-05-11T05:21:36.476Z",
+                "endTime": "2024-12-20T18:41:59.004Z",
+                "additionalInfo": "Additional info for Time of Use"
+              },
+              {
+                "startTime": "2021-09-29T08:23:28.150Z",
+                "endTime": "2023-07-23T19:58:19.759Z",
+                "additionalInfo": "Additional info for Time of Use"
+              }
+            ],
+            "type": "PEAK"
+          }
+        ]
+      }
+    ],
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfUse",
+        "type": "CONDITIONAL",
+        "percentOfUse": {
+          "rate": "2.60"
+        }
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.1",
+            "amount": "3.08"
+          },
+          {
+            "percentGreen": "0.15",
+            "amount": "0.89"
+          },
+          {
+            "percentGreen": "0.41",
+            "amount": "2.98"
+          }
+        ],
+        "type": "FIXED_PER_WEEK"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SMALL_BUSINESS"
+      },
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "EXISTING_BATTERY"
+      },
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "EXISTING_BASIC_METER"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "OTHER",
+        "tariffUType": "timeVaryingTariffs",
+        "timeVaryingTariffs": {
+          "type": "PEAK",
+          "amount": "1.16",
+          "timeVariations": [
+            {
+              "endTime": "2023-11-08T10:39:46.962Z",
+              "days": [
+                "FRI",
+                "TUE",
+                "SUN",
+                "FRI",
+                "FRI"
+              ]
+            },
+            {
+              "startTime": "2021-12-29T15:50:17.818Z",
+              "days": [
+                "TUE",
+                "THU"
+              ]
+            },
+            {
+              "startTime": "2022-04-16T06:57:20.510Z",
+              "endTime": "2023-12-01T02:18:39.326Z",
+              "days": [
+                "PUBLIC_HOLIDAYS",
+                "WED"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "1.82",
+              "measureUnit": "KVARH",
+              "volume": "872.85"
+            },
+            {
+              "unitPrice": "1.03",
+              "measureUnit": "KVARH"
+            },
+            {
+              "unitPrice": "1.76",
+              "measureUnit": "DAYS",
+              "volume": "716.03"
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "OTHER",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "1.38"
+            },
+            {
+              "unitPrice": "0.64"
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "5_YEAR",
+    "coolingOffDays": 34,
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "149411639"
+}
