@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile.dsb-data-loader
-    image: cdradmin/dsb-data-loader:1.22.1
+    image: cdradmin/dsb-data-loader:1.24.0
     container_name: dsb-data-loader
     env_file: .env.docker
     depends_on:
@@ -23,7 +23,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile.dsb-test-data-server
-    image: cdradmin/dsb-test-data-server:1.22.1
+    image: cdradmin/dsb-test-data-server:1.24.0
     container_name: dsb-test-data-server
     restart: unless-stopped
     env_file: .env.docker

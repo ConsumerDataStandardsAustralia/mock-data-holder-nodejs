@@ -8,6 +8,7 @@ import { IDatabase } from './services/database.interface';
 
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv'; 
+import { SingleData } from './services/single.service';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2))
