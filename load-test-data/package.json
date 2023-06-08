@@ -4,6 +4,8 @@
   "description": "Load data generated from testdata-cli into MongoDB",
   "main": "app.js",
   "scripts": {
+
+    "start": "tsc && cp -r ./input ./dist && cd dist && node ./dist/app.js",
     "build": "tsc && cp -r ./input ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

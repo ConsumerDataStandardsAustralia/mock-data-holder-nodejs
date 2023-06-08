@@ -16,8 +16,8 @@ dbService = new MongoData();
 const version = "1.22.0"
 
 const holderId = null;
-let inputPath = 'input/1.24.0'
-let outputPath = 'output/1.24.0'
+let inputPath = 'input/' + version
+let outputPath = 'output/' + version
 
 inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
@@ -112,7 +112,7 @@ async function processHolder(holderPath: string): Promise<boolean> {
                     planIdList.push(data.planId);
                 };
                 console.log(`Added ${planAddCount} plans`);
-                writePlanIdFile(holderId, planIdList);
+                writePlanIdFile(data.holderId, planIdList);
             }
         }
         return Promise.resolve(true);
