@@ -13,7 +13,7 @@ dotenv.config();
 var dbService: IDatabase;
 dbService = new MongoData();
 
-const version = "1.24.0"
+const version = "1.22.0"
 
 const holderId = null;
 let inputPath = 'input/1.24.0'
@@ -22,9 +22,11 @@ let outputPath = 'output/1.24.0'
 inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
 
+console.log("Uploading data for version " + version);
 
 dbService.connectDatabase()
     .then(async () => {
+        console.log("Connected to database...");
         var holderDirectories = fs.readdirSync(inputPath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
 
         if (holderId != null) {
@@ -119,6 +121,7 @@ async function processHolder(holderPath: string): Promise<boolean> {
 }
 
 function createIdFiles(holderId: string, data: any) {
+    console.log("Creating id files...");
     let accountIds: string[] = [];
     let servicePointIds: string[] = [];
     let custDirName = data.customerId;
@@ -140,26 +143,13 @@ function createIdFiles(holderId: string, data: any) {
     })
     let accountIdFile = path.join(outDir, 'accounts.json');
     fs.writeFileSync(accountIdFile, JSON.stringify(accountIds));
-
+    console.log("Written accounts.json....");
 
     let servicePointIdFile = path.join(outDir, 'service-points.json');
     fs.writeFileSync(servicePointIdFile, JSON.stringify(servicePointIds));
-
+    console.log("Written service-points.json....");
 }
 
-function writeCustomerIdFile(holderId: string, data: any[]) {
-    let outFileDir = path.join(outputPath, holderId);
-    let outFile = path.join(outFileDir, 'customer-ids.json');
-    fs.mkdirSync(outFileDir, { recursive: true });
-    var custIdObjects: any[] = [];
-    data?.forEach((entry: any) => {
-        let obj: any = {
-            customerId: entry
-        }
-        custIdObjects.push(obj);
-    });
-    fs.writeFileSync(outFile, JSON.stringify(custIdObjects));
-}
 
 function writePlanIdFile(holderId: string, data: any[]) {
     //let custDirName = data.customerId;
@@ -175,4 +165,5 @@ function writePlanIdFile(holderId: string, data: any[]) {
         planIdObjects.push(obj);
     });
     fs.writeFileSync(outFile, JSON.stringify(planIdObjects));
+    console.log("Written plan ids....");
 }
