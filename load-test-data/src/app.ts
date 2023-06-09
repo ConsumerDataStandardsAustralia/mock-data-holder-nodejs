@@ -13,7 +13,7 @@ dotenv.config();
 var dbService: IDatabase;
 dbService = new MongoData();
 
-const version = "1.22.0"
+const version = "1.24.0"
 
 const holderId = null;
 let inputPath = 'input/' + version
