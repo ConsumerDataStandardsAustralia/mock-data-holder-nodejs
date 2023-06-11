@@ -1,0 +1,236 @@
+{
+  "brand": "ALINTA ENERGY",
+  "brandName": "ORIGIN",
+  "fuelType": "GAS",
+  "lastUpdated": "2022-01-25T06:21:34.816Z",
+  "planId": "122dcc61-627b-4a9e-8f8e-5153779ca152",
+  "type": "REGULATED",
+  "effectiveFrom": "2023-11-29T22:26:36.264Z",
+  "effectiveTo": "2024-08-18T00:00:00.000Z",
+  "displayName": "Energy Plan 3",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://worse-hotel.biz",
+  "customerType": "RESIDENTIAL",
+  "additionalInformation": {},
+  "geography": {
+    "includePostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Bosco LLC",
+      "Gerlach, Gibson and Shanahan"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "88",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "CREDIT_CARD"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-04-08T01:10:47.326Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-04-22T11:55:04.668Z",
+        "dailySupplyCharges": "1.17",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "2.37",
+            "measureUnit": "KWH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "DAY"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-09-02T18:46:31.705Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-01-21T05:34:18.316Z",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.50",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "WED",
+              "FRI",
+              "MON"
+            ],
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "DAY"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "amount": "1.18",
+            "measureUnit": "KW",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "THU",
+              "WED",
+              "MON"
+            ],
+            "minDemand": "0.52",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-05-30T20:55:50.596Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2023-01-31T18:58:58.722Z",
+        "timeZone": "AEST",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "2.3638",
+          "rates": [
+            {
+              "unitPrice": "0.62",
+              "measureUnit": "KW",
+              "description": "Optional description for single rate",
+              "volume": 0.97
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-01-04T18:15:54.685Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2021-07-01T02:14:39.504Z",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "0.74",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "MON",
+              "FRI",
+              "TUE"
+            ],
+            "minDemand": "0.95",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "incentives": [
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "OTHER",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "ACCOUNT_CREDIT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      }
+    ],
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfBill",
+        "type": "GUARANTEED",
+        "endDate": "2023-10-07T17:48:55.952Z",
+        "percentOfBill": {
+          "rate": "3.24"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfBill",
+        "type": "OTHER",
+        "percentOfBill": {
+          "rate": "3.50"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOverThreshold",
+        "type": "OTHER",
+        "percentOverThreshold": {
+          "rate": "2.06",
+          "usageAmount": "16.13"
+        }
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.24",
+            "amount": "2.45"
+          },
+          {
+            "percentGreen": "0.32",
+            "amount": "2.10"
+          }
+        ],
+        "type": "FIXED_PER_WEEK"
+      }
+    ],
+    "fees": [
+      {
+        "term": "DAILY",
+        "type": "CHEQUE_DISHONOUR",
+        "description": "Optional description for this fee",
+        "amount": "7.41"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "OTHER",
+        "tariffUType": "singleTariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "1.95",
+              "volume": 236.44
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "3_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "350345677"
+}

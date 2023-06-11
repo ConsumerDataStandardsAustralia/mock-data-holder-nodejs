@@ -1,0 +1,56 @@
+{
+  "customerId": "68b97f4e-6b11-4b1a-8c43-154b1396f1d1",
+  "customer": {
+    "customerUType": "organisation",
+    "organisation": {
+      "physicalAddresses": [
+        {
+          "purpose": "WORK",
+          "addressUType": "paf",
+          "paf": {
+            "localityName": "Fisher Brothers",
+            "postcode": "5636",
+            "state": "Australian Capital Territory",
+            "dpid": "26762547",
+            "flatUnitType": "UNIT",
+            "floorLevelNumber": "44",
+            "streetName": "Owen Loop",
+            "streetType": "ROAD",
+            "lotNumber": "LOT 2",
+            "buildingName1": "Reception area"
+          }
+        },
+        {
+          "purpose": "PHYSICAL",
+          "addressUType": "paf",
+          "paf": {
+            "localityName": "Koch, Rice and Donnelly",
+            "postcode": "0445",
+            "state": "Western Australia",
+            "postalDeliveryType": "PO_BOX",
+            "postalDeliveryNumber": 26541157,
+            "dpid": "27435838",
+            "thoroughfareNumber1": 3368,
+            "thoroughfareNumber1Suffix": "HWY",
+            "thoroughfareNumber2": 3370,
+            "thoroughfareNumber2Suffix": "HWY",
+            "floorLevelNumber": "18",
+            "streetName": "Kiara Place",
+            "streetType": "ROAD",
+            "buildingName1": "Treasury Building"
+          }
+        }
+      ],
+      "agentRole": "Unspecified",
+      "businessName": "Wilkinson - James",
+      "organisationType": "GOVERNMENT_ENTITY",
+      "agentLastName": "Hand",
+      "industryCode": "613664",
+      "industryCodeVersion": "ANZSIC_1292.0_2006_V1.0",
+      "establishmentDate": "2022-02-26T01:39:32.214Z",
+      "shortName": "Short Name",
+      "abn": "048-730-196"
+    }
+  },
+  "holderId": "350345677"
+}

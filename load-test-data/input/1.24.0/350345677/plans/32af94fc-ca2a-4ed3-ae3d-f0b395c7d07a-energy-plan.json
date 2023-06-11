@@ -1,0 +1,166 @@
+{
+  "brand": "ALINTA ENERGY",
+  "brandName": "ALINTA ENERGY",
+  "fuelType": "GAS",
+  "lastUpdated": "2021-10-24T01:13:57.783Z",
+  "planId": "32af94fc-ca2a-4ed3-ae3d-f0b395c7d07a",
+  "type": "REGULATED",
+  "effectiveFrom": "2024-08-21T11:09:02.556Z",
+  "effectiveTo": "2025-01-18T00:00:00.000Z",
+  "displayName": "Energy Plan 4",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://whimsical-room.biz",
+  "customerType": "RESIDENTIAL",
+  "additionalInformation": {
+    "termsUri": "https://reasonable-note.name",
+    "eligibilityUri": "https://glaring-impression.org",
+    "bundleUri": "https://competent-motivation.biz"
+  },
+  "geography": {
+    "includePostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Kirlin - Anderson",
+      "Monahan - Reynolds"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "84",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "DIRECT_DEBIT"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-09-29T18:33:03.264Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2021-11-05T06:46:35.727Z",
+        "timeZone": "AEST",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "0.6328",
+          "rates": [
+            {
+              "unitPrice": "1.87",
+              "measureUnit": "METER",
+              "description": "Optional description for single rate",
+              "volume": 0.61
+            },
+            {
+              "unitPrice": "0.96",
+              "description": "Optional description for single rate",
+              "volume": 1.49
+            },
+            {
+              "unitPrice": "0.61",
+              "volume": 0.76
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-07-03T12:44:21.980Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2022-07-04T22:43:37.755Z",
+        "dailySupplyCharges": "0.95",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "1.04",
+                "volume": 1.22
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "FRI",
+                  "WED",
+                  "THU"
+                ],
+                "startTime": "2022-12-06T12:33:37.262Z",
+                "endTime": "2025-04-30T17:56:18.820Z"
+              },
+              {
+                "days": [
+                  "FRI",
+                  "WED",
+                  "THU"
+                ],
+                "startTime": "2022-12-06T12:33:37.262Z",
+                "endTime": "2025-04-30T17:56:18.820Z"
+              }
+            ],
+            "type": "SHOULDER2"
+          }
+        ]
+      }
+    ],
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.01",
+            "amount": "2.57"
+          },
+          {
+            "percentGreen": "0.13",
+            "amount": "0.69"
+          },
+          {
+            "percentGreen": "0.4",
+            "amount": "3.36"
+          }
+        ],
+        "type": "FIXED_PER_MONTH"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.34",
+            "amount": "2.03"
+          }
+        ],
+        "type": "FIXED_PER_MONTH"
+      }
+    ],
+    "fees": [
+      {
+        "term": "3_YEAR",
+        "type": "DISCONNECT_NON_PAY",
+        "amount": "12.50"
+      },
+      {
+        "term": "3_YEAR",
+        "type": "MEMBERSHIP",
+        "amount": "14.94"
+      }
+    ],
+    "termType": "5_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "350345677"
+}

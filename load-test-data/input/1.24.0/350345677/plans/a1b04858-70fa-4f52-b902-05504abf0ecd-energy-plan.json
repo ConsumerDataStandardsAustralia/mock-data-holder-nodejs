@@ -1,0 +1,205 @@
+{
+  "brand": "AURORO ENERGY",
+  "brandName": "AGL",
+  "fuelType": "ELECTRICITY",
+  "lastUpdated": "2023-02-18T07:45:31.274Z",
+  "planId": "a1b04858-70fa-4f52-b902-05504abf0ecd",
+  "type": "MARKET",
+  "effectiveFrom": "2024-09-21T19:54:46.943Z",
+  "effectiveTo": "2025-06-12T00:00:00.000Z",
+  "displayName": "Energy Plan 1",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://internal-trust.info",
+  "customerType": "RESIDENTIAL",
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "29",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "electricityContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "PAPER_BILL"
+    ],
+    "pricingModel": "TIME_OF_USE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-06-10T05:18:46.776Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-02-18T08:44:15.592Z",
+        "timeZone": "LOCAL",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.89",
+            "measureUnit": "KVA",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "FRI",
+              "TUE",
+              "WED"
+            ],
+            "maxDemand": "9.40",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-01-16T21:08:39.596Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-05-08T05:54:49.769Z",
+        "dailySupplyCharges": "1.12",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.74",
+            "measureUnit": "KWH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "1.09",
+            "maxDemand": "7.41",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "MONTH"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "1.09",
+            "measureUnit": "KVAR",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "THU",
+              "SAT",
+              "TUE"
+            ],
+            "maxDemand": "8.55",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      }
+    ],
+    "timeZone": "AEST",
+    "intrinsicGreenPower": {
+      "greenPercentage": "2.97"
+    },
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SENIOR_CARD"
+      },
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "ORG_MEMBER"
+      },
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "NO_SOLAR_FIT",
+        "description": "Energy Plan Eligibility Description"
+      }
+    ],
+    "fees": [
+      {
+        "term": "2_YEAR",
+        "type": "OTHER",
+        "amount": "14.65"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "1.25",
+              "volume": 444.35
+            },
+            {
+              "unitPrice": "1.50"
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "OTHER",
+        "tariffUType": "timeVaryingTariffs",
+        "timeVaryingTariffs": {
+          "type": "PEAK",
+          "amount": "0.53",
+          "timeVariations": [
+            {
+              "startTime": "2023-02-14T20:25:42.299Z",
+              "endTime": "2025-03-29T17:41:31.904Z",
+              "days": [
+                "MON",
+                "TUE",
+                "PUBLIC_HOLIDAYS",
+                "TUE",
+                "THU"
+              ]
+            },
+            {
+              "days": [
+                "THU",
+                "FRI",
+                "WED"
+              ]
+            },
+            {
+              "days": [
+                "SUN"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "2.12",
+              "measureUnit": "MONTH",
+              "volume": 887.28
+            },
+            {
+              "unitPrice": "1.12",
+              "measureUnit": "KVARH"
+            },
+            {
+              "unitPrice": "1.82",
+              "measureUnit": "KWH"
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "3_YEAR",
+    "coolingOffDays": 9,
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "350345677"
+}
