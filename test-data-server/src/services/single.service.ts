@@ -11,22 +11,33 @@ export class SingleData implements IDatabase {
     public collections: mongoDB.Collection[] = [];
     private client: mongoDB.MongoClient;
     private dsbData: mongoDB.Db;
+    private dsbName: string;
 
     constructor(connString: string, dbName: string) {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
+        this.dsbName = dbName;
         this.dsbData = this.client.db(dbName);
     }
 
     async getCustomer(allDataCollection: mongoDB.Collection, customerId: string): Promise<any> {
         let allData = await allDataCollection.findOne();
-        let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
-        let cust = allCustomers.find(((x:any) => x.customerId == customerId));
-       return cust;
+        if (allData?.holders != undefined) {
+            let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
+            let cust = allCustomers?.find(((x: any) => x.customerId == customerId));
+            return cust;       
+        } else {
+            return null;
+        }
     }
 
-    async getPlans(allDataCollection: mongoDB.Collection): Promise<any> {
+    async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> {
         let allData = await allDataCollection.findOne();
-        let allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
+        let allPlans = null;
+        if (allData?.holders != null)
+            allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
+        if (query != null) {
+
+        }
         return allPlans;
     }
 
@@ -42,19 +53,20 @@ export class SingleData implements IDatabase {
         }
         let balances: any[] = [];
 
-
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            var idx = accountIds?.indexOf(acc.account.accountId)
-            if (idx > -1) {
-                if (acc?.balance != null) {
-                    let balance: any = {
-                        balance: acc.balance.balance,
-                        accountId: acc.account.accountId
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                var idx = accountIds?.indexOf(acc.account.accountId)
+                if (idx > -1) {
+                    if (acc?.balance != null) {
+                        let balance: any = {
+                            balance: acc.balance.balance,
+                            accountId: acc.account.accountId
+                        }
+                        balances.push(balance);
                     }
-                    balances.push(balance);
                 }
-            }
-        })
+            })
+        }
         let ret: EnergyBalanceListResponse = {
             data: {
                 balances: balances
@@ -70,12 +82,14 @@ export class SingleData implements IDatabase {
         let cust: any = await this.getCustomer(allData, customerId);
 
         let retArray: any[] = [];
-        //let allAccounts: any[] = await cust.energy?.accounts?.length;
-        cust?.energy?.servicePoints?.forEach((sp: any) => {
-            if (sp?.usage != null) {
-                retArray.push(...sp?.usage);
-            }
-        })
+        if (cust != null) {
+            cust?.energy?.servicePoints?.forEach((sp: any) => {
+                if (sp?.usage != null) {
+                    retArray.push(...sp?.usage);
+                }
+            })
+        }
+
 
         ret.data = { reads: retArray };
         let l: LinksPaginated = {
@@ -95,12 +109,13 @@ export class SingleData implements IDatabase {
         let cust: any = await this.getCustomer(allData, customerId);
 
         let retArray: any[] = [];
-        //let allAccounts: any[] = await cust.energy?.accounts?.length;
-        cust?.energy?.servicePoints?.forEach((sp: any) => {
-            if (sp?.der != null) {
-                retArray.push(sp?.der);
-            }
-        })
+        if (cust != null) {
+            cust?.energy?.servicePoints?.forEach((sp: any) => {
+                if (sp?.der != null) {
+                    retArray.push(sp?.der);
+                }
+            })
+        }
 
         ret.data = { derRecords: retArray };
         let l: LinksPaginated = {
@@ -120,10 +135,11 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
-        //let allAccounts: any[] = await cust.energy?.accounts?.length;
-        cust?.energy?.accounts.forEach((acc: any) => {
-            retArray.push(...acc?.transactions)
-        });
+        if (cust != null) {
+            cust?.energy?.accounts.forEach((acc: any) => {
+                retArray.push(...acc?.transactions)
+            });
+        }
 
         ret.data = { transactions: retArray };
         let l: LinksPaginated = {
@@ -148,7 +164,8 @@ export class SingleData implements IDatabase {
             totalRecords: 0
         }
         let balances: any[] = [];
-        cust?.energy?.accounts?.forEach((acc: any) => {
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
 
                 if (acc?.balance != null) {
                     let balance: any = {
@@ -157,7 +174,8 @@ export class SingleData implements IDatabase {
                     }
                     balances.push(balance);
                 }
-        })
+            })
+        }
         let ret: EnergyBalanceListResponse = {
             data: {
                 balances: balances
@@ -172,11 +190,11 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
-        //let allAccounts: any[] = await cust.energy?.accounts?.length;
-        cust?.energy?.accounts.forEach((acc: any) => {
-            retArray.push(...acc?.invoices)
-        });
-
+        if (cust != null) {
+            cust?.energy?.accounts.forEach((acc: any) => {
+                retArray.push(...acc?.invoices)
+            });
+        }
         ret.data = { invoices: retArray };
         let l: LinksPaginated = {
             self: ""
@@ -191,12 +209,17 @@ export class SingleData implements IDatabase {
     }
     async getEnergyAllPlans(): Promise<any> {
         let ret: any = {};
-        let plansCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        let allPlans: any = await this.getPlans(plansCollection);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let allPlans: any = await this.getPlans(allData, undefined);
         let retArray: any[] = [];
-        await allPlans.forEach((p: EnergyPlan) =>
-            retArray.push(p));
-        ret.data = { plans: retArray };
+        if (allPlans == null) {
+            ret.data = { plans: retArray };
+        } else {
+            await allPlans.forEach((p: EnergyPlan) =>
+                retArray.push(p));
+            ret.data = { plans: retArray };
+        }
+
         let l: LinksPaginated = {
             self: ""
         }
@@ -210,9 +233,10 @@ export class SingleData implements IDatabase {
     }
     async getEnergyPlanDetails(planId: string): Promise<any> {
         let ret: any = {};
-        let plans: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         const query = { planId: planId };
-        let plan: any = await plans.findOne(query);
+        let plan: any = await this.getPlans(allData, query);
+
         if (plan == null)
             return null;
         ret.data = plan;
@@ -243,13 +267,15 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m,
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            if (acc.account.accountId == accountId) {
-                if (acc?.concessions != null) {
-                    ret.data.concessions.push(...acc?.concessions);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                if (acc.account.accountId == accountId) {
+                    if (acc?.concessions != null) {
+                        ret.data.concessions.push(...acc?.concessions);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
     async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<any> {
@@ -269,13 +295,15 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m,
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            if (acc.account.accountId == accountId) {
-                if (acc?.paymentSchedule != null) {
-                    ret.data.paymentSchedules.push(...acc?.paymentSchedule);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                if (acc.account.accountId == accountId) {
+                    if (acc?.paymentSchedule != null) {
+                        ret.data.paymentSchedules.push(...acc?.paymentSchedule);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
     async getServicePoints(customerId: string): Promise<any> {
@@ -296,23 +324,25 @@ export class SingleData implements IDatabase {
             meta: m
         }
         let spList: any[] = [];
-        let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetail[];
-        if (spDetailList != null) {
-            spDetailList.forEach((sp: any) => {
-                let newSP: EnergyServicePoint = {
-                    jurisdictionCode: sp.servicePoint.jurisdictionCode,
-                    lastUpdateDateTime: sp.servicePoint.lastUpdateDateTime,
-                    nationalMeteringId: sp.servicePoint.nationalMeteringId,
-                    servicePointClassification: sp.servicePoint.servicePointClassification,
-                    servicePointId: sp.servicePoint.servicePointId,
-                    servicePointStatus: sp.servicePoint.servicePointStatus,
-                    validFromDate: sp.servicePoint.validFromDate
-                }
-                if (sp.servicePoint.consumerProfile) newSP.consumerProfile = sp.servicePoint.consumerProfile;
-                if (sp.servicePoint.isGenerator) newSP.isGenerator = sp.servicePoint.isGenerator;
-                spList.push(newSP);
-            })
-            ret.data.servicePoints = spList;
+        if (cust != null) {
+            let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetail[];
+            if (spDetailList != null) {
+                spDetailList.forEach((sp: any) => {
+                    let newSP: EnergyServicePoint = {
+                        jurisdictionCode: sp.servicePoint.jurisdictionCode,
+                        lastUpdateDateTime: sp.servicePoint.lastUpdateDateTime,
+                        nationalMeteringId: sp.servicePoint.nationalMeteringId,
+                        servicePointClassification: sp.servicePoint.servicePointClassification,
+                        servicePointId: sp.servicePoint.servicePointId,
+                        servicePointStatus: sp.servicePoint.servicePointStatus,
+                        validFromDate: sp.servicePoint.validFromDate
+                    }
+                    if (sp.servicePoint.consumerProfile) newSP.consumerProfile = sp.servicePoint.consumerProfile;
+                    if (sp.servicePoint.isGenerator) newSP.isGenerator = sp.servicePoint.isGenerator;
+                    spList.push(newSP);
+                })
+                ret.data.servicePoints = spList;
+            }
         }
         return ret;
     }
@@ -334,14 +364,16 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            var idx = accountIds?.indexOf(acc.account.accountId)
-            if (idx > -1) {
-                if (acc?.invoices != null) {
-                    ret.data.transactions.push(...acc?.transactions);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                var idx = accountIds?.indexOf(acc.account.accountId)
+                if (idx > -1) {
+                    if (acc?.invoices != null) {
+                        ret.data.transactions.push(...acc?.transactions);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
     async getInvoicesForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any> {
@@ -361,14 +393,16 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            var idx = accountIds?.indexOf(acc.account.accountId)
-            if (idx > -1) {
-                if (acc?.invoices != null) {
-                    ret.data.invoices.push(...acc?.invoices);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                var idx = accountIds?.indexOf(acc.account.accountId)
+                if (idx > -1) {
+                    if (acc?.invoices != null) {
+                        ret.data.invoices.push(...acc?.invoices);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
     async getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> {
@@ -388,14 +422,16 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.servicePoints?.forEach((sp: any) => {
-            var idx = severvicePointIds?.indexOf(sp.servicePoint.servicePointId)
-            if (idx > -1) {
-                if (sp?.usage != null) {
-                    ret.data.derRecords.push(...sp?.der);
+        if (cust != null) {
+            cust?.energy?.servicePoints?.forEach((sp: any) => {
+                var idx = severvicePointIds?.indexOf(sp.servicePoint.servicePointId)
+                if (idx > -1) {
+                    if (sp?.usage != null) {
+                        ret.data.derRecords.push(...sp?.der);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
     async getUsageForMultipleServicePoints(customerId: string, servicePointIds: string[]): Promise<any> {
@@ -415,14 +451,17 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.servicePoints?.forEach((sp: any) => {
-            var idx = servicePointIds?.indexOf(sp.servicePoint.servicePointId)
-            if (idx > -1) {
-                if (sp?.usage != null) {
-                    ret.data.reads.push(...sp?.usage);
+        if (cust != null) {
+            cust?.energy?.servicePoints?.forEach((sp: any) => {
+                var idx = servicePointIds?.indexOf(sp.servicePoint.servicePointId)
+                if (idx > -1) {
+                    if (sp?.usage != null) {
+                        ret.data.reads.push(...sp?.usage);
+                    }
                 }
-            }
-        })
+            })
+        }
+
         return ret;
     }
     async getCustomerDetails(customerId: string): Promise<any> {
@@ -463,13 +502,15 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            if (acc.account.accountId == accountId) {
-                if (acc?.invoices != null) {
-                    ret.data.invoices.push(...acc?.invoices);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                if (acc.account.accountId == accountId) {
+                    if (acc?.invoices != null) {
+                        ret.data.invoices.push(...acc?.invoices);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
 
@@ -490,13 +531,15 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            if (accountIds.findIndex(acc.account.accountId) > -1) {
-                if (acc?.invoices != null) {
-                    ret.data.invoices.push(...acc.invoices);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                if (accountIds.findIndex(acc.account.accountId) > -1) {
+                    if (acc?.invoices != null) {
+                        ret.data.invoices.push(...acc.invoices);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
 
@@ -520,11 +563,13 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            if (acc.account.accountId == accountId) {
-                ret.data.balance = acc.balance.balance
-            }
-        })
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                if (acc.account.accountId == accountId) {
+                    ret.data.balance = acc.balance.balance
+                }
+            })
+        }
         return ret;
     }
 
@@ -549,13 +594,15 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
-        cust?.energy?.accounts?.forEach((acc: any) => {
-            if (acc.account.accountId == accountId) {
-                if (acc?.invoices != null) {
-                    ret.data.transactions.push(...acc?.transactions);
+        if (cust != null) {
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                if (acc.account.accountId == accountId) {
+                    if (acc?.invoices != null) {
+                        ret.data.transactions.push(...acc?.transactions);
+                    }
                 }
-            }
-        })
+            })
+        }
         return ret;
     }
 
@@ -698,6 +745,7 @@ export class SingleData implements IDatabase {
     async connectDatabase() {
         try {
             await this.client.connect();
+            this.dsbData = this.client.db(this.dsbName);
         }
         catch (e) {
             console.log(`Failed to connet to MongoDB${JSON.stringify(e)}`)

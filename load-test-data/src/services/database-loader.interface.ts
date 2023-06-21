@@ -1,6 +1,7 @@
 import * as mongoDB from "mongodb";
 
-export interface IDatabase {
+export interface IDatabaseLoader {
+    
     connectDatabase() : Promise<void>;
     disconnectDatabase() : Promise<void>;
     getCollections(): Promise<string[]>;
@@ -15,7 +16,9 @@ export interface IDatabase {
 
     getEnergyAccounts(customerId: string): Promise<any>;
 
-    addPlan(plan: any): Promise<mongoDB.ObjectId|null> 
+    addPlan(plan: any): Promise<mongoDB.ObjectId|null> ;
 
-    addCustomer(plan: any): Promise<mongoDB.ObjectId|null> 
+    addCustomer(plan: any): Promise<mongoDB.ObjectId|null>;
+
+    createEmptyCollection(colName: string): Promise<mongoDB.Collection> ;
 }

@@ -1,7 +1,7 @@
 import express, { request } from 'express';
 import { NextFunction, Request, Response } from 'express';
-import { MongoData } from './services/database.service';
-import { IDatabase } from './services/database.interface';
+import { MongoData } from './services/database-loader.service';
+import { IDatabaseLoader } from './services/database-loader.interface';
 import * as path from 'path';
 import * as fs from 'fs';
 import { defer } from 'rxjs';
@@ -10,7 +10,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-var dbService: IDatabase;
+var dbService: IDatabaseLoader;
 dbService = new MongoData();
 
 const version = "1.24.0"
@@ -22,34 +22,45 @@ let outputPath = 'output/' + version
 inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
 
+const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
+var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
+var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
+
+
 console.log("Uploading data for version " + version);
 
 dbService.connectDatabase()
     .then(async () => {
         console.log("Connected to database...");
-        var holderDirectories = fs.readdirSync(inputPath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
-
-        if (holderId != null) {
-            let holder = holderDirectories.find(x => x.name == holderId);
-            var holderPath: string = '';
-            if (holder?.isDirectory()) {
-                holderPath = path.join(inputPath, holderId);
-                const observable$ = defer(() => processHolder(holderPath));
-                observable$.subscribe((ret: boolean) => {
-                    console.log("Loaded data: " + ret);
-                    process.exit();
+        if (isSingle == false) {
+            var holderDirectories = fs.readdirSync(inputPath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+            if (holderId != null) {
+                let holder = holderDirectories.find(x => x.name == holderId);
+                var holderPath: string = '';
+                if (holder?.isDirectory()) {
+                    holderPath = path.join(inputPath, holderId);
+                    const observable$ = defer(() => processHolder(holderPath));
+                    observable$.subscribe((ret: boolean) => {
+                        console.log("Loaded data: " + ret);
+                        process.exit();
+                    })
+                }
+            }
+            else {
+                holderDirectories.forEach((dir: any) => {
+                    holderPath = path.join(inputPath, dir.name);
+                    const observable$ = defer(() => processHolder(holderPath));
+                    observable$.subscribe((ret: boolean) => { 
+                        console.log("Loaded data: " + ret);
+                        process.exit();
+                    }, error => {
+                        console.log("ERROR loading data: " + error);
+                    })
                 })
             }
-        }
-        else {
-            holderDirectories.forEach((dir: any) => {
-                holderPath = path.join(inputPath, dir.name);
-                const observable$ = defer(() => processHolder(holderPath));
-                observable$.subscribe((ret: boolean) => { 
-                    console.log("Loaded data: " + ret);
-                    process.exit();
-                })
-            })
+        } else {
+            let colName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "AllData";
+            await dbService.createEmptyCollection(colName);
         }
     })
     .catch((error: Error) => {

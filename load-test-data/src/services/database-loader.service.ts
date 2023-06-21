@@ -1,19 +1,18 @@
 import * as mongoDB from "mongodb";
-import { IDatabase } from "./database.interface";
+import { IDatabaseLoader } from "./database-loader.interface";
 
-export class MongoData implements IDatabase {
+export class MongoData implements IDatabaseLoader {
 
     public collections: mongoDB.Collection[] = [];
     private client : mongoDB.MongoClient;
     private dsbData: mongoDB.Db;
-    //private customerCollection: mongoDB.Collection
 
     constructor(){
-
         const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}`
         this.client = new mongoDB.MongoClient(connString, {monitorCommands: true});
         this.dsbData = this.client.db(process.env.MONGO_DB);
     }
+
     async loadPlans(planArray: any[]): Promise<number> {
         if (planArray == null) return -1;
         let plans: mongoDB.Collection = this.dsbData.collection(process.env.PLAN_COLLECTION_NAME as string);
@@ -59,8 +58,7 @@ export class MongoData implements IDatabase {
     }
 
     async connectDatabase() {
-        await this.client.connect();
-        
+        await this.client.connect();  
     }
 
     async disconnectDatabase(){
@@ -78,6 +76,11 @@ export class MongoData implements IDatabase {
         return retList;
     }
 
+    async createEmptyCollection(colName: string): Promise<mongoDB.Collection> {      
+       let collection = await this.dsbData.collection(colName);
+       await collection.insertOne({});
+       return collection;
+    }
 }
 
 
