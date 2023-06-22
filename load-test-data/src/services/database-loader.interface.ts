@@ -20,5 +20,7 @@ export interface IDatabaseLoader {
 
     addCustomer(plan: any): Promise<mongoDB.ObjectId|null>;
 
+    addCompleteDataSet(doc: any, datasetName: string): Promise<mongoDB.ObjectId|null>;
+
     createEmptyCollection(colName: string): Promise<mongoDB.Collection> ;
 }

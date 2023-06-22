@@ -59,14 +59,36 @@ dbService.connectDatabase()
                 })
             }
         } else {
-            let colName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "AllData";
-            await dbService.createEmptyCollection(colName);
+            var singleDataFilePath = path.join(inputPath, "all-data");
+            await processSingleFiles(singleDataFilePath);
+            process.exit();
         }
     })
     .catch((error: Error) => {
         console.error("Database connection failed", error);
         process.exit();
     })
+
+async function processSingleFiles(singleDataFilePath: string): Promise<boolean> {
+    //var singleDataFiles = fs.readdirSync(singleDataFilePath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+    let defaultColName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "AllData";
+    //var holderSubs = fs.readdirSync(singleDataFiles, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+    let singleDataFiles = fs.readdirSync(singleDataFilePath);
+    let cnt = singleDataFiles.length;
+    for (let i = 0; i < cnt; i++) {
+        let file = singleDataFiles[i];
+        var collectionName = file.split('.').slice(0, -1).join('.')
+        var filePath = path.join(singleDataFilePath, file);
+        let fileString = fs.readFileSync(filePath).toString();
+        var data = JSON.parse(fileString);
+        await dbService.createEmptyCollection(collectionName);
+        console.log("Created " + collectionName);
+        await dbService.addCompleteDataSet(data, collectionName);
+        console.log("Loaded data for " + collectionName);
+    }
+    return true;
+
+}
 
 async function processHolder(holderPath: string): Promise<boolean> {
     let customerDeleteCount = 0;
@@ -124,7 +146,7 @@ async function processHolder(holderPath: string): Promise<boolean> {
                 };
                 console.log(`Added ${planAddCount} plans`);
                 writePlanIdFile(data.holderId, planIdList);
-            }
+            }         
         }
         return Promise.resolve(true);
     }

@@ -53,6 +53,14 @@ export class MongoData implements IDatabaseLoader {
         return ret.deletedCount
     }
 
+    async addCompleteDataSet(doc: any, datasetName: string): Promise<mongoDB.ObjectId|null>  {
+        if (doc == null) return null;
+        let collectionName = datasetName == null ? process.env.SINGLE_COLLECTION_NAME as string: datasetName;
+        let allData: mongoDB.Collection = this.dsbData.collection(collectionName);
+        let ret = await allData.insertOne(doc);
+        return ret.insertedId;
+    }
+
     async getEnergyAccounts(customerId: string): Promise<any> {
         throw new Error("Method not implemented.");
     }
@@ -78,6 +86,7 @@ export class MongoData implements IDatabaseLoader {
 
     async createEmptyCollection(colName: string): Promise<mongoDB.Collection> {      
        let collection = await this.dsbData.collection(colName);
+       let ret = await collection.deleteMany({});
        await collection.insertOne({});
        return collection;
     }
