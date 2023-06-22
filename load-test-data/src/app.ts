@@ -13,7 +13,7 @@ dotenv.config();
 var dbService: IDatabaseLoader;
 dbService = new MongoData();
 
-const version = "1.24.0"
+const version = process.env.VERSION;
 
 const holderId = null;
 let inputPath = 'input/' + version

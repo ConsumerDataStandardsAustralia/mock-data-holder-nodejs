@@ -6,7 +6,7 @@
   "scripts": {
 
     "start": "tsc && cp -r ./input ./dist && cd dist && node ./dist/app.js",
-    "build": "tsc && cp -r ./input ./dist",
+    "build": "tsc && cp -r ./input ./dist ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
