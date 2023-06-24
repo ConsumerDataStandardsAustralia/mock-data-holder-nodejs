@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
 
-    "start": "tsc && cp -r ./input ./dist && cd dist && node ./dist/app.js",
-    "build": "tsc && cp -r ./input ./dist ",
+    "start": "tsc && rm -r ./dist/* && cp -r ./input ./dist && cd dist && node ./dist/app.js",
+    "build": "tsc && rm -r ./dist/input/* && cp -r ./input ./dist ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

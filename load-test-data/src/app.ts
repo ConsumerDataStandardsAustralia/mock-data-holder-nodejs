@@ -39,30 +39,25 @@ dbService.connectDatabase()
                 var holderPath: string = '';
                 if (holder?.isDirectory()) {
                     holderPath = path.join(inputPath, holderId);
-                    const observable$ = defer(() => processHolder(holderPath));
-                    observable$.subscribe((ret: boolean) => {
-                        console.log("Loaded data: " + ret);
-                        process.exit();
-                    })
+                    await processHolder(holderPath);
+                    process.exit();
                 }
             }
             else {
-                holderDirectories.forEach((dir: any) => {
-                    holderPath = path.join(inputPath, dir.name);
-                    const observable$ = defer(() => processHolder(holderPath));
-                    observable$.subscribe((ret: boolean) => { 
-                        console.log("Loaded data: " + ret);
-                        process.exit();
-                    }, error => {
-                        console.log("ERROR loading data: " + error);
-                    })
-                })
+                let cnt = holderDirectories.length;
+                for(let i = 0; i < cnt; i++) {
+                    if (holderDirectories[i].name.toLowerCase() == "all-data")
+                       continue;
+                    holderPath = path.join(inputPath, holderDirectories[i].name);
+                    await processHolder(holderPath);                  
+                }
+                process.exit();
             }
         } else {
             var singleDataFilePath = path.join(inputPath, "all-data");
             await processSingleFiles(singleDataFilePath);
             process.exit();
-        }
+        };
     })
     .catch((error: Error) => {
         console.error("Database connection failed", error);
@@ -71,17 +66,19 @@ dbService.connectDatabase()
 
 async function processSingleFiles(singleDataFilePath: string): Promise<boolean> {
     //var singleDataFiles = fs.readdirSync(singleDataFilePath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
-    let defaultColName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "AllData";
+    let defaultColName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "data-factory-output";
     //var holderSubs = fs.readdirSync(singleDataFiles, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
     let singleDataFiles = fs.readdirSync(singleDataFilePath);
     let cnt = singleDataFiles.length;
     for (let i = 0; i < cnt; i++) {
         let file = singleDataFiles[i];
-        var collectionName = file.split('.').slice(0, -1).join('.')
+        var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
+        if (defaultColName.toLowerCase() != collectionName)
+            continue;
         var filePath = path.join(singleDataFilePath, file);
         let fileString = fs.readFileSync(filePath).toString();
         var data = JSON.parse(fileString);
-        await dbService.createEmptyCollection(collectionName);
+        //await dbService.createEmptyCollection(collectionName);
         console.log("Created " + collectionName);
         await dbService.addCompleteDataSet(data, collectionName);
         console.log("Loaded data for " + collectionName);
