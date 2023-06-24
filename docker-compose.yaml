@@ -42,7 +42,6 @@ services:
 
 networks:
   app-network:
-    name: dsb-net
     driver: bridge
 
 volumes:
