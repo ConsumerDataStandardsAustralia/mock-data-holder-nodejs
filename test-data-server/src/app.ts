@@ -8,6 +8,7 @@ import { IDatabase } from './services/database.interface';
 
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv'; 
+import { SingleData } from './services/single.service';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2))
@@ -37,10 +38,17 @@ const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_
 
 const dbHost = `${process.env.DB_HOST}`
 const dbPort = `${process.env.DB_PORT}`
+const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
+var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
+var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
+
 console.log(`Connection string is ${connString}`);
 console.log(`Hosted on ${process.env.DB_HOST}:${process.env.DB_PORT}`)
 var dbService: IDatabase;
-dbService = new MongoData(connString, process.env.MONGO_DB as string);
+if (isSingle == true)
+    dbService = new SingleData(connString, process.env.MONGO_DB as string);
+else
+    dbService = new MongoData(connString, process.env.MONGO_DB as string);
 
 
 app.use(bodyParser.json())

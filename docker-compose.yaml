@@ -5,17 +5,11 @@ services:
     build:
       context: .
       dockerfile: dockerfile.dsb-data-loader
-    image: cdradmin/dsb-data-loader:1.22.1
+    image: cdradmin/dsb-data-loader:1.24.0
     container_name: dsb-data-loader
     env_file: .env.docker
     depends_on:
       - mongodb
-    environment:
-      - MONGO_HOSTNAME=mongodb
-      - CUSTOMER_COLLECTION_NAME=$CUSTOMER_COLLECTION_NAME
-      - PLAN_COLLECTION_NAME=$PLAN_COLLECTION_NAME
-      - MONGO_PORT=$MONGO_PORT
-      - MONGO_DB=$MONGO_DB
     networks:
       - app-network
 
@@ -23,20 +17,12 @@ services:
     build:
       context: .
       dockerfile: dockerfile.dsb-test-data-server
-    image: cdradmin/dsb-test-data-server:1.22.1
+    image: cdradmin/dsb-test-data-server:1.24.0
     container_name: dsb-test-data-server
     restart: unless-stopped
     env_file: .env.docker
     depends_on:
       - mongodb
-    environment:
-      - MONGO_HOSTNAME=mongodb
-      - CUSTOMER_COLLECTION_NAME=$CUSTOMER_COLLECTION_NAME
-      - PLAN_COLLECTION_NAME=$PLAN_COLLECTION_NAME
-      - MONGO_USERNAME=$MONGO_USERNAME
-      - MONGO_PASSWORD=$MONGO_PASSWORD  
-      - MONGO_PORT=$MONGO_PORT
-      - MONGO_DB=$MONGO_DB
     ports:
       - "3005:3005"
     networks:
@@ -56,7 +42,6 @@ services:
 
 networks:
   app-network:
-    name: dsb-net
     driver: bridge
 
 volumes:

@@ -1,0 +1,208 @@
+{
+  "brand": "ACETEWAGL",
+  "brandName": "ALINTA ENERGY",
+  "fuelType": "ELECTRICITY",
+  "lastUpdated": "2021-06-07T22:57:05.608Z",
+  "planId": "76764096-9e18-4bb7-8e0e-a5e9af1e2363",
+  "type": "STANDING",
+  "effectiveFrom": "2024-12-14T11:55:43.772Z",
+  "effectiveTo": "2025-03-04T00:00:00.000Z",
+  "displayName": "Energy Plan 2",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://remote-eligibility.org",
+  "customerType": "RESIDENTIAL",
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includePostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Russel LLC",
+      "Osinski, Friesen and Cormier"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "83",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "electricityContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "BPAY"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-12-25T04:43:32.136Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-08-02T02:38:56.885Z",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "1.3867",
+          "rates": [
+            {
+              "unitPrice": "1.68",
+              "measureUnit": "METER",
+              "description": "Optional description for single rate",
+              "volume": 1.02
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-01-28T08:25:48.656Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2021-08-07T06:53:17.414Z",
+        "timeZone": "LOCAL",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "1.7458",
+          "rates": [
+            {
+              "unitPrice": "1.92",
+              "measureUnit": "KVA",
+              "volume": 0.72
+            },
+            {
+              "unitPrice": "1.61",
+              "volume": 0.8
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-10-21T04:37:19.589Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-01-19T02:32:53.428Z",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.73",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "maxDemand": "8.09",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "DAY"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "2.48",
+            "measureUnit": "MONTH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "2.11",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-05-07T16:13:55.870Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2021-03-31T11:51:00.858Z",
+        "timeZone": "AEST",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "2.3644",
+          "rates": [
+            {
+              "unitPrice": "2.24",
+              "volume": 0.55
+            },
+            {
+              "unitPrice": "1.57",
+              "measureUnit": "KVA",
+              "description": "Optional description for single rate",
+              "volume": 0.53
+            },
+            {
+              "unitPrice": "2.49",
+              "description": "Optional description for single rate",
+              "volume": 1.36
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      }
+    ],
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "fixedAmount",
+        "type": "GUARANTEED",
+        "endDate": "2023-04-09T22:30:48.987Z",
+        "fixedAmount": {
+          "amount": "3.09"
+        }
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.1",
+            "rate": "1.95"
+          }
+        ],
+        "type": "PERCENT_OF_BILL"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.12",
+            "rate": "2.25"
+          }
+        ],
+        "type": "PERCENT_OF_BILL"
+      },
+      {
+        "displayName": "Energy Green Power Charge 2",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.01",
+            "amount": "1.17"
+          },
+          {
+            "percentGreen": "0.01",
+            "amount": "2.47"
+          },
+          {
+            "percentGreen": "0.37",
+            "amount": "2.93"
+          }
+        ],
+        "type": "FIXED_PER_MONTH"
+      }
+    ],
+    "termType": "3_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "239904123"
+}

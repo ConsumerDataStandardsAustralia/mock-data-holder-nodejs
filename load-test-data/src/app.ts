@@ -1,7 +1,7 @@
 import express, { request } from 'express';
 import { NextFunction, Request, Response } from 'express';
-import { MongoData } from './services/database.service';
-import { IDatabase } from './services/database.interface';
+import { MongoData } from './services/database-loader.service';
+import { IDatabaseLoader } from './services/database-loader.interface';
 import * as path from 'path';
 import * as fs from 'fs';
 import { defer } from 'rxjs';
@@ -10,48 +10,82 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-var dbService: IDatabase;
+var dbService: IDatabaseLoader;
 dbService = new MongoData();
 
+const version = process.env.VERSION;
+
 const holderId = null;
-let inputPath = 'input/'
-let outputPath = 'output/'
+let inputPath = 'input/' + version
+let outputPath = 'output/' + version
 
 inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
 
+const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
+var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
+var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
+
+
+console.log("Uploading data for version " + version);
 
 dbService.connectDatabase()
     .then(async () => {
-        var holderDirectories = fs.readdirSync(inputPath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
-
-        if (holderId != null) {
-            let holder = holderDirectories.find(x => x.name == holderId);
-            var holderPath: string = '';
-            if (holder?.isDirectory()) {
-                holderPath = path.join(inputPath, holderId);
-                const observable$ = defer(() => processHolder(holderPath));
-                observable$.subscribe((ret: boolean) => {
-                    console.log("Loaded data: " + ret);
+        console.log("Connected to database...");
+        if (isSingle == false) {
+            var holderDirectories = fs.readdirSync(inputPath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+            if (holderId != null) {
+                let holder = holderDirectories.find(x => x.name == holderId);
+                var holderPath: string = '';
+                if (holder?.isDirectory()) {
+                    holderPath = path.join(inputPath, holderId);
+                    await processHolder(holderPath);
                     process.exit();
-                })
+                }
             }
-        }
-        else {
-            holderDirectories.forEach((dir: any) => {
-                holderPath = path.join(inputPath, dir.name);
-                const observable$ = defer(() => processHolder(holderPath));
-                observable$.subscribe((ret: boolean) => {
-                    console.log("Loaded data: " + ret);
-                    process.exit();
-                })
-            })
-        }
+            else {
+                let cnt = holderDirectories.length;
+                for(let i = 0; i < cnt; i++) {
+                    if (holderDirectories[i].name.toLowerCase() == "all-data")
+                       continue;
+                    holderPath = path.join(inputPath, holderDirectories[i].name);
+                    await processHolder(holderPath);                  
+                }
+                process.exit();
+            }
+        } else {
+            var singleDataFilePath = path.join(inputPath, "all-data");
+            await processSingleFiles(singleDataFilePath);
+            process.exit();
+        };
     })
     .catch((error: Error) => {
         console.error("Database connection failed", error);
         process.exit();
     })
+
+async function processSingleFiles(singleDataFilePath: string): Promise<boolean> {
+    //var singleDataFiles = fs.readdirSync(singleDataFilePath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+    let defaultColName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "data-factory-output";
+    //var holderSubs = fs.readdirSync(singleDataFiles, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
+    let singleDataFiles = fs.readdirSync(singleDataFilePath);
+    let cnt = singleDataFiles.length;
+    for (let i = 0; i < cnt; i++) {
+        let file = singleDataFiles[i];
+        var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
+        if (defaultColName.toLowerCase() != collectionName)
+            continue;
+        var filePath = path.join(singleDataFilePath, file);
+        let fileString = fs.readFileSync(filePath).toString();
+        var data = JSON.parse(fileString);
+        //await dbService.createEmptyCollection(collectionName);
+        console.log("Created " + collectionName);
+        await dbService.addCompleteDataSet(data, collectionName);
+        console.log("Loaded data for " + collectionName);
+    }
+    return true;
+
+}
 
 async function processHolder(holderPath: string): Promise<boolean> {
     let customerDeleteCount = 0;
@@ -108,8 +142,8 @@ async function processHolder(holderPath: string): Promise<boolean> {
                     planIdList.push(data.planId);
                 };
                 console.log(`Added ${planAddCount} plans`);
-                writePlanIdFile(holderId, planIdList);
-            }
+                writePlanIdFile(data.holderId, planIdList);
+            }         
         }
         return Promise.resolve(true);
     }
@@ -117,6 +151,7 @@ async function processHolder(holderPath: string): Promise<boolean> {
 }
 
 function createIdFiles(holderId: string, data: any) {
+    console.log("Creating id files...");
     let accountIds: string[] = [];
     let servicePointIds: string[] = [];
     let custDirName = data.customerId;
@@ -138,26 +173,13 @@ function createIdFiles(holderId: string, data: any) {
     })
     let accountIdFile = path.join(outDir, 'accounts.json');
     fs.writeFileSync(accountIdFile, JSON.stringify(accountIds));
-
+    console.log("Written accounts.json....");
 
     let servicePointIdFile = path.join(outDir, 'service-points.json');
     fs.writeFileSync(servicePointIdFile, JSON.stringify(servicePointIds));
-
+    console.log("Written service-points.json....");
 }
 
-function writeCustomerIdFile(holderId: string, data: any[]) {
-    let outFileDir = path.join(outputPath, holderId);
-    let outFile = path.join(outFileDir, 'customer-ids.json');
-    fs.mkdirSync(outFileDir, { recursive: true });
-    var custIdObjects: any[] = [];
-    data?.forEach((entry: any) => {
-        let obj: any = {
-            customerId: entry
-        }
-        custIdObjects.push(obj);
-    });
-    fs.writeFileSync(outFile, JSON.stringify(custIdObjects));
-}
 
 function writePlanIdFile(holderId: string, data: any[]) {
     //let custDirName = data.customerId;
@@ -173,4 +195,5 @@ function writePlanIdFile(holderId: string, data: any[]) {
         planIdObjects.push(obj);
     });
     fs.writeFileSync(outFile, JSON.stringify(planIdObjects));
+    console.log("Written plan ids....");
 }
