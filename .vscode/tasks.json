@@ -24,6 +24,18 @@
 				"isDefault": true
 			},
 			"label": "tsc: build - data server"
+		},
+		{
+			"type": "typescript",
+			"tsconfig": "test-data-adr/tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "tsc: build - adr"
 		}
 	]
 }

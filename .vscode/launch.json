@@ -31,6 +31,20 @@
             ],
             "preLaunchTask": "tsc: build - data server"
 
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug ADR",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/test-data-adr/src/app.ts",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "preLaunchTask": "tsc: build - adr"
+
         }
     ]
 }

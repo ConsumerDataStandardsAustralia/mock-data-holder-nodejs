@@ -1,0 +1,14 @@
+{
+  "name": "test-data-adr",
+  "version": "1.0.0",
+  "description": "A basic mock data recipient",
+  "main": "app.js",
+  "scripts": {
+    "start": "tsc && node ./dist/app.js",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon"
+  },
+  "author": "Tomas Schier",
+  "license": "MIT"
+}

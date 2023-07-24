@@ -37,6 +37,7 @@
     "mongodb": "^4.13.0",
     "mongoose": "^6.8.4",
     "parse": "^4.0.0",
+    "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.0"
   }
 }

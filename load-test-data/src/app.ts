@@ -23,9 +23,7 @@ inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
 
 const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
-var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
 var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
-
 
 console.log("Uploading data for version " + version);
 

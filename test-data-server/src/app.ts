@@ -15,7 +15,7 @@ console.log(JSON.stringify(process.env, null, 2))
 
 const exp = express;
 const app = express();
-const port = 3005;
+const port = 3004;
 
 
 let standardsVersion = '/cds-au/v1';
@@ -477,14 +477,20 @@ app.post(`${standardsVersion}/energy/accounts/billing`, async (req: Request, res
 });
 
 // get billing for a number of accounts
-app.post(`${standardsVersion}/energy/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
+app.get(`/jwks`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    let result = 'Ades123'
+    res.send(result);
+});
+
+app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
     if (user(req) == undefined){
         res.sendStatus(401);
         return;
     }
-    let result = await dbService.getBalancesForMultipleAccount(userId, req.body?.data?.accountIds)
+    let result = await dbService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
     if (result == null){
         res.sendStatus(404);
     } else {
@@ -492,7 +498,6 @@ app.post(`${standardsVersion}/energy/accounts/balances`, async (req: Request, re
         res.send(result);
     }
 });
-
 
 dbService.connectDatabase()
     .then(() => {
