@@ -1,12 +1,13 @@
 // request (JWT Key: Ades123)
 {
     "iss": "77831c42-7e8b-457a-93b2-d714bb3b2bc6",
+    "kid": "b58bd0ff-0f92-40f3-a804-dc6526ec5bc6",
     "response_type": "code",
     "code_challenge_method": "S256",
     "nonce": "pUrzbYRmip",
     "client_id": "77831c42-7e8b-457a-93b2-d714bb3b2bc6",
     "response_mode": "jwt",
-    "aud": "https://dh-test.idp.dev.cdrsandbox.gov.au/fapi-jarm",
+    "aud": "https://localhost:8082/connect/par",
     "nbf": 1676931048,
     "scope": "openid profile common:customer.basic:read energy:accounts.basic:read energy:accounts.concessions:read",
     "claims": {
@@ -20,9 +21,9 @@
     },
     "redirect_uri": "https://www.certification.openid.net/test/a/cdr-mdh/callback",
     "state": "KvvmtMvBV0",
-    "exp": 1676931348,
+    "exp": 1876931348,
     "code_challenge": "DLmRwoU1A8yGm1MEutA8qHkRToG3er32rEwsevYNQNg"
-  }
+}
  // Encoded
  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3NzgzMWM0Mi03ZThiLTQ1N2EtOTNiMi1kNzE0YmIzYjJiYzYiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJub25jZSI6InBVcnpiWVJtaXAiLCJjbGllbnRfaWQiOiI3NzgzMWM0Mi03ZThiLTQ1N2EtOTNiMi1kNzE0YmIzYjJiYzYiLCJyZXNwb25zZV9tb2RlIjoiand0IiwiYXVkIjoiaHR0cHM6Ly9kaC10ZXN0LmlkcC5kZXYuY2Ryc2FuZGJveC5nb3YuYXUvZmFwaS1qYXJtIiwibmJmIjoxNjc2OTMxMDQ4LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGNvbW1vbjpjdXN0b21lci5iYXNpYzpyZWFkIGVuZXJneTphY2NvdW50cy5iYXNpYzpyZWFkIGVuZXJneTphY2NvdW50cy5jb25jZXNzaW9uczpyZWFkIiwiY2xhaW1zIjp7InNoYXJpbmdfZHVyYXRpb24iOjc3NzYwMDAsImlkX3Rva2VuIjp7ImFjciI6eyJ2YWx1ZSI6InVybjpjZHMuYXU6Y2RyOjIiLCJlc3NlbnRpYWwiOnRydWV9fX0sInJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vd3d3LmNlcnRpZmljYXRpb24ub3BlbmlkLm5ldC90ZXN0L2EvY2RyLW1kaC9jYWxsYmFjayIsInN0YXRlIjoiS3Z2bXRNdkJWMCIsImV4cCI6MTY3NjkzMTM0OCwiY29kZV9jaGFsbGVuZ2UiOiJETG1Sd29VMUE4eUdtMU1FdXRBOHFIa1JUb0czZXIzMnJFd3NldllOUU5nIiwiaWF0IjoxNjkwMTkzNjk5fQ.pQkH9ttqfymFzD6ikSQLSKUXteW02utEyNZuSfWdwoU
 
@@ -33,9 +34,9 @@
   //client_assertion (JWT Key: Ades123)
   {
     "sub": "77831c42-7e8b-457a-93b2-d714bb3b2bc6",
-    "aud": "https://dh-test.idp.dev.cdrsandbox.gov.au/fapi-jarm",
+    "aud": "https://localhost:3005",
     "iss": "77831c42-7e8b-457a-93b2-d714bb3b2bc6",
-    "exp": 1676931108,
+    "exp": 1876931108,
     "iat": 1676931048,
     "jti": "meDQDSVJa3GfZ2UGGT0r"
   }
