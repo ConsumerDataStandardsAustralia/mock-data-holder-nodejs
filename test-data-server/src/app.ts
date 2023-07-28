@@ -1,24 +1,35 @@
 import express, { request }  from 'express';
 import {NextFunction, Request, Response} from 'express';
-import endpoints from './data/endpoints.json';
+import endpoints from '../data/endpoints.json';
 import { EndpointConfig, CdrConfig, cdrHeaderValidator, DefaultBankingEndpoints,
     DefaultEnergyEndpoints}  from '@cds-au/holder-sdk'
 import { MongoData } from './services/database.service';
 import { IDatabase } from './services/database.interface';
-
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv'; 
 import { SingleData } from './services/single.service';
+import cors from 'cors';
+import path from 'path';
+import { readFileSync } from 'fs';
+import * as https from 'https'
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2))
 
 const exp = express;
 const app = express();
-const port = 3004;
 
-
+const port = `${process.env.APP_LISTENTING_PORT}`;
 let standardsVersion = '/cds-au/v1';
+
+// Add a list of allowed origins.
+// If you have more origins you would like to add, you can add them to the array below.
+const allowedOrigins = ['https://localhost:3004'];
+const corsOptions: cors.CorsOptions = {
+  origin: allowedOrigins
+};
+app.use(cors(corsOptions));
+
 
 const router = exp.Router();
 
@@ -36,14 +47,12 @@ app.use(cdrHeaderValidator(dsbOptions));
 // you need to implement the IDatabase interface
 const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}`
 
-const dbHost = `${process.env.DB_HOST}`
-const dbPort = `${process.env.DB_PORT}`
 const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
 var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
 var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
 
 console.log(`Connection string is ${connString}`);
-console.log(`Hosted on ${process.env.DB_HOST}:${process.env.DB_PORT}`)
+console.log(`DB hosted on ${process.env.DB_HOST}:${process.env.MONGO_PORT}`)
 var dbService: IDatabase;
 if (isSingle == true)
     dbService = new SingleData(connString, process.env.MONGO_DB as string);
@@ -501,15 +510,31 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 
 dbService.connectDatabase()
     .then(() => {
-        app.listen(port, dbHost, () => {
-            console.log(`Server running at http://${dbHost}:${dbPort}/`);
-            console.log('Listening for requests....');
-        });
+        startServer();      
+        // app.listen(port,  () => {
+        //     console.log(`Server running....`);
+        //     console.log(`Listening for requests on ${port}....`);
+        // });
     })
     .catch((error: Error) => {
         console.error("Database connection failed", error);
         process.exit();
     })
+
+async function startServer() {
+    const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
+    const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
+    const rCert = readFileSync(certFile, 'utf8');
+    const rKey = readFileSync(keyFile, 'utf8');
+    const otions = {
+    key: rKey,
+    cert: rCert
+    }
+    https.createServer(otions, app)
+    .listen(port, () => {
+        console.log('Server started');
+    })
+}
 
 
 // In the absence of an IdP we use the accessToken as userId
