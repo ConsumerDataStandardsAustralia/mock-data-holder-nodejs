@@ -7,13 +7,17 @@ import * as https from 'https'
 import path from 'path';
 import { readFileSync } from 'fs';
 
-
+import {SwaggerUiOptions } from "swagger-ui-express";
+import * as swaggerUI from 'swagger-ui-express'
+const swaggerDocument = require("./data/cds-energy.json");
 // dotenv.config();
 console.log(JSON.stringify(process.env, null, 2))
 
 const dbHost = `${process.env.DB_HOST}`
-const dbPort = 3005;
+const adrPort = 3004;
 const app = express();
+const authServerHost = 'https://localhost';
+const authServerPort = 8001;
 
 async function startServer() {
   const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
@@ -25,16 +29,53 @@ async function startServer() {
     cert: rCert
   }
   https.createServer(otions, app)
-    .listen(dbPort, () => {
+    .listen(adrPort, () => {
       console.log('Server started');
-    });
+    })
 }
- 
+
+// function callPAR() {
+//   const options = {
+//     hostname: authServerHost,
+//     port: authServerPort,
+//     path: '/connect/par',
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'Content-Length': data.length
+//     }
+//   }
+  
+
+//   https.(options, resp => {
+//     let data = "";
+
+//     // A chunk of data has been recieved.
+//     resp.on("data", chunk => {
+//       data += chunk;
+//     });
+
+//     // The whole response has been received. Print out the result.
+//     resp.on("end", () => {
+//       let url = JSON.parse(data).message;
+//       console.log(url);      
+//     });
+//   })
+//   .on("error", err => {
+//     console.log("Error: " + err.message);
+//   });
+// }
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument))
+
 startServer();
+
+
+
 
 // get the jwks signing key. This is called by the auth server
 app.get(`/jwks`, async (req: Request, res: Response, next: NextFunction) => {
-    console.log(`Received request on ${dbPort} for ${req.url}`);
+    console.log(`Received request on ${adrPort} for ${req.url}`);
     res.contentType('application/json')
     const jwkFile = path.join(__dirname, '/data/jwk.json')
     const jwk = JSON.parse(readFileSync(jwkFile, 'utf8'));
@@ -42,12 +83,14 @@ app.get(`/jwks`, async (req: Request, res: Response, next: NextFunction) => {
     res.send(jwk);
 });
 
-app.get(`/test`, async (req: Request, res: Response, next: NextFunction) => {
-    console.log(`Received request on ${dbPort} for ${req.url}`);
-    res.send('Hello World');
+app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${adrPort} for ${req.url}`);
+    res.send('Server is running..');
 });
 
 app.get(`/callback`, async (req: Request, res: Response, next: NextFunction) => {
-  console.log(`Received callback on ${dbPort} for ${req.url}`);
-  res.send('Authenticationcomplete');
+  console.log(`Received callback on ${adrPort} for ${req.url}`);
+  res.send('Authentication complete');
 });
+
+
