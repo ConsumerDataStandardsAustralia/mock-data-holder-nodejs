@@ -24,7 +24,7 @@ let standardsVersion = '/cds-au/v1';
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
-const allowedOrigins = ['https://localhost:3004'];
+const allowedOrigins = ['https://localhost:3004', 'https://localhost:9001'];
 const corsOptions: cors.CorsOptions = {
   origin: allowedOrigins
 };
@@ -40,7 +40,7 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
-app.use(cdrHeaderValidator(dsbOptions));
+// app.use(cdrHeaderValidator(dsbOptions));
 
 
 // This implementation uses a MongoDB. To use some other persistent storage

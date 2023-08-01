@@ -1,0 +1,18 @@
+{
+  "name": "test-data-server",
+  "version": "1.0.0",
+  "description": "An app to host test data generated",
+  "main": "app.js",
+  "scripts": {
+    "start": "tsc && node ./dist/app.js",
+    "build": "tsc && cp ./data/* ./dist/data/",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon"
+  },
+  "keywords": [
+    "nodejs",
+    "typescript"
+  ],
+  "author": "Tomas Schier",
+  "license": "MIT"
+}
