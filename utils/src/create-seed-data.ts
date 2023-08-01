@@ -42,7 +42,7 @@ sourceObj.holders[0]?.holder?.authenticated?.customers?.forEach((c:any) => {
     let accountList: any[] = [];
     cust.CustomerID = c.customerId;
     cust.CustomerUType = c.customer?.customerUType;
-    cust.LoginId = c.customer.lastName;
+    cust.LoginId = c.customer?.person?.lastName;
     // Person
     person.PersonID = c.customerId;
     person.firstName = c.customer?.person?.firstName;
@@ -72,7 +72,7 @@ sourceObj.holders[0]?.holder?.authenticated?.customers?.forEach((c:any) => {
     customers.push(cust)
 });
 
-outputData.Customer = customers;
+outputData.Customers = customers;
 
 
 writeFileSync(seedDataOutput,JSON.stringify(outputData))
