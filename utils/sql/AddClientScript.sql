@@ -1,4 +1,5 @@
 USE [cdr-auth-server]
+
 DECLARE @ClientId NVARCHAR(450) = N'77831c42-7e8b-457a-93b2-d714bb3b2bc6'
 DECLARE @OrganisationId NVARCHAR(450) = N'5242a9d7-4c5d-43c7-a78a-844e352c7593'
 DECLARE @LegalEntityId NVARCHAR(450) = N'8ecd3c03-1638-4936-97c3-76d2f3ac9d0d'
@@ -158,7 +159,6 @@ VALUES
 
 
 
-
 -- Update Other stuff
 USE [cdr-mdr]
 DELETE FROM dbo.[DataHolderBrand] WHERE DataHolderBrandId IN (@BrandId)
@@ -190,26 +190,6 @@ VALUES
     ],
     "LastUpdated": "2023-04-19T11:58:00Z"
 }', null)
-
--- Add the clients into the software products table.
--- DELETE FROM [dbo].[SoftwareProduct] WHERE SoftwareProductId IN (@SoftwareId)
-
-
-
--- INSERT INTO [dbo].[SoftwareProduct]
--- VALUES
---       (@SoftwareId
---            , @BrandId
---            , @SoftwareName
---            , 'DSB Software Product Description'
---            , 'https://mylogo.png'
---            , @DataRecipientBaseUri,
---            , @RedirectUri
---            , @LegalEntityName
---            , 'ACTIVE'
---            , @BrandId
---            , @BrandName
---            , 'ACTIVE')
 
 
 INSERT INTO Registration (ClientId, JsonDocument, DataHolderBrandId)

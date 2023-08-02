@@ -34,38 +34,6 @@ async function startServer() {
     })
 }
 
-// function callPAR() {
-//   const options = {
-//     hostname: authServerHost,
-//     port: authServerPort,
-//     path: '/connect/par',
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Content-Length': data.length
-//     }
-//   }
-  
-
-//   https.(options, resp => {
-//     let data = "";
-
-//     // A chunk of data has been recieved.
-//     resp.on("data", chunk => {
-//       data += chunk;
-//     });
-
-//     // The whole response has been received. Print out the result.
-//     resp.on("end", () => {
-//       let url = JSON.parse(data).message;
-//       console.log(url);      
-//     });
-//   })
-//   .on("error", err => {
-//     console.log("Error: " + err.message);
-//   });
-// }
-
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
 startServer();

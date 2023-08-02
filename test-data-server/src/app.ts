@@ -40,7 +40,7 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
-// app.use(cdrHeaderValidator(dsbOptions));
+app.use(cdrHeaderValidator(dsbOptions));
 
 
 // This implementation uses a MongoDB. To use some other persistent storage
@@ -52,7 +52,7 @@ var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
 var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
 
 console.log(`Connection string is ${connString}`);
-console.log(`DB hosted on ${process.env.DB_HOST}:${process.env.MONGO_PORT}`)
+
 var dbService: IDatabase;
 if (isSingle == true)
     dbService = new SingleData(connString, process.env.MONGO_DB as string);
@@ -511,10 +511,6 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 dbService.connectDatabase()
     .then(() => {
         startServer();      
-        // app.listen(port,  () => {
-        //     console.log(`Server running....`);
-        //     console.log(`Listening for requests on ${port}....`);
-        // });
     })
     .catch((error: Error) => {
         console.error("Database connection failed", error);

@@ -2,7 +2,7 @@ FROM node:16
 
 ENV NODE_ENV=docker
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -18,6 +18,6 @@ COPY ./test-data-server/ .
 
 RUN npm run build
 
-CMD [ "node", "dist/app.js"]
+CMD [ "node", "dist/src/app.js"]
 
 EXPOSE 3005

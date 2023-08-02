@@ -1,0 +1,3 @@
+FROM consumerdataright/mock-data-recipient
+
+# copy appsettings.Release with our data base connection and other stuff
