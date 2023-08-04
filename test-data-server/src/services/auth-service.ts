@@ -1,10 +1,9 @@
 import path from "path";
-import { User } from "./user";
-// import axios from 'axios';
+import { User } from "../models/user";
 import * as https from 'https'
 import { readFileSync } from "fs";
-import { Introspection } from "./introspection";
-import { JwkKeys } from "./jwt-key";
+import { Introspection } from "../models/introspection";
+import { JwkKeys } from "../models/jwt-key";
 
 
 export class AuthService {
@@ -75,19 +74,7 @@ export class AuthService {
     
             if (this.jwks_uri == undefined)
                 return retVal;
-            const certFile = path.join(__dirname, '../certificates/mtls-server.pem')
-            const keyFile = path.join(__dirname, '../certificates/mtls-server.key')
-            const rCert = readFileSync(certFile, 'utf8');
-            const rKey = readFileSync(keyFile, 'utf8');
-            let url = new URL(this.jwks_uri);
-            let options: https.RequestOptions = {
-                host: url.hostname,
-                port: url.port,
-                path: url.pathname,
-                cert: rCert,
-                key: rKey,
-                method: 'GET' 
-            }  
+            let options = this.buildHttpsRequestOptions(this.jwks_uri, "GET")
             // get the jwks signing key
             let req = await https.request(options, (response:any) => {
                 let chunks_of_data: any = [];

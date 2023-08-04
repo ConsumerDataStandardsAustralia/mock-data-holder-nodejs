@@ -1,9 +1,9 @@
 import { DsbResponse } from "@cds-au/holder-sdk";
-import { AuthServer } from "../models/auth-server";
+import { AuthService } from "../services/auth-service";
 
 
 
-export function cdrAuthorization(authServer: AuthServer): any {
+export function cdrAuthorization(authServer: AuthService): any {
     // Do something with config here
     let srv = authServer;
     return function authorize(req: Request, res: DsbResponse) {

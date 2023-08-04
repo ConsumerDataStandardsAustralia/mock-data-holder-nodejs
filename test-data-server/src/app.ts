@@ -71,10 +71,11 @@ async function startServer() {
 
     console.log('Discovered issuer %s %O',  discovery.metadata);
     let init = await authService.initAuthService(discovery.metadata);
+
     https.createServer(otions, app)
-    .listen(port, () => {
-        console.log('Server started');
-    })
+        .listen(port, () => {
+            console.log('Server started');
+        })
 }
 
 
@@ -204,7 +205,7 @@ app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Respons
 app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let temp = req.headers?.authorization as string;
-    let tokenIsValid = await authServer.verifyAccessToken(temp) 
+    let tokenIsValid = await authService.verifyAccessToken(temp) 
     if (tokenIsValid == false) {
         res.status(401).json('Not authorized');
         return;
