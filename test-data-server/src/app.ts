@@ -1,17 +1,25 @@
-import express, { request }  from 'express';
-import {NextFunction, Request, Response} from 'express';
+import express, { request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import endpoints from '../data/endpoints.json';
-import { EndpointConfig, CdrConfig, cdrHeaderValidator, DefaultBankingEndpoints,
-    DefaultEnergyEndpoints}  from '@cds-au/holder-sdk'
+import {
+    EndpointConfig, CdrConfig, cdrHeaderValidator, DefaultBankingEndpoints,
+    DefaultEnergyEndpoints
+} from '@cds-au/holder-sdk'
 import { MongoData } from './services/database.service';
 import { IDatabase } from './services/database.interface';
 import bodyParser from 'body-parser';
-import * as dotenv from 'dotenv'; 
+import * as dotenv from 'dotenv';
 import { SingleData } from './services/single.service';
 import cors from 'cors';
 import path from 'path';
 import { readFileSync } from 'fs';
 import * as https from 'https'
+
+import { Issuer } from 'openid-client';
+import { AuthService } from './services/auth-service';
+import { cdrAuthorization } from './modules/auth';
+
+let discovery: any = null;
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2))
@@ -20,28 +28,10 @@ const exp = express;
 const app = express();
 
 const port = `${process.env.APP_LISTENTING_PORT}`;
+const authServerUrl = 'https://localhost:8081';
 let standardsVersion = '/cds-au/v1';
 
-// Add a list of allowed origins.
-// If you have more origins you would like to add, you can add them to the array below.
-const allowedOrigins = ['https://localhost:3004', 'https://localhost:9001'];
-const corsOptions: cors.CorsOptions = {
-  origin: allowedOrigins
-};
-app.use(cors(corsOptions));
-
-
-const router = exp.Router();
-
-// this middle ware will handle the boilerplate validation and setting for a number of header parameters
-// For more information on how to use and set up refer to the js-holder demo project 
-// https://github.com/ConsumerDataStandardsAustralia/js-holder-sdk-demo
-const sampleEndpoints = [...endpoints] as EndpointConfig[];
-const dsbOptions: CdrConfig = {
-    endpoints: sampleEndpoints
-}
-app.use(cdrHeaderValidator(dsbOptions));
-
+let authService = new AuthService()
 
 // This implementation uses a MongoDB. To use some other persistent storage
 // you need to implement the IDatabase interface
@@ -49,7 +39,7 @@ const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_
 
 const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
 var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
-var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
+var isSingle = isSingleStr?.toLowerCase() == 'false' ? false : true;
 
 console.log(`Connection string is ${connString}`);
 
@@ -59,6 +49,53 @@ if (isSingle == true)
 else
     dbService = new MongoData(connString, process.env.MONGO_DB as string);
 
+dbService.connectDatabase()
+    .then(() => {
+        startServer();
+    })
+    .catch((error: Error) => {
+        console.error("Database connection failed", error);
+        process.exit();
+    })
+
+async function startServer() {
+    const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
+    const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
+    const rCert = readFileSync(certFile, 'utf8');
+    const rKey = readFileSync(keyFile, 'utf8');
+    const otions = {
+        key: rKey,
+        cert: rCert
+    }
+    discovery = await Issuer.discover(authServerUrl);
+
+    console.log('Discovered issuer %s %O',  discovery.metadata);
+    let init = await authService.initAuthService(discovery.metadata);
+    https.createServer(otions, app)
+    .listen(port, () => {
+        console.log('Server started');
+    })
+}
+
+
+// Add a list of allowed origins.
+// If you have more origins you would like to add, you can add them to the array below.
+const allowedOrigins = ['https://localhost:3004', 'https://localhost:9001'];
+const corsOptions: cors.CorsOptions = {
+    origin: allowedOrigins
+};
+app.use(cors(corsOptions));
+
+const router = exp.Router();
+//app.use(cdrAuthorization());
+// this middle ware will handle the boilerplate validation and setting for a number of header parameters
+// For more information on how to use and set up refer to the js-holder demo project 
+// https://github.com/ConsumerDataStandardsAustralia/js-holder-sdk-demo
+const sampleEndpoints = [...endpoints] as EndpointConfig[];
+const dsbOptions: CdrConfig = {
+    endpoints: sampleEndpoints
+}
+app.use(cdrHeaderValidator(dsbOptions));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -68,15 +105,15 @@ app.use('/', router);
 // anything /energy/accounts/<something-else> needs  to be routed like this 
 router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) => {
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     console.log(`Received request on ${port} for ${req.url}`);
     var excludes = ["invoices", "billing", "balances"];
-    if (excludes.indexOf(req.params?.accountId) == -1){
+    if (excludes.indexOf(req.params?.accountId) == -1) {
         let result = await dbService.getEnergyAccountDetails(userId, req.params?.accountId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -85,7 +122,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
     }
     if (req.params?.accountId == "invoices") {
         let result = await dbService.getBulkInvoicesForUser(userId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
@@ -94,7 +131,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
 
     if (req.params?.accountId == "billing") {
         let result = await dbService.getBulkBilllingForUser(userId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
@@ -103,7 +140,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
 
     if (req.params?.accountId == "balances") {
         let result = await dbService.getBulkBalancesForUser(userId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
@@ -115,14 +152,14 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
 router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId`, async (req, res) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     var excludes = ["usage", "der"];
-    if (excludes.indexOf(req.params?.servicePointId) == -1){
+    if (excludes.indexOf(req.params?.servicePointId) == -1) {
         let result = await dbService.getServicePointDetails(userId, req.params?.servicePointId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -132,7 +169,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
     if (req.params?.servicePointId == "usage") {
         console.log(`Received request on ${port} for ${req.url}`);
         let result = await dbService.getBulkUsageForUser(userId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -142,7 +179,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
 
     if (req.params?.servicePointId == "der") {
         let result = await dbService.getBulkDerForUser(userId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
@@ -154,7 +191,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
 app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.status(401);
         return;
     }
@@ -166,14 +203,22 @@ app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Respons
 // tget list of service points, returns EnergyServicePointListResponse
 app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
+    let temp = req.headers?.authorization as string;
+    let tokenIsValid = await authServer.verifyAccessToken(temp) 
+    if (tokenIsValid == false) {
+        res.status(401).json('Not authorized');
+        return;
+    }
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
-    let result = await dbService.getServicePoints(userId);
-    if (result == null){
+    //let result = await dbService.getServicePoints(userId);
+    let result: any = null;
+    if (result == null) {
         res.sendStatus(404);
+        return;
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
         res.send(result);
@@ -183,12 +228,12 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
 app.get(`${standardsVersion}/common/customer/detail`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getCustomerDetails(userId);
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -199,12 +244,12 @@ app.get(`${standardsVersion}/common/customer/detail`, async (req: Request, res: 
 app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getCustomerDetails(userId);
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -217,7 +262,7 @@ app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Re
     console.log(`Received request on ${port} for ${req.url}`);
 
     let result = await dbService.getEnergyPlanDetails(req.params.planId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -230,7 +275,7 @@ app.get(`${standardsVersion}/energy/plans/`, async (req: Request, res: Response,
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
     let result = await dbService.getEnergyAllPlans()
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -242,12 +287,12 @@ app.get(`${standardsVersion}/energy/plans/`, async (req: Request, res: Response,
 app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getUsageForServicePoint(userId, req.params.servicePointId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -261,12 +306,12 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/us
 app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/der`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getDerForServicePoint(userId, req.params.servicePointId);
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -279,12 +324,12 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/de
 app.post(`${standardsVersion}/energy/electricity/servicepoints/der`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getDerForMultipleServicePoints(userId, req.body?.accountIds)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -296,14 +341,14 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/der`, async (req:
 app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     var excludes = ["invoices"];
-    if (excludes.indexOf(req.params?.accountId) == -1){
+    if (excludes.indexOf(req.params?.accountId) == -1) {
         let result = await dbService.getEnergyAccountDetails(userId, req.params?.accountId)
-        if (result == null){
+        if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -311,7 +356,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, r
         }
     }
     else {
-      app.get(`${standardsVersion}/energy/accounts/`);
+        app.get(`${standardsVersion}/energy/accounts/`);
     }
 
 });
@@ -320,12 +365,12 @@ app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, r
 app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getInvoicesForAccount(userId, req.params?.accountId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -337,12 +382,12 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
 app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
-    let result = await dbService.getInvoicesForAccount(userId,req.params.accountId)
-    if (result == null){
+    let result = await dbService.getInvoicesForAccount(userId, req.params.accountId)
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -354,12 +399,12 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
 app.post(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received POST request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getInvoicesForMultipleAccounts(userId, req.body?.data?.accountIds)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         res.send(result);
@@ -370,12 +415,12 @@ app.post(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, re
 app.get(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received GET request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getBulkInvoicesForUser(userId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         res.send(result);
@@ -386,12 +431,12 @@ app.get(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res
 app.post(`${standardsVersion}/energy/electricity/servicepoints/usage`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getUsageForMultipleServicePoints(userId, req.body?.data?.servicePointIds)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -403,12 +448,12 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/usage`, async (re
 app.get(`${standardsVersion}/energy/accounts/:accountId/concessions`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getConcessionsForAccount(userId, req.params?.accountId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -421,13 +466,13 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/concessions`, async (req
 app.get(`${standardsVersion}/energy/accounts/:accountId/balance`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let st = `Received request on ${port} for ${req.url}`;
     let result = await dbService.getBalanceForAccount(userId, req.params?.accountId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -439,12 +484,12 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/balance`, async (req: Re
 app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -456,12 +501,12 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 app.get(`${standardsVersion}/energy/accounts/:accountId/billing`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getTransactionsForAccount(userId, req.params?.accountId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         res.send(result);
@@ -472,12 +517,12 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/billing`, async (req: Re
 app.post(`${standardsVersion}/energy/accounts/billing`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getBillingForMultipleAccounts(userId, req.body?.data?.accountIds)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -495,12 +540,12 @@ app.get(`/jwks`, async (req: Request, res: Response, next: NextFunction) => {
 app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let userId: any = user(req);
-    if (user(req) == undefined){
+    if (user(req) == undefined) {
         res.sendStatus(401);
         return;
     }
     let result = await dbService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
-    if (result == null){
+    if (result == null) {
         res.sendStatus(404);
     } else {
         result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -508,33 +553,9 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
     }
 });
 
-dbService.connectDatabase()
-    .then(() => {
-        startServer();      
-    })
-    .catch((error: Error) => {
-        console.error("Database connection failed", error);
-        process.exit();
-    })
-
-async function startServer() {
-    const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
-    const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
-    const rCert = readFileSync(certFile, 'utf8');
-    const rKey = readFileSync(keyFile, 'utf8');
-    const otions = {
-    key: rKey,
-    cert: rCert
-    }
-    https.createServer(otions, app)
-    .listen(port, () => {
-        console.log('Server started');
-    })
-}
-
 
 // In the absence of an IdP we use the accessToken as userId
-function user(req: any): string| undefined {   
-        let temp = req.headers?.authorization as string;
-        return temp?.split(" ")[1];
+function user(req: any): string | undefined {
+    let temp = req.headers?.authorization as string;
+    return temp?.split(" ")[1];
 }
