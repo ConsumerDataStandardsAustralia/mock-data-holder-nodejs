@@ -49,34 +49,6 @@ if (isSingle == true)
 else
     dbService = new MongoData(connString, process.env.MONGO_DB as string);
 
-dbService.connectDatabase()
-    .then(() => {
-        startServer();
-    })
-    .catch((error: Error) => {
-        console.error("Database connection failed", error);
-        process.exit();
-    })
-
-async function startServer() {
-    const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
-    const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
-    const rCert = readFileSync(certFile, 'utf8');
-    const rKey = readFileSync(keyFile, 'utf8');
-    const otions = {
-        key: rKey,
-        cert: rCert
-    }
-    discovery = await Issuer.discover(authServerUrl);
-
-    console.log('Discovered issuer %s %O',  discovery.metadata);
-    let init = await authService.initAuthService(discovery.metadata);
-
-    https.createServer(otions, app)
-        .listen(port, () => {
-            console.log('Server started');
-        })
-}
 
 
 // Add a list of allowed origins.
@@ -96,12 +68,52 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
+const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
+const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
+const rCert = readFileSync(certFile, 'utf8');
+const rKey = readFileSync(keyFile, 'utf8');
+const otions = {
+    key: rKey,
+    cert: rCert
+}
 app.use(cdrHeaderValidator(dsbOptions));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 //app.use(express.json({limit: '50mb' }));
 app.use('/', router);
+
+dbService.connectDatabase()
+    .then(() => {
+        initAuthService();     
+    })
+    .catch((error: Error) => {
+        console.error("Database connection failed", error);
+        process.exit();
+    })
+
+async function initAuthService() {
+    const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
+    const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
+    const rCert = readFileSync(certFile, 'utf8');
+    const rKey = readFileSync(keyFile, 'utf8');
+    const otions = {
+        key: rKey,
+        cert: rCert
+    }
+    let discovery = await Issuer.discover(authServerUrl);
+    //console.log('Discovered issuer %s %O',  discovery.metadata);
+    let init = await authService.initAuthService(discovery.metadata);
+    if (init == false) {
+        console.log('WARNING: Authentication service could not be initalised');
+    }
+    https.createServer(otions, app)
+    .listen(port, () => {
+        console.log('Server started');
+    })
+}
+
+
 
 // anything /energy/accounts/<something-else> needs  to be routed like this 
 router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) => {
@@ -210,13 +222,14 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
         res.status(401).json('Not authorized');
         return;
     }
-    let userId: any = user(req);
-    if (user(req) == undefined) {
-        res.sendStatus(401);
-        return;
-    }
+    // let userId: any = user(req);
+    // if (user(req) == undefined) {
+    //     res.sendStatus(401);
+    //     return;
+    // }
     //let result = await dbService.getServicePoints(userId);
-    let result: any = null;
+    let result = await dbService.getServicePoints('040c4adf-8f7d-40ab-8ce7-6c91044752fb');
+    //let result: any = null;
     if (result == null) {
         res.sendStatus(404);
         return;

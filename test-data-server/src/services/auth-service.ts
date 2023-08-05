@@ -4,6 +4,7 @@ import * as https from 'https'
 import { readFileSync } from "fs";
 import { Introspection } from "../models/introspection";
 import { JwkKeys } from "../models/jwt-key";
+import axios, { Axios, AxiosRequestConfig, HttpStatusCode } from "axios";
 
 
 export class AuthService {
@@ -14,119 +15,103 @@ export class AuthService {
     issuer: string | undefined;
     scopes_supported: string[] | undefined;
 
-
-
     authUser: User| undefined;
     jwkKeys: JwkKeys[] | undefined;
+    tlsThumPrint: string;
+
 
     constructor() {
+        this.tlsThumPrint = "GIVEMEATHUMBPRINT"
     }
 
-    public verifyAccessToken(token: string): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            if (this.introspection_endpoint == undefined)
-               return;
-            const certFile = path.join(__dirname, '../certificates/mtls-server.pem')
-            const keyFile = path.join(__dirname, '../certificates/mtls-server.key')
-            //const caFile = path.join(__dirname, '../certificates/ca.pem')
-            const rCert = readFileSync(certFile, 'utf8');
-            const rKey = readFileSync(keyFile, 'utf8');
-            //const rCA = readFileSync(caFile, 'utf8');
-            let options = this.buildHttpsRequestOptions(this.introspection_endpoint, "POST");
-            options.headers = {
-                        'X-TlsClientCertThumbprint': 'gdsajdhjhjhasd',
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }    
-            let req = await https.request(options, (response) => {
-                let chunks_of_data: any = [];
-
-                response.on('data', (fragments) => {
-                    chunks_of_data.push(fragments);
-                    let response_body = Buffer.concat(chunks_of_data).toJSON();
-                    resolve(true)
-                });
-
-                response.on('end', () => {
-                    let response_body = Buffer.concat(chunks_of_data);
-                    let intro : Introspection =  JSON.parse(response_body.toString());
-                    resolve(true);
-                });
-        
-                response.on('error', (error) => {
-                    reject(error);
-                });
-            });
-            req.write(token);
-            req.end();
-            
-        });
-    }
-
-    public async initAuthService(metadata: any): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-
-            let retVal: boolean = false;
+    async initAuthService(metadata: any): Promise<boolean> {
+        try {
+            // no jwks_uri exists
             this.token_endpoint = metadata?.token_endpoint;
             this.introspection_endpoint = metadata?.introspection_endpoint;
             this.jwks_uri = metadata?.jwks_uri;
             this.issuer = metadata?.issuer;
             this.scopes_supported = metadata?.scopes_supported;
-    
+
             if (this.jwks_uri == undefined)
-                return retVal;
-            let options = this.buildHttpsRequestOptions(this.jwks_uri, "GET")
-            // get the jwks signing key
-            let req = await https.request(options, (response:any) => {
-                let chunks_of_data: any = [];
-    
-                response.on('data', (keys:any) => {
-                    chunks_of_data.push(keys);
-                    resolve(true)
-                });
-    
-                response.on('end', () => {
-                    let response_body = Buffer.concat(chunks_of_data);
-                    let keys : JwkKeys[] =  JSON.parse(response_body.toString());
-                    this.jwkKeys = keys;
-                    resolve(true)
-                });      
-                response.on('error', (error: any) => {
-                    retVal = false;
-                    reject(error)
-                });
-            });
-            req.end();        
-        })
- 
+               return false;
+
+            const httpsAgent = this.buildHttpsAgent();
+              let config : AxiosRequestConfig = {
+                httpsAgent: httpsAgent,
+              }
+
+            const response = await axios.get(this.jwks_uri as string,  config)
+            if (!(response.status == 200)) {
+                return false;
+              }
+            else {
+                this.jwkKeys = response.data?.keys;
+                return true;
+            }
+        } catch (error: any) {
+            console.log('ERROR: ', error.message);
+            console.log('ERROR DETAIL', error?.response?.data);   
+            return false;
+        }       
     }
     
-    buildHttpsRequestOptions(url: string, method: string): https.RequestOptions {
-        const certFile = path.join(__dirname, '../certificates/mtls-server.pem')
-        const keyFile = path.join(__dirname, '../certificates/mtls-server.key')
-        const rCert = readFileSync(certFile, 'utf8');
-        const rKey = readFileSync(keyFile, 'utf8');
-        let urlObj = new URL(url);
-        let options: https.RequestOptions = {
-            host: urlObj.hostname,
-            port: urlObj.port,
-            path: urlObj.pathname,
-            cert: rCert,
-            key: rKey,
-            method: method 
-        } 
-        return options;
+    async verifyAccessToken(token: string): Promise<boolean> {
+        try {
+            // no introspective endpoint exists
+            if (this.introspection_endpoint == undefined)
+               return false;
+            let hdrs = {
+                        'X-TlsClientCertThumbprint': this.tlsThumPrint,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    } ; 
+
+            const httpsAgent = this.buildHttpsAgent();
+              let config : AxiosRequestConfig = {
+                httpsAgent: httpsAgent,
+                headers: hdrs
+              }
+            // TODO enable this lime once the call can get through the MTLS gateway
+            //const response = await axios.post(this.introspection_endpoint as string, token, config)
+            const response = await axios.post('https://localhost:8001/connect/introspect', token, config)
+            if (!(response.status == 200)) {
+                let st = response.data;
+                return false;
+              }
+            else {
+                let intro: Introspection = JSON.parse(response.data);
+                return true;
+            }
+        } catch (error: any) {
+            console.log('ERROR: ', error.message);
+            console.log('ERROR DETAIL', error?.response?.data);   
+            return false;
+        }
     }
 
-    getUser(): User | undefined {
-        return this.authUser;
+
+    buildHttpsAgent(): https.Agent {
+        let httpsAgent = new https.Agent({
+            cert: readFileSync(path.join(__dirname, '../certificates/mtls-server.pem')),
+            key: readFileSync(path.join(__dirname, '../certificates/mtls-server.key')),
+          })
+        return httpsAgent;
     }
 
-    getUserAccounts(): string[] {
-        let accounts: string[]= [];
-        // decode account ids
-        this.authUser?.accounts.forEach(elem => {
-            let acc: string = elem // TODO decode
-        })
-        return accounts;
+    buildUser(token: string){
+        // TODO use the idPermanence key to decode the sub field, store in User.userId
+        // TODO use the idPermanence key to decode the account ids, strore in User.accounts
+
+        return ;
+    }
+
+    calculateTLSThumbprint() {
+        // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint
+    }
+
+    buildClientAssertion(token: string): string {
+        // TODO decode the token and create json structure
+        // TODO encode the client_assertion with the jwks key
+        return '';
     }
 }
