@@ -184,11 +184,6 @@ export class AuthService {
             console.log(JSON.stringify(ex))
             return undefined;
         }
-
-        
-        
-
-        return ;
     }
 
     calculateTLSThumbprint(): string {
@@ -217,6 +212,9 @@ export class AuthService {
             typ: 'JWT',
             version: true
         }
+        const b64Header = CryptoUtils.jsonObjectToBase64 (header);
+        const jwtB64Header = CryptoUtils.replaceSpecialChars (b64Header);
+
         // get the encoding algo from jwtKeys
         let encKey = this.jwkKeys?.find(x => x.alg == this.jwtEncodingAlgorithm);
         /*
@@ -241,9 +239,10 @@ export class AuthService {
         
         const b64Payload = CryptoUtils.jsonObjectToBase64 (payload);
         const jwtB64Payload = CryptoUtils.replaceSpecialChars (b64Payload);
-        console.log ("the payload is: ",jwtB64Payload);
-
-        return jwtB64Payload;
+        let signature = CryptoUtils.createSha256Signature(jwtB64Header, jwtB64Payload, 'ABC')
+        const jsonWebToken = jwtB64Header + '.' + jwtB64Payload + '.' + signature;
+        console.log ("the JWT is :",jsonWebToken);    
+        return jsonWebToken;
 
         // TODO encode the client_assertion with the jwks key
        //  return 'eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJraWQiOiJiNThiZDBmZi0wZjkyLTQwZjMtYTgwNC1kYzY1MjZlYzViYzYiLCJzdWIiOiI3NzgzMWM0Mi03ZThiLTQ1N2EtOTNiMi1kNzE0YmIzYjJiYzYiLCJhdWQiOiJodHRwczovL2RoLXRlc3QuaWRwLmRldi5jZHJzYW5kYm94Lmdvdi5hdS9mYXBpLWphcm0iLCJpc3MiOiI3NzgzMWM0Mi03ZThiLTQ1N2EtOTNiMi1kNzE0YmIzYjJiYzYiLCJleHAiOjE2NzY5MzExMDgsImlhdCI6MTY3NjkzMTA0OCwianRpIjoibWVEUURTVkphM0dmWjJVR0dUMHIifQ.cMiSpYQGHQJmcVWTPPeB4ucNyAPYkBx-zbqRBIXzPbEg-DJ5KlvgFVhMc1IUcmygPrGu4TSSr4W8DRTmlHThkqmNrYkOUY1UsMP1VOLPgDw8_dujI-XvuH7xsZojjNoZh53mikEaX4wgOrMs7bBBjHC6h7oO7a50a_2T03DAXKfgERjjMcrLvd8L5Hi7bZKxroKCT1d-azmS2S7_hpViBpqKJBuygkgvsi21vyHb4CwvnoVQIjpTx88YGrsQxlWApaohccgyt0vj9orRtWqjyikvczpRLq-cqyaaFv3S6fQ76MJ4z2Ojj7uLQzcG7j6sT3Z301ORTpfQfRJmGEMxyg';

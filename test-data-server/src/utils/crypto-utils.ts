@@ -31,6 +31,6 @@ export class CryptoUtils {
 
         //of course we need to clean the base64 string of URL special characters
         retVal = this.replaceSpecialChars(retVal);
-        return signature
+        return retVal;
     }
 }
