@@ -23,6 +23,7 @@
             "type": "node",
             "request": "launch",
             "name": "Debug Data Server",
+            "args": ["--trace-warnings"],
             "skipFiles": [
                 "<node_internals>/**"
             ],

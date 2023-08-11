@@ -42,7 +42,7 @@ sourceObj.holders[0]?.holder?.authenticated?.customers?.forEach((c:any) => {
     let accountList: any[] = [];
     cust.CustomerID = c.customerId;
     cust.CustomerUType = c.customer?.customerUType;
-    cust.LoginId = c.customer?.person?.lastName;
+    cust.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
     // Person
     person.PersonID = c.customerId;
     person.firstName = c.customer?.person?.firstName;
