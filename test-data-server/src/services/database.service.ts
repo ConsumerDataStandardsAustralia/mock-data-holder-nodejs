@@ -3,8 +3,9 @@ import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponse, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
+import { Service } from "typedi";
 
-
+@Service()
 export class MongoData implements IDatabase {
 
     public collections: mongoDB.Collection[] = [];
@@ -741,6 +742,15 @@ export class MongoData implements IDatabase {
             retList.push(c.collectionName)
         })
         return retList;
+    }
+
+    async getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>{
+        // split login name to find first and last name
+        let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
+        const query = { firstName: 'Blake', lastName: 'Koss' };
+        let cust: any = await customers.findOne(query);
+
+        return cust?.customerId;
     }
 
 }

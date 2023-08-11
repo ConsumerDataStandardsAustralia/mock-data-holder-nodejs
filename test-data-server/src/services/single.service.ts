@@ -4,8 +4,9 @@ import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, Ener
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { devNull } from "os";
+import { Service } from "typedi";
 
-
+@Service()
 export class SingleData implements IDatabase {
 
     public collections: mongoDB.Collection[] = [];
@@ -17,6 +18,32 @@ export class SingleData implements IDatabase {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
         this.dsbName = dbName;
         this.dsbData = this.client.db(dbName);
+    }
+
+    async getUserForLoginId(loginId: string, userType: string): Promise<string| undefined> {
+        // split loginId into first and last name
+        var customerId;
+        let arr: string[] = loginId.split('.');
+        if (arr.length < 2)
+            return undefined;
+        let firstName = arr[1];
+        let lastName = arr[0];
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let allData = await allDataCollection.findOne();
+        if (allData?.holders != undefined) {
+            let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
+            if (allCustomers.length < 1)
+                return undefined;
+            allCustomers.forEach( (c: any) => {
+                if (c?.customer?.person?.firstName.toUpperCase() == firstName.toUpperCase()
+                && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
+                    customerId = c.customerId;
+                }
+            })
+            //let cust = allCustomers?.find(((x: any) => x.customer.person.firstName == firstName && x.customer.person.lastName == lastName));
+           // return cust;       
+        } 
+        return customerId;
     }
 
     async getCustomer(allDataCollection: mongoDB.Collection, customerId: string): Promise<any> {

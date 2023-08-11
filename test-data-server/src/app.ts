@@ -31,7 +31,8 @@ const port = `${process.env.APP_LISTENTING_PORT}`;
 const authServerUrl = 'https://localhost:8081';
 let standardsVersion = '/cds-au/v1';
 
-let authService = new AuthService()
+
+
 
 // This implementation uses a MongoDB. To use some other persistent storage
 // you need to implement the IDatabase interface
@@ -49,7 +50,7 @@ if (isSingle == true)
 else
     dbService = new MongoData(connString, process.env.MONGO_DB as string);
 
-
+let authService = new AuthService(dbService);
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
@@ -222,13 +223,12 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
         res.status(401).json('Not authorized');
         return;
     }
-    // let userId: any = user(req);
-    // if (user(req) == undefined) {
-    //     res.sendStatus(401);
-    //     return;
-    // }
-    //let result = await dbService.getServicePoints(userId);
-    let result = await dbService.getServicePoints('040c4adf-8f7d-40ab-8ce7-6c91044752fb');
+    let userId: any = user(req);
+    if (user(req) == undefined) {
+        res.sendStatus(401);
+        return;
+    }
+    let result = await dbService.getServicePoints(userId);
     //let result: any = null;
     if (result == null) {
         res.sendStatus(404);
@@ -570,6 +570,6 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 
 // In the absence of an IdP we use the accessToken as userId
 function user(req: any): string | undefined {
-    let temp = req.headers?.authorization as string;
-    return temp?.split(" ")[1];
+    //return authService.authUser?.userId;
+    return '040c4adf-8f7d-40ab-8ce7-6c91044752fb';
 }
