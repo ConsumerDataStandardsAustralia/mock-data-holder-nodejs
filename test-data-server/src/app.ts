@@ -114,8 +114,6 @@ async function initAuthService() {
     })
 }
 
-
-
 // anything /energy/accounts/<something-else> needs  to be routed like this 
 router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) => {
     let temp = req.headers?.authorization as string;
@@ -305,7 +303,6 @@ app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Respons
     }
 });
 
-
 app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     let temp = req.headers?.authorization as string;
@@ -374,7 +371,6 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/us
     }
 
 });
-
 
 // get der for a service point, returns EnergyDerDetailResponse
 app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/der`, async (req: Request, res: Response, next: NextFunction) => {
@@ -606,7 +602,6 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/concessions`, async (req
         res.send(result);
     }
 });
-
 
 // get balance for account, returns EnergyBalanceResponse
 app.get(`${standardsVersion}/energy/accounts/:accountId/balance`, async (req: Request, res: Response, next: NextFunction) => {
