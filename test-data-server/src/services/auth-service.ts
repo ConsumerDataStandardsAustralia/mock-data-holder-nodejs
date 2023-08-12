@@ -76,7 +76,10 @@ export class AuthService {
         let decoded: any = jwtDecode(token);
         let accountIds: string[] = decoded?.account_id as string[]
         // TODO get the actual accounts by decryption this array
-        let accounts : string [] = ['914505516', '238874532']
+        let accounts : string [] = ['2f904750-b441-449a-9732-d50fc5b0df5a',
+                '51febbc5-11a2-41e2-83e1-eb9e84e79896',
+                'f891b5b2-f8e9-452d-bb73-821efb5795b2'
+                ]
         return accounts;
     }
 
@@ -139,7 +142,7 @@ export class AuthService {
               }
             else {
                 let intro: Introspection = response.data as Introspection;
-                return intro.Active;
+                return intro.active;
             }
         } catch (error: any) {
             console.log('ERROR: ', error.message);
