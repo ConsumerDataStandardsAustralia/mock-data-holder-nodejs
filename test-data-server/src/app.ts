@@ -571,5 +571,6 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 // In the absence of an IdP we use the accessToken as userId
 function user(req: any): string | undefined {
     //return authService.authUser?.userId;
-    return '040c4adf-8f7d-40ab-8ce7-6c91044752fb';
+    return authService.authUser?.customerId;
 }
+

@@ -3,7 +3,7 @@ import { CdrUser } from "../models/user";
 import * as https from 'https'
 import { readFileSync } from "fs";
 import { Introspection } from "../models/introspection";
-import { JwkKeys } from "../models/jwt-key";
+import { JwkKey } from "../models/jwt-key";
 import axios, { Axios, AxiosRequestConfig, HttpStatusCode } from "axios";
 import {CipherKey, Hash, KeyExportOptions, KeyObject, createHash} from 'crypto'; 
 import * as CryptoJS from 'crypto-js';
@@ -25,7 +25,7 @@ export class AuthService {
     scopes_supported: string[] | undefined;
 
     authUser: CdrUser| undefined;
-    jwkKeys: JwkKeys[] | undefined;
+    jwkKeys: JwkKey[] | undefined;
     tlsThumPrint: string | undefined;
     jwtEncodingAlgorithm: string | undefined;
     algorithm = 'AES-256-CBC';
@@ -33,12 +33,18 @@ export class AuthService {
     idPermanenceKey = '90733A75F19347118B3BE0030AB590A8';
     iv = Buffer.alloc(16);
 
+    // The ACCC implementation of the CDrAuthServer has an internal introspection endpoint
+    // When this is called only the Access Token is pur in the POST request
+    // instread of a client assertion request as required by the introspection endpoint
+    useInternalIntrospectiveEndpoint: boolean; 
+
     dbService: IDatabase;
 
 
     constructor(dbService: IDatabase) {
         this.dbService = dbService;
-        this.jwtEncodingAlgorithm = 'PS256'
+        this.jwtEncodingAlgorithm = 'PS256';
+        this.useInternalIntrospectiveEndpoint = true;
     }
 
     getEncrptionKey(idPermanenceKey: string): Buffer {
@@ -127,13 +133,13 @@ export class AuthService {
             let postBody = this.buildIntrospecticePostBody(token);
             // TODO enable this lime once the call can get through the MTLS gateway
             //const response = await axios.post(this.introspection_endpoint as string, token, config)
-            const response = await axios.post('https://localhost:8001/connect/introspect', postBody, config)
+            const response = await axios.post('https://localhost:8001/connect/introspect-internal', postBody, config)
             if (!(response.status == 200)) {
                 return false;
               }
             else {
-                let intro: Introspection = JSON.parse(response.data);
-                return intro.IsActive;
+                let intro: Introspection = response.data as Introspection;
+                return intro.Active;
             }
         } catch (error: any) {
             console.log('ERROR: ', error.message);
@@ -171,7 +177,7 @@ export class AuthService {
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
             // TODO decryped account_id array from token
-            let accountIds: string[] = this.decryptAccountArray(decoded?.account_id) 
+            let accountIds: string[] = this.decryptAccountArray(token) 
             this.authUser  = {
                 loginId : loginId,
                 customerId: customerId,
@@ -196,12 +202,15 @@ export class AuthService {
         // decode the token
         let postBody: any = {};
         let decoded: any = jwtDecode(token);
-        
-        postBody.client_id = decoded?.client_id;
-        postBody.client_assertion = this.buildClientAssertion(token);
-        postBody.client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'; 
-        postBody.grant_type = '';
-        postBody.scope = '';
+        if (this.useInternalIntrospectiveEndpoint == true) {
+            postBody.token = token.replace('Bearer ', '');
+        } else {
+            postBody.client_id = decoded?.client_id;
+            postBody.client_assertion = this.buildClientAssertion(token);
+            postBody.client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'; 
+            postBody.grant_type = '';
+            postBody.scope = decoded?.scope;
+        }  
         return postBody;
     }
 
@@ -217,6 +226,12 @@ export class AuthService {
 
         // get the encoding algo from jwtKeys
         let encKey = this.jwkKeys?.find(x => x.alg == this.jwtEncodingAlgorithm);
+        let x5cKeys = encKey?.x5c;
+        let key = '';
+        if (x5cKeys == undefined)
+            return '';
+        else
+            key = x5cKeys[0];
         /*
         {
         "kid": "7C5716553E9B132EF325C49CA2079737196C03DB",
@@ -239,9 +254,8 @@ export class AuthService {
         
         const b64Payload = CryptoUtils.jsonObjectToBase64 (payload);
         const jwtB64Payload = CryptoUtils.replaceSpecialChars (b64Payload);
-        let signature = CryptoUtils.createSha256Signature(jwtB64Header, jwtB64Payload, 'ABC')
+        let signature = CryptoUtils.createSha256Signature(jwtB64Header, jwtB64Payload, key)
         const jsonWebToken = jwtB64Header + '.' + jwtB64Payload + '.' + signature;
-        console.log ("the JWT is :",jsonWebToken);    
         return jsonWebToken;
 
         // TODO encode the client_assertion with the jwks key

@@ -12,9 +12,9 @@ export class CryptoUtils {
 
     public static replaceSpecialChars(b64string: string) {
         // create a regex to match any of the characters =,+ or / and replace them with their // substitutes
-        let retVal = b64string.replace('/', '_');
-        retVal = retVal.replace('=', '');
-        retVal = retVal.replace('+', '-');
+        let retVal = b64string.replace(/\//g, '_');
+        retVal = retVal.replace(/=/g, '');
+        retVal = retVal.replace(/\+/g, '-');
         return retVal;
     };
 

@@ -1,4 +1,4 @@
-export interface JwkKeys {
+export interface JwkKey {
     kty: string | undefined;
     use: string | undefined;
     kid: string;
