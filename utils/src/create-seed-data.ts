@@ -2,7 +2,8 @@ import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 const dataCliFile = path.join(__dirname, '/data/my-created-combined.json')
-const seedDataOutput = path.join(__dirname, '/data/out/seed-data.json')
+const seedDataBankingOutput = path.join(__dirname, '/data/out/seed-data-banking.json')
+const seedDataEnergyOutput = path.join(__dirname, '/data/out/seed-data-energy.json')
 
 // "CustomerID": "4ee1a8db-13af-44d7-b54b-e94dff3df548",
 // "CustomerUType": "person",
@@ -33,16 +34,25 @@ const seedDataOutput = path.join(__dirname, '/data/out/seed-data.json')
 
 const sourceData: any = readFileSync(dataCliFile, 'utf8');
 const sourceObj = JSON.parse(sourceData)
-let outputData: any = {}
-let customers: any[] = [];
+let outputDataBanking: any = {}
+let outputDataEnergy: any = {}
+let customersBanking: any[] = [];
+let customersEnergy: any[] = [];
 
 sourceObj.holders[0]?.holder?.authenticated?.customers?.forEach((c:any) => {
-    let cust:any = {}
+    let custBanking:any = {}
+    let custEnergy:any = {}
     let person: any = {};
-    let accountList: any[] = [];
-    cust.CustomerID = c.customerId;
-    cust.CustomerUType = c.customer?.customerUType;
-    cust.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+    let accountListBanking: any[] = [];
+    let accountListEnergy: any[] = [];
+    custBanking.CustomerID = c.customerId;
+    custBanking.CustomerUType = c.customer?.customerUType;
+    custBanking.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+    custEnergy.CustomerID = c.customerId;
+    custEnergy.CustomerUType = c.customer?.customerUType;
+    custEnergy.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+
+    
     // Person
     person.PersonID = c.customerId;
     person.firstName = c.customer?.person?.firstName;
@@ -53,9 +63,9 @@ sourceObj.holders[0]?.holder?.authenticated?.customers?.forEach((c:any) => {
     person.OccupationCode= c.customer?.person?.occupationCode;
     person.OccupationCodeVersion = c.customer?.person?.occupationCodeVersion;
     person.LastUpdateTime = c.customer?.person?.lastUpdateTime;  
-    cust.Person = person;
- 
-    // accounts
+    custBanking.Person = person;
+    custEnergy.Person = person;
+    // banking accounts
     c.banking?.accounts?.forEach((a:any) => {
         let acc: any = {};
         acc.AccountId = a.account?.accountId;
@@ -66,15 +76,27 @@ sourceObj.holders[0]?.holder?.authenticated?.customers?.forEach((c:any) => {
         acc.MaskedName = a.account?.maskedNumber ;
         acc.ProductCategory  = a.account?.productCategory ;
         acc.ProductName = a.account?.productCategory ;
-        accountList.push(acc);
+        accountListBanking.push(acc);
     });
-    cust.Accounts = accountList;
-    customers.push(cust)
+
+    c.energy?.accounts?.forEach((a:any) => {
+        let acc: any = {};
+        acc.AccountId = a.account?.accountId;
+        acc.AccountNumber = a.account?.accountNumber ;
+        acc.DisplayName = a.account?.displayName ;
+        acc.CreationDate = a.account?.creationDate ;
+        accountListEnergy.push(acc);
+    });
+    custBanking.Accounts = accountListBanking;
+    custEnergy.Accounts = accountListEnergy;
+    customersBanking.push(custBanking);
+    customersEnergy.push(custEnergy);
 });
 
-outputData.Customers = customers;
+outputDataBanking.Customers = customersBanking;
+outputDataEnergy.Customers = customersEnergy;
 
-
-writeFileSync(seedDataOutput,JSON.stringify(outputData))
+writeFileSync(seedDataBankingOutput,JSON.stringify(outputDataBanking))
+writeFileSync(seedDataEnergyOutput,JSON.stringify(outputDataEnergy))
 
 
