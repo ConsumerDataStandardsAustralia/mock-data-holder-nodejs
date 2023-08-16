@@ -58,8 +58,13 @@ export class AuthService {
 
     decryptAccountArray(token: string) : string[]{
         let decoded: any = jwtDecode(token);
-        let accountIds: string[] = decoded?.account_id as string[];
-        let accounts: string [] = [];
+        let accountIds: string [] = [];
+        if (Array.isArray(decoded?.account_id) == true)
+            accountIds = decoded?.account_id as string[];
+        else
+            accountIds.push(decoded?.account_id);
+
+        let accounts: string[] = [];
         const userNameLength = this.authUser?.loginId.length as number;
         for(let i = 0; i < accountIds.length; i++) {
             let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;

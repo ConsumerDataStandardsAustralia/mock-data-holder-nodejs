@@ -17,12 +17,9 @@ import * as https from 'https'
 
 import { Issuer } from 'openid-client';
 import { AuthService } from './services/auth-service';
-import { cdrAuthorization } from './modules/auth';
-
-let discovery: any = null;
 
 dotenv.config();
-console.log(JSON.stringify(process.env, null, 2))
+console.log(JSON.stringify(process.env, null, 2));
 
 const exp = express;
 const app = express();
@@ -30,8 +27,6 @@ const app = express();
 const port = `${process.env.APP_LISTENTING_PORT}`;
 const authServerUrl = 'https://localhost:8081';
 let standardsVersion = '/cds-au/v1';
-
-
 
 
 // This implementation uses a MongoDB. To use some other persistent storage
@@ -229,7 +224,7 @@ app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Respons
         res.status(401).json('Not authorized');
         return;
     }
-    let ret = await dbService.getEnergyAccounts(userId);
+    let ret = await dbService.getEnergyAccounts(userId, authService.authUser?.accounts as string[]);
     ret.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
     res.send(ret);
 });
@@ -305,17 +300,6 @@ app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Respons
 
 app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
-    let temp = req.headers?.authorization as string;
-    let tokenIsValid = await authService.verifyAccessToken(temp) 
-    if (tokenIsValid == false) {
-        res.status(401).json('Not authorized');
-        return;
-    }
-    let userId = getUserId(req);
-    if (userId == undefined) {
-        res.status(401).json('Not authorized');
-        return;
-    }
     let result = await dbService.getEnergyPlanDetails(req.params.planId)
     if (result == null) {
         res.sendStatus(404);
@@ -328,17 +312,6 @@ app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Re
 // this endpoint does NOT require authentication
 app.get(`${standardsVersion}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
-    let temp = req.headers?.authorization as string;
-    let tokenIsValid = await authService.verifyAccessToken(temp) 
-    if (tokenIsValid == false) {
-        res.status(401).json('Not authorized');
-        return;
-    }
-    let userId = getUserId(req);
-    if (userId == undefined) {
-        res.status(401).json('Not authorized');
-        return;
-    }
     let result = await dbService.getEnergyAllPlans()
     if (result == null) {
         res.sendStatus(404);

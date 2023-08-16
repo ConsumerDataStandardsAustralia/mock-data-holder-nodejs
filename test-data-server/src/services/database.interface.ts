@@ -5,7 +5,7 @@ export interface IDatabase {
 
     loadCustomer(customer: any): Promise<boolean>;
 
-    getEnergyAccounts(customerId: string): Promise<any>;
+    getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any>;
 
     getServicePoints(customerId: string): Promise<any>;
 

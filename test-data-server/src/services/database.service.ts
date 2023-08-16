@@ -660,7 +660,7 @@ export class MongoData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string): Promise<any> {
+    async getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         const query = { customerId: customerId };
         let cust: any = await customers.findOne(query);
@@ -671,7 +671,7 @@ export class MongoData implements IDatabase {
                 let cnt = acc?.account?.plans?.length;
                 let planList: any[] = [];
                 for (let i = 0; i < cnt; i++) {
-
+                    
                     let newPlan: any = {
                         nickname: acc.account?.plans[i]?.nickname,
                         servicePointIds: []

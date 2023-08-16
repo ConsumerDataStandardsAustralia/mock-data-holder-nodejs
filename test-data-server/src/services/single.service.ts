@@ -716,7 +716,7 @@ export class SingleData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string): Promise<any> {
+    async getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let accList: any[] = [];
