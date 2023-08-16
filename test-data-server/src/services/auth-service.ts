@@ -49,28 +49,25 @@ export class AuthService {
 
     decryptLoginId(token: string) : string {
         let decoded: any = jwtDecode(token);
-        let encodedLoginID = decoded?.sub  
-        // TODO use the idPermanence key to decode the sub field, the return the loginId
-        // let buffer = Buffer.from(encryptedUser, 'base64');
-        // let iv = randomBytes(16);
-        // let keyBuffer = this.getEncrptionKey(this.idPermanenceKey)
-        // let keyHash : Buffer = createHash('sha512').update(keyBuffer).digest();
-        // let keyHashTargetBuffer = keyHash.subarray(0,24);
-        // let decipher = createDecipheriv(this.algorithm, keyHashTargetBuffer, iv);       
-        // let decrypted = decipher.update(buffer);
-        // TODO enable this when function is working
-        //return decrypted.toString();
-        return 'koss.blake'
+        let encodedLoginID = decoded?.sub as string;
+        let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
+        let buffer = Buffer.from(encodedLoginID, 'base64')
+        let login = CryptoUtils.decrypt(encryptionKey, buffer);
+        return login;
     }
 
     decryptAccountArray(token: string) : string[]{
         let decoded: any = jwtDecode(token);
-        let accountIds: string[] = decoded?.account_id as string[]
-        // TODO get the actual accounts by decryption this array
-        let accounts : string [] = ['2f904750-b441-449a-9732-d50fc5b0df5a',
-                '51febbc5-11a2-41e2-83e1-eb9e84e79896',
-                'f891b5b2-f8e9-452d-bb73-821efb5795b2'
-                ]
+        let accountIds: string[] = decoded?.account_id as string[];
+        let accounts: string [] = [];
+        const userNameLength = this.authUser?.loginId.length as number;
+        for(let i = 0; i < accountIds.length; i++) {
+            let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
+            let buffer = Buffer.from(accountIds[i], 'base64');
+            let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
+            let accountId = decryptedValue?.substring(userNameLength)
+            accounts.push(accountId);
+        }
         return accounts;
     }
 
@@ -153,32 +150,29 @@ export class AuthService {
     async buildUser(token: string) : Promise<CdrUser | undefined> {
         // First the JWT access token must be decoded and the signature verified
         let decoded: any = jwtDecode(token);
-
         // decrypt the loginId, ie the sub claim from token:
         // Requires the software_id from the token.
         // The decryption key is the concatenated software_id and the private IdPermance key
         // The IdPermanence key (private key) is kwown to the DH and the Auth server
         try {
-            
-            
+                
             let loginId = this.decryptLoginId(token);
             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
             if (customerId == undefined)
                return undefined;
-
-            // TODO use the idPermanence key to decode the account ids, strore in User.accounts
-            // Once the customerId (here: userId) has been the account ids can be decrypted.
-            // The parameters here are the decrypted customerId from above and the software_id from the token
-            // The IdPermanence key (private key) is kwown to the DH and the Auth server
-            // TODO decryped account_id array from token
-            let accountIds: string[] = this.decryptAccountArray(token) 
-            this.authUser  = {
+               this.authUser  = {
                 loginId : loginId,
                 customerId: customerId,
                 encodeUserId: decoded?.sub,
                 encodedAccounts: decoded?.account_id,
-                accounts: accountIds
+                accounts: undefined
             }
+            // TODO use the idPermanence key to decode the account ids, strore in User.accounts
+            // Once the customerId (here: userId) has been the account ids can be decrypted.
+            // The parameters here are the decrypted customerId from above and the software_id from the token
+            // The IdPermanence key (private key) is kwown to the DH and the Auth server
+            let accountIds: string[] = this.decryptAccountArray(token) 
+            this.authUser.accounts = accountIds;
             return this.authUser;
         } catch(ex) {
             console.log(JSON.stringify(ex))
