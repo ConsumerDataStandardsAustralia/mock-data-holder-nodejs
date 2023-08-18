@@ -25,7 +25,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@cds-au/holder-sdk": "1.0.1",
+    "@cds-au/holder-sdk": "^1.1.0",
     "@types/body-parser": "^1.19.2",
     "@types/consumer-data-standards": "^4.0.0",
     "@types/express-serve-static-core": "^4.17.30",

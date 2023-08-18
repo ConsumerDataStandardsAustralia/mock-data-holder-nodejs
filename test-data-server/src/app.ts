@@ -3,7 +3,10 @@ import { NextFunction, Request, Response } from 'express';
 import endpoints from '../data/endpoints.json';
 import {
     EndpointConfig, CdrConfig, cdrHeaderValidator, DefaultBankingEndpoints,
-    DefaultEnergyEndpoints
+    DefaultEnergyEndpoints,
+    cdrJwtScopes,
+    DsbAuthConfig,
+    cdrTokenValidator
 } from '@cds-au/holder-sdk'
 import { MongoData } from './services/database.service';
 import { IDatabase } from './services/database.interface';
@@ -17,6 +20,7 @@ import * as https from 'https'
 
 import { Issuer } from 'openid-client';
 import { AuthService } from './services/auth-service';
+import { cdrAuthorization } from './modules/auth';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -56,10 +60,6 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 
 const router = exp.Router();
-//app.use(cdrAuthorization());
-// this middle ware will handle the boilerplate validation and setting for a number of header parameters
-// For more information on how to use and set up refer to the js-holder demo project 
-// https://github.com/ConsumerDataStandardsAustralia/js-holder-sdk-demo
 const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
@@ -72,11 +72,25 @@ const otions = {
     key: rKey,
     cert: rCert
 }
+
+let authOption: DsbAuthConfig = {
+    scopeFormat: 'LIST',
+    endpoints: sampleEndpoints
+}
+let tokenValidatorOptions: CdrConfig = {
+    endpoints: sampleEndpoints
+}
+
+// read the scopes from the header and enhance the request object 
+app.use(cdrJwtScopes(authOption));
+// validate the relevant scope is included
+app.use(cdrTokenValidator(tokenValidatorOptions));
+// do other header validation, eg x-v, x-min-v etc
 app.use(cdrHeaderValidator(dsbOptions));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
-//app.use(express.json({limit: '50mb' }));
+
 app.use('/', router);
 
 dbService.connectDatabase()
@@ -123,7 +137,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
         return;
     }
     if (accountIsValid(req.params?.accountId) == false){
-        res.status(401).json('Not authorized');
+        res.status(404).json('Not Found');
         return;      
     }
     console.log(`Received request on ${port} for ${req.url}`);

@@ -20,9 +20,10 @@ export class AuthService {
 
     token_endpoint: string | undefined;
     introspection_endpoint: string | undefined;
+    introspection_endpoint_internal: string | undefined;
     jwks_uri: string | undefined;
     issuer: string | undefined;
-    scopes_supported: string[] | undefined;
+    //scopes_supported: string[] | undefined;
 
     authUser: CdrUser| undefined;
     jwkKeys: JwkKey[] | undefined;
@@ -37,6 +38,7 @@ export class AuthService {
     constructor(dbService: IDatabase) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
+        this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
     }
 
     getEncrptionKey(idPermanenceKey: string): Buffer {
@@ -56,19 +58,26 @@ export class AuthService {
         return login;
     }
 
+    // when the account ids are encrypted the same thing is happenign in reverse.
+    Decode(value: string): string
+    {
+        return value.replace(/%2F/g, "/");
+        //retVal = retVal.replace(/=/g, '');
+    }
+
     decryptAccountArray(token: string) : string[]{
         let decoded: any = jwtDecode(token);
         let accountIds: string [] = [];
         if (Array.isArray(decoded?.account_id) == true)
             accountIds = decoded?.account_id as string[];
         else
-            accountIds.push(decoded?.account_id);
+            accountIds.push(this.Decode(decoded?.account_id));
 
         let accounts: string[] = [];
         const userNameLength = this.authUser?.loginId.length as number;
         for(let i = 0; i < accountIds.length; i++) {
             let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-            let buffer = Buffer.from(accountIds[i], 'base64');
+            let buffer = Buffer.from(this.Decode(accountIds[i]), 'base64');
             let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
             let accountId = decryptedValue?.substring(userNameLength)
             accounts.push(accountId);
@@ -83,7 +92,6 @@ export class AuthService {
             this.introspection_endpoint = metadata?.introspection_endpoint;
             this.jwks_uri = metadata?.jwks_uri;
             this.issuer = metadata?.issuer;
-            this.scopes_supported = metadata?.scopes_supported;
 
             if (this.jwks_uri == undefined) {
                 console.log('ERROR: No jwk endpoint uri found');
@@ -114,10 +122,9 @@ export class AuthService {
     async verifyAccessToken(token: string): Promise<boolean> {
         try {
             // no introspective endpoint exists
-            if (this.introspection_endpoint == undefined)
+            if (this.introspection_endpoint_internal == undefined)
                return false;
             let hdrs = {
-                        'X-TlsClientCertThumbprint': this.tlsThumPrint,
                         'Content-Type': 'application/x-www-form-urlencoded'
                     } ;
             this.authUser = await this.buildUser(token);
@@ -129,7 +136,7 @@ export class AuthService {
             let postBody = this.buildIntrospecticePostBody(token);
             // TODO enable this lime once the call can get through the MTLS gateway
             //const response = await axios.post(this.introspection_endpoint as string, token, config)
-            const response = await axios.post('https://localhost:8001/connect/introspect-internal', postBody, config)
+            const response = await axios.post(this.introspection_endpoint_internal, postBody, config)
             if (!(response.status == 200)) {
                 return false;
               }
@@ -170,7 +177,8 @@ export class AuthService {
                 customerId: customerId,
                 encodeUserId: decoded?.sub,
                 encodedAccounts: decoded?.account_id,
-                accounts: undefined
+                accounts: undefined,
+                scopes_supported: decoded?.scopes
             }
             // TODO use the idPermanence key to decode the account ids, strore in User.accounts
             // Once the customerId (here: userId) has been the account ids can be decrypted.
@@ -195,5 +203,12 @@ export class AuthService {
         let postBody: any = {};
         postBody.token = token.replace('Bearer ', '');
         return postBody;
+    }
+
+    verifyScope(scope: string): boolean {
+        if (this.authUser?.scopes_supported == undefined)
+           return false;
+        else
+           return this.authUser?.scopes_supported?.indexOf(scope) > -1
     }
 }

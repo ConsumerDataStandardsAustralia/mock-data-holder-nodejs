@@ -4,5 +4,5 @@ export interface CdrUser {
     encodeUserId: string;
     encodedAccounts: string[] | undefined;
     accounts: string[] | undefined;
-
+    scopes_supported: string[] | undefined;
 }

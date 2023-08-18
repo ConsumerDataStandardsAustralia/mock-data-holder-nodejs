@@ -724,28 +724,31 @@ export class SingleData implements IDatabase {
         if (accDetailList != null) {
             accDetailList.forEach((acc: any) => {
                 let cnt = acc?.account?.plans?.length;
-                let planList: any[] = [];
-                for (let i = 0; i < cnt; i++) {
-
-                    let newPlan: any = {
-                        nickname: acc.account?.plans[i]?.nickname,
-                        servicePointIds: []
+                if (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1) {
+                    let planList: any[] = [];
+                    for (let i = 0; i < cnt; i++) {
+    
+                        let newPlan: any = {
+                            nickname: acc.account?.plans[i]?.nickname,
+                            servicePointIds: []
+                        }
+                        if (acc.account?.openStatus == null || acc.account?.openStatus == 'OPEN')
+                            newPlan.planOverview = acc.account?.plans[i]?.planOverview;
+                        if (acc.account?.plans[i]?.servicePointsIds)
+                            newPlan.servicePointIds = acc.account?.plans[i]?.servicePointsIds
+                        planList.push(newPlan);
                     }
-                    if (acc.account?.openStatus == null || acc.account?.openStatus == 'OPEN')
-                        newPlan.planOverview = acc.account?.plans[i]?.planOverview;
-                    if (acc.account?.plans[i]?.servicePointsIds)
-                        newPlan.servicePointIds = acc.account?.plans[i]?.servicePointsIds
-                    planList.push(newPlan);
+                    let newAccount: EnergyAccount = {
+                        plans: planList,
+                        accountNumber: acc.account?.accountNumber,
+                        accountId: acc.account?.accountId,
+                        displayName: acc.account?.displayName,
+                        openStatus: acc.account?.openStatus,
+                        creationDate: acc.account?.creationDate as string
+                    }
+                    accList.push(newAccount);
                 }
-                let newAccount: EnergyAccount = {
-                    plans: planList,
-                    accountNumber: acc.account?.accountNumber,
-                    accountId: acc.account?.accountId,
-                    displayName: acc.account?.displayName,
-                    openStatus: acc.account?.openStatus,
-                    creationDate: acc.account?.creationDate as string
-                }
-                accList.push(newAccount);
+
             })
         }
 
