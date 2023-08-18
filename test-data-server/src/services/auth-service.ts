@@ -53,17 +53,11 @@ export class AuthService {
         let decoded: any = jwtDecode(token);
         let encodedLoginID = decoded?.sub as string;
         let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-        let buffer = Buffer.from(encodedLoginID, 'base64')
+        let buffer = Buffer.from(CryptoUtils.decode(encodedLoginID), 'base64')
         let login = CryptoUtils.decrypt(encryptionKey, buffer);
         return login;
     }
 
-    // when the account ids are encrypted the same thing is happenign in reverse.
-    Decode(value: string): string
-    {
-        return value.replace(/%2F/g, "/");
-        //retVal = retVal.replace(/=/g, '');
-    }
 
     decryptAccountArray(token: string) : string[]{
         let decoded: any = jwtDecode(token);
@@ -71,13 +65,13 @@ export class AuthService {
         if (Array.isArray(decoded?.account_id) == true)
             accountIds = decoded?.account_id as string[];
         else
-            accountIds.push(this.Decode(decoded?.account_id));
+            accountIds.push(CryptoUtils.decode(decoded?.account_id));
 
         let accounts: string[] = [];
         const userNameLength = this.authUser?.loginId.length as number;
         for(let i = 0; i < accountIds.length; i++) {
             let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-            let buffer = Buffer.from(this.Decode(accountIds[i]), 'base64');
+            let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
             let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
             let accountId = decryptedValue?.substring(userNameLength)
             accounts.push(accountId);

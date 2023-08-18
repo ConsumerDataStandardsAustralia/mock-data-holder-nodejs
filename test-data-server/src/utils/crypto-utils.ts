@@ -2,6 +2,7 @@
 import { createHmac, createCipheriv } from "crypto";
 import * as crypto from 'crypto'
 import { lib } from "crypto-js";
+import * as zlib from 'node:zlib'
 
 export class CryptoUtils {
 
@@ -47,21 +48,34 @@ export class CryptoUtils {
         return retVal;
     }
 
+    // The decryption routine matching the CDrAuthServer encryption
     public static decrypt(encryptionKey: string, bufferToDecrypt: Uint8Array) : string {
-        let key = CryptoUtils.getEncrptionKey(encryptionKey);
-        var mykey = crypto.createDecipheriv('aes-192-cbc', key, this.IV);
-        var buf = mykey.update(bufferToDecrypt);
-        let st = buf.toString('utf-8') + mykey.final('utf-8');
-        return st;
+        // get the encryption key
+        let key = this.getEncrptionKey(encryptionKey);
+        var decipher : crypto.Decipher = crypto.createDecipheriv('aes-192-cbc', key, this.IV);
+        
+        // decrypt the buffer
+        var decryptedBuffer = decipher.update(bufferToDecrypt);
+        decryptedBuffer = Buffer.concat([decryptedBuffer, decipher.final()]);
+
+        // decompress the buffer
+        let decompressedBuffer = zlib.inflateRawSync(decryptedBuffer);
+        let decryptedString = decompressedBuffer.toString('utf-8')
+        return decryptedString;
     }
 
-    public static encrypt(encryptionKey: string, stringToEncrypt: string) : string {
+    // The encryption routine matching the CDrAuthServer decryption
+    public static encrypt(encryptionKey: string, stringToEncrypt: string) : Uint8Array {
+        let buf = Buffer.from(stringToEncrypt, 'utf-8');
+        // create the compressed buffer
+        let compressedBuffer = zlib.deflateRawSync(buf);
+        // get the encryption key
         let key = this.getEncrptionKey(encryptionKey);
-        var mykey = createCipheriv('aes-192-cbc', key, this.IV);
-        var mystr = mykey.update(stringToEncrypt.toString(), 'utf-8', 'base64')
-        mystr += mykey.final('base64');
-        return mystr;
-    } 
+        var cipher = createCipheriv('aes-192-cbc', key, this.IV);
+        // now encrypt
+        var encryptedBuffer = cipher.update(compressedBuffer);
+        return Buffer.concat([encryptedBuffer, cipher.final()]);
+    }
     
     // convert a byte array to a Crypyojs.lib.WordArray
     public static convertUint8ArrayToWordArray(u8Array: Uint8Array) : any {
@@ -115,5 +129,10 @@ export class CryptoUtils {
                 .map((_, i) => String.fromCharCode(arr[i]))
                 .join('')
         );
+    }
+
+    public static decode(value: string): string
+    {
+        return value.replace(/%2F/g, "/");
     }
 }

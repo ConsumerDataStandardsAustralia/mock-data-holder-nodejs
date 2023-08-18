@@ -5,33 +5,6 @@ const dataCliFile = path.join(__dirname, '/data/my-created-combined.json')
 const seedDataBankingOutput = path.join(__dirname, '/data/out/seed-data-banking.json')
 const seedDataEnergyOutput = path.join(__dirname, '/data/out/seed-data-energy.json')
 
-// "CustomerID": "4ee1a8db-13af-44d7-b54b-e94dff3df548",
-// "CustomerUType": "person",
-// "LoginId": "jsmith",
-// "Person": {
-//     "PersonID": "be36d5b8-8d92-4076-81c1-2260ba7e7272",
-//     "FirstName": "John",
-//     "LastName": "Smith",
-//     "MiddleNames": "",
-//     "Prefix": "Mr",
-//     "Suffix": null,
-//     "OccupationCode": null,
-//     "OccupationCodeVersion": null,
-//     "LastUpdateTime": "2021-04-30T08:00:00Z"
-// },
-// "Accounts": [
-//     {
-//         "AccountId": "1122334455",
-//         "CreationDate": "2015-01-01",
-//         "DisplayName": "Savings Account",
-//         "NickName": "Savings",
-//         "OpenStatus": "OPEN",
-//         "MaskedName": "xxx-xxx xxxxx455",
-//         "ProductCategory": "TRANS_AND_SAVINGS_ACCOUNTS",
-//         "ProductName": "Everyday Savings"
-//     }
-// ]
-
 const sourceData: any = readFileSync(dataCliFile, 'utf8');
 const sourceObj = JSON.parse(sourceData)
 let outputDataBanking: any = {}
