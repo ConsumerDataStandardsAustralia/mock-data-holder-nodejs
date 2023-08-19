@@ -82,13 +82,17 @@ let tokenValidatorOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
 
-// read the scopes from the header and enhance the request object 
-app.use(/\/((?!login-data).)*/, cdrJwtScopes(authOption));
-// validate the relevant scope is included
-app.use(/\/((?!login-data).)*/, cdrTokenValidator(tokenValidatorOptions));
-// do other header validation, eg x-v, x-min-v etc
-app.use(/\/((?!login-data).)*/, cdrHeaderValidator(dsbOptions));
-
+// function used to determine if the middleware is to be bypassed for the given 'paths'
+function unless(middleware:any, ...paths: any) {
+    return function(req: Request, res: Response, next: NextFunction) {
+      const pathCheck = paths.some((path:string) => path === req.path);
+      pathCheck ? next() : middleware(req, res, next);
+    };
+  };
+  
+app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
+app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
+app.use(unless(cdrHeaderValidator(dsbOptions), "/login-data/energy", "/jwks"));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
