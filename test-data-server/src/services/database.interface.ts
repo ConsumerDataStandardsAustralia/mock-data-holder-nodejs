@@ -1,3 +1,5 @@
+import { CustomerModel } from "../models/login";
+
 export interface IDatabase {
     connectDatabase() : Promise<void>;
     disconnectDatabase() : Promise<void>;
@@ -54,4 +56,6 @@ export interface IDatabase {
     getBulkDerForUser(customerId: string): Promise<any>;
 
     getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
+
+    getLoginInformation(loginId: string, sector: string): Promise<CustomerModel[] | undefined>;
 }

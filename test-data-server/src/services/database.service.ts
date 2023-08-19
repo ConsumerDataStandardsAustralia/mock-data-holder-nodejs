@@ -4,6 +4,8 @@ import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, Ener
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { Service } from "typedi";
+import { AccountModel, CustomerModel } from "../models/login";
+import { response } from "express";
 
 @Service()
 export class MongoData implements IDatabase {
@@ -16,6 +18,7 @@ export class MongoData implements IDatabase {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
         this.dsbData = this.client.db(dbName);
     }
+
     async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         const query = { customerId: customerId };
@@ -714,6 +717,51 @@ export class MongoData implements IDatabase {
 
     }
 
+    async getLoginInformation(loginId: string, sector: string): Promise<CustomerModel[] | undefined> {
+        let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
+        var loginModel : CustomerModel[] = [];
+        let cursor = customers.find();
+        cursor.forEach(c => {
+            let aModel: CustomerModel = {
+                LoginId: "",
+                Accounts: []
+            };
+            aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+            let accounts: AccountModel [] = [];
+            if (sector.toLowerCase() == 'energy') {
+                // get the energy login data
+                c?.energy?.accounts.forEach((acc: any) => {
+                    let loginAccount: AccountModel = {
+                        AccountId: acc?.account?.accountId,
+                        AccountNumber: acc?.account?.accountNumber,
+                        MaskedName: acc?.account?.maskedNumber,
+                        DisplayName: acc?.account?.displayName
+                    };
+                    accounts.push(loginAccount)
+                })
+                aModel.Accounts = accounts;
+                loginModel.push(aModel);
+
+            }
+            if (sector.toLowerCase() == 'banking') {
+                // get the banking login data
+                c?.banking?.accounts.forEach((acc: any) => {
+                    let loginAccount: AccountModel = {
+                        AccountId: acc?.account?.accountId,
+                        AccountNumber: acc?.account?.accountNumber,
+                        MaskedName: acc?.account?.maskedNumber,
+                        DisplayName: acc?.account?.displayName
+                    };
+                    accounts.push(loginAccount)
+                })
+                aModel.Accounts = accounts;
+                loginModel.push(aModel);
+            }  
+        })
+
+        return loginModel;
+    }
+
     async connectDatabase() {
         try {
             await this.client.connect();
@@ -747,9 +795,13 @@ export class MongoData implements IDatabase {
     async getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>{
         // split login name to find first and last name
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
-        const query = { firstName: 'Blake', lastName: 'Koss' };
+        let arr: string[] = loginId.split('.');
+        if (arr.length < 2)
+            return undefined;
+        let firstName = arr[1];
+        let lastName = arr[0];
+        const query = { firstName: firstName, lastName: lastName };
         let cust: any = await customers.findOne(query);
-
         return cust?.customerId;
     }
 

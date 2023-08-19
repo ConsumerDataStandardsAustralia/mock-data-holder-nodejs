@@ -36,6 +36,7 @@ let standardsVersion = '/cds-au/v1';
 // This implementation uses a MongoDB. To use some other persistent storage
 // you need to implement the IDatabase interface
 const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}`
+const corsAllowedOrigin = process.env.CORS_ALLOWED_ORIGINS?.split(",")
 
 const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
 var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
@@ -53,9 +54,9 @@ let authService = new AuthService(dbService);
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
-const allowedOrigins = ['https://localhost:3004', 'https://localhost:9001'];
+//const allowedOrigins = corsAllowedOrigin;
 const corsOptions: cors.CorsOptions = {
-    origin: allowedOrigins
+    origin: corsAllowedOrigin
 };
 app.use(cors(corsOptions));
 
@@ -82,11 +83,11 @@ let tokenValidatorOptions: CdrConfig = {
 }
 
 // read the scopes from the header and enhance the request object 
-app.use(cdrJwtScopes(authOption));
+app.use(/\/((?!login-data).)*/, cdrJwtScopes(authOption));
 // validate the relevant scope is included
-app.use(cdrTokenValidator(tokenValidatorOptions));
+app.use(/\/((?!login-data).)*/, cdrTokenValidator(tokenValidatorOptions));
 // do other header validation, eg x-v, x-min-v etc
-app.use(cdrHeaderValidator(dsbOptions));
+app.use(/\/((?!login-data).)*/, cdrHeaderValidator(dsbOptions));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -728,6 +729,21 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
     }
 });
 
+// Get the information required by the Auth server to displaythe login screen
+app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    if (sectorIsValid(req.params?.sector) == false){
+        res.status(404).json('Not Found');
+        return;      
+    }
+    if (loginIsValid(req.params?.login) == false){
+        res.status(404).json('Not Found');
+        return;      
+    }
+    let customers = await dbService.getLoginInformation(req.params?.login, req.params?.sector)
+    let result = { Customers: customers};
+    res.send(result);
+});
 
 // In the absence of an IdP we use the accessToken as userId
 function getUserId(req: any): string | undefined {
@@ -737,5 +753,15 @@ function getUserId(req: any): string | undefined {
 function accountIsValid(accountId: string): boolean{
     let idx = authService?.authUser?.accounts?.findIndex(x => x == accountId)
     return (idx != undefined && idx > -1);
+}
+
+function sectorIsValid(sector: string) : boolean {
+    let validSectors = ['energy', 'banking']
+    let st = sector.toLowerCase();
+    return validSectors.indexOf(st)>-1
+}
+
+function loginIsValid(login: string): boolean {
+    return true;
 }
 
