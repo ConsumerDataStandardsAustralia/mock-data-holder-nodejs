@@ -8,10 +8,10 @@ services:
       - "7000:7000"
       - "7001:7001"
       - "7006:7006"
-    extra_hosts:
-      - "mock-data-holder:host-gateway"
-      - "mock-data-holder-energy:host-gateway"
-      - "mock-data-recipient:host-gateway"      
+    # extra_hosts:
+    #   - "mock-data-holder:host-gateway"
+    #   - "mock-data-holder-energy:host-gateway"
+    #   - "mock-data-recipient:host-gateway"      
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     healthcheck:
@@ -22,97 +22,111 @@ services:
     # depends_on:
     #   mssql:
     #     condition: service_healthy
+    networks:
+      - app-network    
 
-  # mock-data-recipient:
-  #   container_name: mock-data-recipient
-  #   image: consumerdataright/mock-data-recipient
-  #   ports: 
-  #     - "9001:9001"
-  #   extra_hosts:
-  #     - "mock-data-holder:host-gateway"
-  #     - "mock-data-holder-energy:host-gateway"
-  #     - "mock-register:host-gateway"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
-  #   healthcheck:
-  #     test: wget --no-check-certificate --no-verbose --spider https://localhost:9001/health || exit 1            
-  #     timeout: 5s
-  #     interval: 5s
-  #     retries: 50      
-  #   depends_on:
-  #     mssql:
-  #       condition: service_healthy
+  mock-data-recipient:
+    container_name: mock-data-recipient
+    image: mock-data-recipient:dsb-build-1.1
+    ports: 
+      - "9001:9001"
+    extra_hosts:
+    #   - "mock-data-holder:host-gateway"
+    #   - "mock-data-holder-energy:host-gateway"
+      - "mock-register:host-gateway"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    healthcheck:
+      test: wget --no-check-certificate --no-verbose --spider https://localhost:9001/health || exit 1            
+      timeout: 5s
+      interval: 5s
+      retries: 50      
+    # depends_on:
+    #   mssql:
+    #     condition: service_healthy
+    networks:
+      - app-network        
 
-  # authorisation-server:
-  #   container_name: authorisation-server
-  #   # build:
-  #   #   context: .
-  #   #   dockerfile: dockerfile.accc-auth
-  #   image: consumerdataright/authorisation-server
-  #   ports: 
-  #     - "8001:8001"
-  #     - "3000:3000"
-  #   extra_hosts:
-  #     - "mssql:host-gateway"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
+  cdr-auth-server:
+    container_name: cdr-auth-server
+    # build:
+    #   context: .
+    #   dockerfile: dockerfile.accc-auth
+    image: cdr-auth-server:accc-build-1.0
+    ports: 
+      - "8001:8001"
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    networks:
+      - app-network       
 
-  # dsb-data-loader:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile.dsb-data-loader
-  #   # image: cdradmin/dsb-data-loader:1.24.0
-  #   container_name: dsb-data-loader
-  #   env_file: .env.docker
-  #   depends_on:
-  #     - mongodb
-  #   networks:
-  #     - app-network
+  tls-gateway:
+    container_name: tls-gateway
+    image: tls-gateway:dsb-build-1.0
+    ports: 
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    networks:
+      - app-network       
 
-  # dsb-test-data-server:
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile.dsb-test-data-server
-  #   # image: cdradmin/dsb-test-data-server:1.24.0
-  #   container_name: dsb-test-data-server
-  #   restart: unless-stopped
-  #   env_file: .env.docker
-  #   depends_on:
-  #     - mongodb
-  #   ports:
-  #     - "3005:3005"
-  #   networks:
-  #     - app-network
+  mtls-gateway:
+    container_name: mtls-gateway
+    image: mtls-gateway:dsb-build-1.0
+    ports: 
+      - "8082:8082"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    networks:
+      - app-network     
 
-  # mssql:
-  #   container_name: sql1
-  #   image: 'mcr.microsoft.com/mssql/server:2019-latest'
-  #   ports:
-  #     - '1433:1433'
-  #   environment:
-  #     - ACCEPT_EULA=Yes
-  #     - SA_PASSWORD=Pa{}w0rd2019
-  #   healthcheck:
-  #     test: /opt/mssql-tools/bin/sqlcmd -S . -U sa -P "Pa{}w0rd2019" -Q "SELECT 1" || exit 1 
-  #     timeout: 10s
-  #     interval: 10s
-  #     retries: 10    
+  dsb-sample-data:
+    container_name: dsb-sample-data
+    image: dsb-sample-data:1.0
 
-  # mongodb:
-  #   image: mongo:6.0
-  #   container_name: mongodb
-  #   restart: unless-stopped
-  #   env_file: .env.docker
-  #   volumes:     
-  #     - dbdata:/usr/local/var/mongodb
-  #   ports:
-  #     - "27017:27017"
-  #   networks:
-  #     - app-network  
+    restart: unless-stopped
+    env_file: .env.docker
+    # depends_on:
+    #   - mongodb
+    ports:
+      - "3005:3005"
+    networks:
+      - app-network
+
+  mssql:
+    container_name: mssql
+    image: 'mcr.microsoft.com/mssql/server:2019-latest'
+    ports:
+      - '1433:1433'
+    environment:
+      - ACCEPT_EULA=Yes
+      - SA_PASSWORD=Pa{}w0rd2019
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S . -U sa -P "Pa{}w0rd2019" -Q "SELECT 1" || exit 1 
+      timeout: 10s
+      interval: 10s
+      retries: 10 
+    networks:
+      - app-network     
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:     
+      - dbdata:/usr/local/var/mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network  
 
 networks:
   app-network:
     driver: bridge
+
 volumes:
   dbdata:
   node_modules:    
