@@ -102,3 +102,9 @@ Ensure that the following header exists:
 `authorization: "Bearer CUSTOMER_ID"`
 
 Eg, `authorization: "Bearer 02bce083-7e64-46e0-b373-71b53189928c"`
+
+# Setup steps
+
+1. App config settings in 
+2. Initialisation script
+3. Edit Host file

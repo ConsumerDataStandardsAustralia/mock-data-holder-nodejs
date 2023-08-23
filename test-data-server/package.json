@@ -40,6 +40,7 @@
     "jwt-decode": "^3.1.2",
     "mongodb": "^4.13.0",
     "mongoose": "^6.8.4",
+    "openid-client": "^5.4.3",
     "parse": "^4.0.0",
     "swagger-ui-express": "^5.0.0",
     "typedi": "^0.10.0",
