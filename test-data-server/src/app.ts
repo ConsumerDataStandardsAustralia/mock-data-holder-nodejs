@@ -29,7 +29,7 @@ const exp = express;
 const app = express();
 
 const port = `${process.env.APP_LISTENTING_PORT}`;
-const authServerUrl = 'https://localhost:8081';
+const authServerUrl = `${process.env.AUTH_SERVER_URL}`;
 let standardsVersion = '/cds-au/v1';
 
 
