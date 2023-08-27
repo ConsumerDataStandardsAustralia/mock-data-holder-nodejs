@@ -717,7 +717,7 @@ export class MongoData implements IDatabase {
 
     }
 
-    async getLoginInformation(loginId: string, sector: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformation( sector: string): Promise<CustomerModel[] | undefined> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         var loginModel : CustomerModel[] = [];
         let cursor = customers.find();

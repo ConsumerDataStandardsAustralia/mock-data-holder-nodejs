@@ -802,13 +802,8 @@ export class SingleData implements IDatabase {
         return retList;
     }
 
-    async getLoginInformation(loginId: string, sector: string): Promise<CustomerModel[] | undefined> {
-        // TODO see comment below
-        //   let arr: string[] = loginId.split('.');
-        //   if (arr.length < 2)
-        //       return undefined;
-        //   let firstName = arr[1];
-        //   let lastName = arr[0];
+    // get all the logins for the ACCC cdr-auth-server UI
+    async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
           var loginModel : CustomerModel[] = [];
           let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
           let allData = await allDataCollection.findOne();
@@ -816,12 +811,7 @@ export class SingleData implements IDatabase {
               let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
               if (allCustomers.length < 1)
                   return undefined;
-              // TODO for now we return all customers as the ACCC AuthServer UI does not have the functionality
-              // to request login info per user, but rather filters this at the UI end
-              // ie, this requies a code change in the ACCC code base
               allCustomers.forEach( (c: any) => {
-                //   if (c?.customer?.person?.firstName == firstName
-                //   && c?.customer?.person?.lastName == lastName) {
                     let aModel: CustomerModel = {
                         LoginId: "",
                         Accounts: []
@@ -857,7 +847,7 @@ export class SingleData implements IDatabase {
                         aModel.Accounts = accounts;
                         loginModel.push(aModel);
                     }              
-                 // }
+
               })    
           } 
           return loginModel;      

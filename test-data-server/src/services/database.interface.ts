@@ -57,5 +57,5 @@ export interface IDatabase {
 
     getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
 
-    getLoginInformation(loginId: string, sector: string): Promise<CustomerModel[] | undefined>;
+    getLoginInformation(sector: string): Promise<CustomerModel[] | undefined>;
 }

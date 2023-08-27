@@ -31,7 +31,7 @@ export class AuthService {
     jwtEncodingAlgorithm: string | undefined;
     algorithm = 'AES-256-CBC';
     // This key must be the same on the authorisation server
-    idPermanenceKey = '90733A75F19347118B3BE0030AB590A8';
+    idPermanenceKey = process.env.IDPERMANENCEKEY;
     iv = Buffer.alloc(16);
     dbService: IDatabase;
 
@@ -147,8 +147,8 @@ export class AuthService {
 
     buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
-            cert: readFileSync(path.join(__dirname, '../certificates/mtls-server.pem')),
-            key: readFileSync(path.join(__dirname, '../certificates/mtls-server.key')),
+            cert: readFileSync(path.join(__dirname, '../security/master.crt')),
+            key: readFileSync(path.join(__dirname, '../security/master.key')),
           })
         return httpsAgent;
     }
