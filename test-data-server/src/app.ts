@@ -744,7 +744,7 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
     //     res.status(404).json('Not Found');
     //     return;      
     // }
-    let customers = await dbService.getLoginInformation('', req.params?.sector)
+    let customers = await dbService.getLoginInformation(req.params?.sector)
     let result = { Customers: customers};
     res.send(result);
 });
