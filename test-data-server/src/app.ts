@@ -65,8 +65,8 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
-const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
-const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
+const certFile = path.join(__dirname, '/security/master.crt')
+const keyFile = path.join(__dirname, '/security/master.key')
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
 const otions = {
@@ -108,10 +108,10 @@ dbService.connectDatabase()
     })
 
 async function initAuthService() {
-    const certFile = path.join(__dirname, '/certificates/mtls-server.pem')
-    const keyFile = path.join(__dirname, '/certificates/mtls-server.key')
-    const rCert = readFileSync(certFile, 'utf8');
-    const rKey = readFileSync(keyFile, 'utf8');
+    // const certFile = path.join(__dirname, '/certificates/mtls/tlsgateway-cert.pem')
+    // const keyFile = path.join(__dirname, '/certificates/mtls/tlsgateway-key.pem')
+    // const rCert = readFileSync(certFile, 'utf8');
+    // const rKey = readFileSync(keyFile, 'utf8');
     const otions = {
         key: rKey,
         cert: rCert
@@ -740,11 +740,11 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
         res.status(404).json('Not Found');
         return;      
     }
-    if (loginIsValid(req.params?.login) == false){
-        res.status(404).json('Not Found');
-        return;      
-    }
-    let customers = await dbService.getLoginInformation(req.params?.login, req.params?.sector)
+    // if (loginIsValid(req.params?.login) == false){
+    //     res.status(404).json('Not Found');
+    //     return;      
+    // }
+    let customers = await dbService.getLoginInformation('', req.params?.sector)
     let result = { Customers: customers};
     res.send(result);
 });
