@@ -7,11 +7,7 @@ services:
     ports: 
       - "7000:7000"
       - "7001:7001"
-      - "7006:7006"
-    # extra_hosts:
-    #   - "mock-data-holder:host-gateway"
-    #   - "mock-data-holder-energy:host-gateway"
-    #   - "mock-data-recipient:host-gateway"      
+      - "7006:7006"    
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     healthcheck:
@@ -27,13 +23,9 @@ services:
 
   mock-data-recipient:
     container_name: mock-data-recipient
-    image: mock-data-recipient:dsb-build-1.1
+    image: consumerdataright/mock-data-recipient
     ports: 
       - "9001:9001"
-    extra_hosts:
-    #   - "mock-data-holder:host-gateway"
-    #   - "mock-data-holder-energy:host-gateway"
-      - "mock-register:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     healthcheck:
@@ -49,14 +41,10 @@ services:
 
   cdr-auth-server:
     container_name: cdr-auth-server
-    # build:
-    #   context: .
-    #   dockerfile: dockerfile.accc-auth
-    image: cdr-auth-server:accc-build-1.0
+    image: cdr-auth-server:dsb-0.1
     ports: 
       - "8001:8001"
       - "3000:3000"
-      - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     networks:
@@ -65,6 +53,9 @@ services:
   tls-gateway:
     container_name: tls-gateway
     image: tls-gateway:dsb-build-1.0
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.tlsgateway    
     ports: 
       - "8081:8081"
     environment:
@@ -75,6 +66,9 @@ services:
   mtls-gateway:
     container_name: mtls-gateway
     image: mtls-gateway:dsb-build-1.0
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.mtlsgateway    
     ports: 
       - "8082:8082"
     environment:
@@ -84,8 +78,11 @@ services:
 
   dsb-sample-data:
     container_name: dsb-sample-data
-    image: dsb-sample-data:1.0
+    #image: dsb-sample-data:1.0
 
+    build:
+      context: . 
+      dockerfile: dockerfile.dsb-test-data-server   
     restart: unless-stopped
     env_file: .env.docker
     # depends_on:
@@ -97,6 +94,9 @@ services:
 
   mssql:
     container_name: mssql
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.mssql
     image: 'mcr.microsoft.com/mssql/server:2019-latest'
     ports:
       - '1433:1433'
