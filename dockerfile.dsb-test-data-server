@@ -12,9 +12,9 @@ ENV MONGO_PORT=27017
 ENV MONGO_DB=DSB
 ENV VERSION=1.24.0
 ENV APP_LISTENTING_PORT=3005
-ENV AUTH_SERVER_URL=https://tls-gateway:8081
+ENV AUTH_SERVER_URL=https://cdr-auth-server:8081
 ENV IDPERMANENCEKEY=90733A75F19347118B3BE0030AB590A8
-ENV INTERNAL_INTROSPECTION=https://tls-gateway:8081/connect/introspect-internal
+ENV INTERNAL_INTROSPECTION=https://cdr-auth-server:8081/connect/introspect-internal
 ENV CORS_ALLOWED_ORIGINS=https://localhost:3004,https://mock-data-recipient:9001,https://cdr-auth-server:3000
 # Create app directory
 WORKDIR /app
@@ -22,7 +22,7 @@ WORKDIR /app
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
-COPY test-data-server/package*.json ./
+COPY ./test-data-server/package*.json ./
 
 RUN npm install
 # If you are building your code for production
@@ -33,7 +33,7 @@ COPY ./test-data-server/ .
 
 RUN npm run build
 
-RUN  cp ./certificates/mtls/ca.crt /usr/local/share/ca-certificates/ca.crt
+COPY ./test-data-server/security/ca/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 
 CMD [ "node", "dist/src/app.js"]

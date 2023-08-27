@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/mssql/server:2019-latest
+
+COPY ./utils/sql/AddClientScriptRelease.sql .
+ENV ACCEPT_EULA=Y
+ENV SA_PASSWORD=Pa{}w0rd2019
+RUN /opt/mssql-tools/bin/sqlcmd -U "sa" -P "Pa{}w0rd2019" -i AddClientScriptRelease.sql

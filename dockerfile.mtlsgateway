@@ -1,0 +1,9 @@
+FROM mtls-gateway:dsb-0.1 AS build
+
+WORKDIR /app
+
+# copy the gateway config
+COPY ./configs/mtls-gateway/gateway-config.json /gateway-mtls/
+
+# copy the certificate
+COPY ./test-data-server/security/certs/mtls-server.pfx /gateway-mtls/Certificates
