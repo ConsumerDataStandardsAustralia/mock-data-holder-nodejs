@@ -1,0 +1,8 @@
+FROM consumerdataright/authorisation-server AS build
+
+
+# copy the certificate
+COPY ./test-data-server/security/accc-certs/cdr-auth-server/tls/tls-server.pfx /app/cdrauthserver/Certificates
+COPY ./test-data-server/security/accc-certs/cdr-auth-server/tls/tls-server.key /app/cdrauthserver/Certificates
+COPY ./test-data-server/security/accc-certs/cdr-auth-server/tls/tls-server.pem /app/cdrauthserver/Certificates
+COPY ./test-data-server/security/accc-certs/cdr-auth-server/tls/tls-server.ext /app/cdrauthserver/Certificates

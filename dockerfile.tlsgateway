@@ -1,9 +1,13 @@
-FROM tls-gateway:dsb-0.1 AS build
+FROM tls-gateway:0.1 AS build
 
 WORKDIR /app
 
+
 # copy the gateway config
-COPY ./configs/tls-gateway/gateway-config.json /gateway-tls/
+COPY ./configs/tls-gateway/gateway-config.json /app/gateway-tls/
+# COPY ./configs/tls-gateway/appsettings.Release.json /app/gateway-tls/
 
 # copy the certificate
-COPY ./test-data-server/security/certs/tls-server.pfx /gateway-tls/Certificates
+# COPY ./test-data-server/security/accc-certs/cdr-auth-server/tls/tls-server.pfx /app/gateway-tls/Certificates
+#COPY ./test-data-server/security/master-v1.pfx /app/gateway-tls/Certificates
+#COPY ./test-data-server/security/master-v3.pfx /app/gateway-tls/Certificates

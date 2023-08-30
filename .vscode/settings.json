@@ -1,0 +1,8 @@
+{
+    "rest-client.certificates": {
+        "localhost:8082": {
+            "pfx": "/Users/tomasschier/code/_git/consumer-data-standards/dsb-test-data/test-data-server/security/mtls-server.pfx",
+            "passphrase": "#M0ckDataHolder#"
+        }
+    }
+}
