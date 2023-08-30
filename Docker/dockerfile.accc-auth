@@ -1,5 +1,0 @@
-FROM consumerdataright/authorisation-server
-
-# copy appsettings.Release with our data base connection and other stuff
-
-# copy the seed data json file
