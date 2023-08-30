@@ -9,8 +9,8 @@ DECLARE @BrandName NVARCHAR(450) = N'DSB Energy Provider'
 DECLARE @SoftwareId NVARCHAR(450) = N'36094666-7e37-4717-8ab0-0c3d3485f56e'
 DECLARE @SoftwareName NVARCHAR(450) = N'DSB Test Software'
 DECLARE @DataRecipientBaseUri NVARCHAR(450) = N'https://mock-data-recipient:9001'
-DECLARE @DataHolderBaseUri NVARCHAR(450) = N'https://dsb-sample-data:3005'
-DECLARE @InfoSecBaseUri NVARCHAR(450) = N'https://tls-gateway:8081'
+DECLARE @DataHolderBaseUri NVARCHAR(450) = N'https://mock-data-holder:3005'
+DECLARE @InfoSecBaseUri NVARCHAR(450) = N'https://cdr-auth-server:8001'
 -- Set this to wherever the data recipient client is running
 DECLARE @LogoUri NVARCHAR(450) = @DataRecipientBaseUri + '/logo.png'
 

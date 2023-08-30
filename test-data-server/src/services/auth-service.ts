@@ -79,33 +79,32 @@ export class AuthService {
         return accounts;
     }
 
-    async initAuthService(metadata: any): Promise<boolean> {
+    async initAuthService(): Promise<boolean> {
         try {
-            // set the various endpoints
-            this.token_endpoint = metadata?.token_endpoint;
-            this.introspection_endpoint = metadata?.introspection_endpoint;
-            this.jwks_uri = metadata?.jwks_uri;
-            this.issuer = metadata?.issuer;
-
-            if (this.jwks_uri == undefined) {
-                console.log('ERROR: No jwk endpoint uri found');
-                return false;
-            }
-               
-            this.tlsThumPrint = this.calculateTLSThumbprint();
+            console.log('Initialise auth service..');
             const httpsAgent = this.buildHttpsAgent();
               let config : AxiosRequestConfig = {
                 httpsAgent: httpsAgent,
               }
 
-            const response = await axios.get(this.jwks_uri as string,  config)
+            this.tlsThumPrint = this.calculateTLSThumbprint();
+            const url = path.join(process.env.AUTH_SERVER_URL as string, '.well-known/openid-configuration')
+            console.log(`Auth server url: ${url}`);
+            const response = await axios.get(url,  config)
             if (!(response.status == 200)) {
+                console.log('Auth server discovery failed.');
                 return false;
               }
             else {
-                this.jwkKeys = response.data?.keys;
+                console.log(`Auth server discovery complete. ${JSON.stringify(response.data)}`);
+                // set the various endpoints
+                this.token_endpoint = response.data?.token_endpoint;
+                this.introspection_endpoint = response.data?.introspection_endpoint;
+                this.jwks_uri = response.data?.jwks_uri;
+                this.issuer = response.data?.issuer;
                 return true;
             }
+            //return true;
         } catch (error: any) {
             console.log('ERROR: ', error.message);
             console.log('ERROR DETAIL', error?.response?.data);   
@@ -128,8 +127,6 @@ export class AuthService {
                 headers: hdrs
               }
             let postBody = this.buildIntrospecticePostBody(token);
-            // TODO enable this lime once the call can get through the MTLS gateway
-            //const response = await axios.post(this.introspection_endpoint as string, token, config)
             const response = await axios.post(this.introspection_endpoint_internal, postBody, config)
             if (!(response.status == 200)) {
                 return false;
@@ -147,8 +144,10 @@ export class AuthService {
 
     buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
-            cert: readFileSync(path.join(__dirname, '../security/master.crt')),
-            key: readFileSync(path.join(__dirname, '../security/master.key')),
+            ca: readFileSync(path.join(__dirname, '../security/accc-certs/cdr-auth-server/mtls', process.env.CA_FILE as string))
+            
+            // cert: readFileSync(path.join(__dirname, '../security/accc-certs/mock-data-holder/tls', process.env.CERT_FILE as string)),
+            // key: readFileSync(path.join(__dirname, '../security/accc-certs/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)),
           })
         return httpsAgent;
     }
@@ -174,7 +173,6 @@ export class AuthService {
                 accounts: undefined,
                 scopes_supported: decoded?.scopes
             }
-            // TODO use the idPermanence key to decode the account ids, strore in User.accounts
             // Once the customerId (here: userId) has been the account ids can be decrypted.
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server

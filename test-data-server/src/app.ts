@@ -65,8 +65,8 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
-const certFile = path.join(__dirname, '/security/master.crt')
-const keyFile = path.join(__dirname, '/security/master.key')
+const certFile =path.join(__dirname, '/security/accc-certs/mock-data-holder/tls', process.env.CERT_FILE as string)
+const keyFile = path.join(__dirname, '/security/accc-certs/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
 const otions = {
@@ -116,9 +116,8 @@ async function initAuthService() {
         key: rKey,
         cert: rCert
     }
-    let discovery = await Issuer.discover(authServerUrl);
-    //console.log('Discovered issuer %s %O',  discovery.metadata);
-    let init = await authService.initAuthService(discovery.metadata);
+    console.log(`Interrogating discovery endpoint : ${authServerUrl}`);  
+    let init = await authService.initAuthService();
     if (init == false) {
         console.log('WARNING: Authentication service could not be initalised');
     }
