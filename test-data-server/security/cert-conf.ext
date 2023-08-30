@@ -1,6 +1,0 @@
-openssl req -nodes -x509 -sha256 -newkey rsa:4096 \
-  -keyout master.key \
-  -out master.crt \
-  -days 356 \
-  -subj "/C=AU/ST=NSW/L=Sydney/O=ACME Corp/OU=IT Dept/CN=consumerdatastandards.gov.au"  \
-  -addext "subjectAltName = DNS:localhost,DNS:cdr-auth-server,DNS:tls-gateway,DNS:mtls-gateway" 
