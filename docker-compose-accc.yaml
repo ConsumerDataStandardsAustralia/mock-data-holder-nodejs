@@ -7,7 +7,10 @@ services:
     ports: 
       - "7000:7000"
       - "7001:7001"
-      - "7006:7006"    
+      - "7006:7006"
+    extra_hosts:
+      - "mock-data-holder:host-gateway"
+      - "mock-data-recipient:host-gateway"           
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     healthcheck:
@@ -15,9 +18,9 @@ services:
       timeout: 5s
       interval: 5s
       retries: 50      
-    # depends_on:
-    #   mssql:
-    #     condition: service_healthy
+    depends_on:
+      mssql:
+        condition: service_healthy
     networks:
       - app-network    
 
@@ -28,34 +31,55 @@ services:
       - "9001:9001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
+    extra_hosts:
+      - "mock-data-holder:host-gateway"
+      - "mock-register:host-gateway"      
     healthcheck:
       test: wget --no-check-certificate --no-verbose --spider https://localhost:9001/health || exit 1            
       timeout: 5s
       interval: 5s
       retries: 50      
-    # depends_on:
-    #   mssql:
-    #     condition: service_healthy
+    depends_on:
+      mssql:
+        condition: service_healthy
     networks:
       - app-network        
 
   cdr-auth-server:
     container_name: cdr-auth-server
-    image: cdr-auth-server:dsb-0.1
+    image: cdr-auth-server:dsb-0.2
+    # image: consumerdataright/authorisation-server
+    build:
+      context: . 
+      dockerfile: dockerfile.cdr-auth-server  
     ports: 
       - "8001:8001"
+      - "8080:8080"
       - "3000:3000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
+    extra_hosts:
+      - "mssql:host-gateway"
+      - "mock-data-holder:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-recipient:host-gateway"      
+    depends_on:
+      mssql:
+        condition: service_healthy      
     networks:
       - app-network       
 
   tls-gateway:
     container_name: tls-gateway
-    image: tls-gateway:dsb-build-1.0
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.tlsgateway    
+    image: tls-gateway:0.1
+    build:
+      context: . 
+      dockerfile: dockerfile.tlsgateway  
+    extra_hosts:
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway"     
     ports: 
       - "8081:8081"
     environment:
@@ -65,28 +89,38 @@ services:
 
   mtls-gateway:
     container_name: mtls-gateway
-    image: mtls-gateway:dsb-build-1.0
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.mtlsgateway    
+    image: mtls-gateway:0.1
+    build:
+      context: . 
+      dockerfile: dockerfile.mtlsgateway    
     ports: 
       - "8082:8082"
+    extra_hosts:
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway"        
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     networks:
       - app-network     
 
-  dsb-sample-data:
-    container_name: dsb-sample-data
-    #image: dsb-sample-data:1.0
-
+  mock-data-holder:
+    container_name: mock-data-holder
+    image: dsb-test-data-server:0.2
     build:
       context: . 
-      dockerfile: dockerfile.dsb-test-data-server   
+      dockerfile: dockerfile.dsb-test-data-server    
     restart: unless-stopped
     env_file: .env.docker
-    # depends_on:
-    #   - mongodb
+    extra_hosts:
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway" 
+      - "mongodb:host-gateway"    
+    depends_on:
+      - mongodb
     ports:
       - "3005:3005"
     networks:
