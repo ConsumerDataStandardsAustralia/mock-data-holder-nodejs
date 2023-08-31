@@ -1,7 +1,5 @@
 {
   "Routes": [
-
-    // Registration
     {
       "DownstreamPathTemplate": "/connect/register",
       "DownstreamScheme": "https",
@@ -12,11 +10,11 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/register",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // GET, PUT, DELETE Registration
     {
       "DownstreamPathTemplate": "/connect/register/{clientId}",
       "DownstreamScheme": "https",
@@ -27,11 +25,13 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/register/{clientId}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // Get Token
     {
       "DownstreamPathTemplate": "/connect/token",
       "DownstreamScheme": "https",
@@ -42,11 +42,11 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/token",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // Get UserInfo
     {
       "DownstreamPathTemplate": "/connect/userinfo",
       "DownstreamScheme": "https",
@@ -57,11 +57,12 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/userinfo",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // Token Revocation
     {
       "DownstreamPathTemplate": "/connect/revocation",
       "DownstreamScheme": "https",
@@ -72,11 +73,11 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/revocation",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // Revoke CDR Arrangement
     {
       "DownstreamPathTemplate": "/connect/arrangements/revoke",
       "DownstreamScheme": "https",
@@ -87,11 +88,11 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/arrangements/revoke",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // Get Introspection
     {
       "DownstreamPathTemplate": "/connect/introspect",
       "DownstreamScheme": "https",
@@ -102,11 +103,11 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/introspect",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-
-    // PAR
     {
       "DownstreamPathTemplate": "/connect/par",
       "DownstreamScheme": "https",
@@ -117,11 +118,12 @@
         }
       ],
       "UpstreamPathTemplate": "/connect/par",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
 
-    // Get Common Customer (TEST endpoint)
     {
       "DownstreamPathTemplate": "/resource/cds-au/v1/common/customer",
       "DownstreamScheme": "https",
@@ -132,10 +134,12 @@
         }
       ],
       "UpstreamPathTemplate": "/resource/cds-au/v1/common/customer",
-      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
-    // Authorization server endpoint for Admin metadata updata
+
     {
       "DownstreamPathTemplate": "/cds-au/v1/admin/register/metadata",
       "DownstreamScheme": "https",
@@ -146,10 +150,11 @@
         }
       ],
       "UpstreamPathTemplate": "/cds-au/v1/admin/register/metadata",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
       "DangerousAcceptAnyServerCertificateValidator": true
     }
-
   ],
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:8082"

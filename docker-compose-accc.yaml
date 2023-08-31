@@ -26,7 +26,13 @@ services:
 
   mock-data-recipient:
     container_name: mock-data-recipient
-    image: consumerdataright/mock-data-recipient
+
+    # image: consumerdataright/mock-data-recipient
+    image: mock-data-recipient:dsb-0.1
+    # image: consumerdataright/authorisation-server
+    build:
+      context: . 
+      dockerfile: dockerfile.mock-data-recipient
     ports: 
       - "9001:9001"
     environment:
@@ -47,11 +53,12 @@ services:
 
   cdr-auth-server:
     container_name: cdr-auth-server
-    image: cdr-auth-server:dsb-0.2
-    # image: consumerdataright/authorisation-server
+    image: cdr-auth-server:accc-dsb
+    #image: consumerdataright/authorisation-server
     build:
       context: . 
-      dockerfile: dockerfile.cdr-auth-server  
+      dockerfile: dockerfile.cdr-auth-server 
+
     ports: 
       - "8001:8001"
       - "8080:8080"
@@ -71,7 +78,7 @@ services:
 
   tls-gateway:
     container_name: tls-gateway
-    image: tls-gateway:0.1
+    image: tls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.tlsgateway  
@@ -89,7 +96,7 @@ services:
 
   mtls-gateway:
     container_name: mtls-gateway
-    image: mtls-gateway:0.1
+    image: mtls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.mtlsgateway    
@@ -107,7 +114,7 @@ services:
 
   mock-data-holder:
     container_name: mock-data-holder
-    image: dsb-test-data-server:0.2
+    image: dsb-test-data-server:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.dsb-test-data-server    
@@ -121,6 +128,7 @@ services:
       - "mongodb:host-gateway"    
     depends_on:
       - mongodb
+      - cdr-auth-server
     ports:
       - "3005:3005"
     networks:
@@ -128,9 +136,6 @@ services:
 
   mssql:
     container_name: mssql
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.mssql
     image: 'mcr.microsoft.com/mssql/server:2019-latest'
     ports:
       - '1433:1433'
@@ -156,6 +161,18 @@ services:
       - "27017:27017"
     networks:
       - app-network  
+
+  dsb-data-loader:
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-data-loader
+    image: cdradmin/dsb-data-loader:1.24.0
+    container_name: dsb-data-loader
+    env_file: .env.docker
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
 
 networks:
   app-network:

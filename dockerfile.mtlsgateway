@@ -1,13 +1,8 @@
-FROM mtls-gateway:0.1 AS build
+FROM mtls-gateway:accc AS build
 
 
 WORKDIR /app
 
-# copy the gateway config
-COPY ./configs/mtls-gateway/gateway-config.json /app/gateway-mtls/
-#COPY ./configs/mtls-gateway/appsettings.Release.json /app/gateway-mtls/
+# COPY ./configs/mtls-gateway/gateway-config.json /app/gateway-mtls/
+# COPY ./test-data-server/security/accc-certs/mtls-gateway/mtls-server.pfx /app/gateway-mtls/Certificates
 
-# copy the certificate
-# COPY ./test-data-server/security/accc-certs/cdr-auth-server/mtls/mtls-server.pfx /app/gateway-mtls/Certificates
-# COPY ./test-data-server/security/master-v1.pfx /app/gateway-mtls/Certificates
-# COPY ./test-data-server/security/master-v3.pfx /app/gateway-mtls/Certificates

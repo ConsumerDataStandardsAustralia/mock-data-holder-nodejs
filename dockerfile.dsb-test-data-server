@@ -33,7 +33,7 @@ COPY ./test-data-server/ .
 
 RUN npm run build
 
-COPY ./test-data-server/security/ca/ca.crt /usr/local/share/ca-certificates/ca.crt
+COPY ./test-data-server/security/accc-certs/cdr-auth-server/mtls/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 
 CMD [ "node", "dist/src/app.js"]

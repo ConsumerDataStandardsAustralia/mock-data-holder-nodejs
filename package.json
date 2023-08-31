@@ -7,7 +7,9 @@
     "start": "tsc && node ./dist/src/app.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "ionic:build": "npm run build",
+    "ionic:serve": "npm run start"
   },
   "keywords": [
     "nodejs",
