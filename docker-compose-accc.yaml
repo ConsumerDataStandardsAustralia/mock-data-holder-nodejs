@@ -28,7 +28,7 @@ services:
     container_name: mock-data-recipient
 
     # image: consumerdataright/mock-data-recipient
-    image: mock-data-recipient:dsb-0.1
+    # image: mock-data-recipient:dsb-0.2
     # image: consumerdataright/authorisation-server
     build:
       context: . 
@@ -53,16 +53,14 @@ services:
 
   cdr-auth-server:
     container_name: cdr-auth-server
-    image: cdr-auth-server:accc-dsb
+    #image: cdr-auth-server:accc-dsb
     #image: consumerdataright/authorisation-server
     build:
       context: . 
       dockerfile: dockerfile.cdr-auth-server 
-
     ports: 
       - "8001:8001"
       - "8080:8080"
-      - "3000:3000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     extra_hosts:
@@ -75,6 +73,23 @@ services:
         condition: service_healthy      
     networks:
       - app-network       
+
+  authserver-ui:
+    container_name: authserver-ui
+    image: cdr-auth-server-ui:dsb-0.1
+    ports: 
+      - "3000:3000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    extra_hosts:
+      - "mssql:host-gateway"
+      - "mock-data-holder:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-recipient:host-gateway"    
+      - "cdr-auth-server:host-gateway"          
+    networks:
+      - app-network       
+
 
   tls-gateway:
     container_name: tls-gateway
