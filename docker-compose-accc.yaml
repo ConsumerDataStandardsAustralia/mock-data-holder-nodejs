@@ -68,11 +68,11 @@ services:
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-recipient:host-gateway" 
-    healthcheck:
-      test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/.well-known/openid-configuration || exit 1
-      timeout: 5s
-      interval: 5s
-      retries: 50         
+    # healthcheck:
+    #   test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/.well-known/openid-configuration || exit 1
+    #   timeout: 5s
+    #   interval: 5s
+    #   retries: 50         
     depends_on:
       mssql:
         condition: service_healthy      
@@ -81,7 +81,7 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
-    image: authserver-ui:dsb-0.2
+    image: authserver-ui:dsb-0.1
     ports: 
       - "3000:3000"
     environment:
@@ -159,8 +159,8 @@ services:
     ports:
       - '1433:1433'
     environment:
-      - ACCEPT_EULA=Yes
-      - SA_PASSWORD=Pa{}w0rd2019
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Pa{}w0rd2019
     healthcheck:
       test: /opt/mssql-tools/bin/sqlcmd -S . -U sa -P "Pa{}w0rd2019" -Q "SELECT 1" || exit 1 
       timeout: 10s

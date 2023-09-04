@@ -1,6 +1,7 @@
-FROM tls-gateway:accc AS build
+FROM tls-gateway:dsb-0.1 AS build
 
 WORKDIR /app
 
-# COPY ./configs/tls-gateway/gateway-config.json /app/gateway-tls/
-# COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.pfx /app/gateway-tls/Certificates
+COPY ./configs/tls-gateway/gateway-config.json /app/gateway-tls/
+COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.pfx /app/gateway-tls/Certificates/tls-server.pfx
+COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.key /app/gateway-tls/Certificates/tls-server.key
