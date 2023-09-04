@@ -1,4 +1,4 @@
-FROM cdr-auth-server:dbs-0.1 AS build
+FROM cdr-auth-server:dsb-0.1 AS build
 
 
 # copy the certificate 

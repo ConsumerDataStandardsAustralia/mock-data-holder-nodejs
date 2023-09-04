@@ -76,7 +76,7 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
-    image: cdr-auth-server-ui:dsb-0.1
+    image: authserver-ui:dsb-0.1
     ports: 
       - "3000:3000"
     environment:
@@ -93,7 +93,7 @@ services:
 
   tls-gateway:
     container_name: tls-gateway
-    image: tls-gateway:dsb-0.1
+    # image: tls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.tlsgateway  
@@ -111,7 +111,7 @@ services:
 
   mtls-gateway:
     container_name: mtls-gateway
-    image: mtls-gateway:dsb-0.1
+    # image: mtls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.mtlsgateway    
@@ -129,7 +129,7 @@ services:
 
   mock-data-holder:
     container_name: mock-data-holder
-    image: dsb-test-data-server:dsb-0.1
+    # image: dsb-test-data-server:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.dsb-test-data-server    
@@ -143,7 +143,7 @@ services:
       - "mongodb:host-gateway"    
     depends_on:
       - mongodb
-      - cdr-auth-server
+      # - cdr-auth-server
     ports:
       - "3005:3005"
     networks:
