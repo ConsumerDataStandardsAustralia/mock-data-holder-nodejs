@@ -4,7 +4,7 @@ distinguished_name  = req_distinguished_name
 prompt 			    = no
 req_extensions      = req_ext
 [ req_distinguished_name ]
-commonName          = cdr-auth-server-mtls
+commonName          = MockDataRecipient
 countryName         = AU
 stateOrProvinceName = ACT
 localityName        = Canberra
@@ -13,10 +13,4 @@ organizationalUnitName = CDR
 [ req_ext ]
 basicConstraints    = CA:FALSE
 keyUsage            = critical, nonRepudiation, digitalSignature, keyEncipherment
-extendedKeyUsage    = critical, serverAuth
-subjectAltName      = @alt_names
-[alt_names]
-DNS.1               = localhost
-DNS.2               = authserver.mock
-DNS.3				= cdr-auth-server
-DNS.4				= mtls-server
+extendedKeyUsage    = critical, clientAuth

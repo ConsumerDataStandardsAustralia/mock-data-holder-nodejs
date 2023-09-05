@@ -2,5 +2,5 @@ FROM cdr-auth-server:dsb-0.1 AS build
 
 
 # copy the certificate 
-COPY ./test-data-server/security/accc-certs/cdr-auth-server/tls/tls-server.pfx /app/cdrauthserver/Certificates
+COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.pfx /app/cdrauthserver/Certificates
 COPY ./configs/auth-server/appsettings.Release.json /app/cdrauthserver
