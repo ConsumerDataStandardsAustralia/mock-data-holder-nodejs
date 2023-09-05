@@ -129,6 +129,39 @@
       ],
       "DangerousAcceptAnyServerCertificateValidator": true
     },
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/plans",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/plans",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/plans/:planId",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/plans/:planId",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
     // Authorization server endpoint for Admin metadata updata
     {
       "DownstreamPathTemplate": "/cds-au/v1/admin/register/metadata",

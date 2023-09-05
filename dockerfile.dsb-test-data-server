@@ -15,7 +15,7 @@ ENV APP_LISTENTING_PORT=3005
 ENV AUTH_SERVER_URL=https://cdr-auth-server:8081
 ENV IDPERMANENCEKEY=90733A75F19347118B3BE0030AB590A8
 ENV INTERNAL_INTROSPECTION=https://cdr-auth-server:8081/connect/introspect-internal
-ENV CORS_ALLOWED_ORIGINS=https://localhost:3004,https://mock-data-recipient:9001,https://cdr-auth-server:3000
+ENV CORS_ALLOWED_ORIGINS=https://localhost:3004,https://mock-data-recipient:9001,https://authserver-ui:3000
 # Create app directory
 WORKDIR /app
 

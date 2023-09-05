@@ -10,7 +10,11 @@ services:
       - "7006:7006"
     extra_hosts:
       - "mock-data-holder:host-gateway"
-      - "mock-data-recipient:host-gateway"           
+      - "mock-data-recipient:host-gateway"  
+      - "authserver-ui:host-gateway" 
+      - "cdr-auth-server:host-gateway"            
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"          
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     healthcheck:
@@ -21,8 +25,8 @@ services:
     depends_on:
       mssql:
         condition: service_healthy
-    networks:
-      - app-network    
+    # networks:
+    #   - app-network    
 
   mock-data-recipient:
     container_name: mock-data-recipient
@@ -39,7 +43,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Release
     extra_hosts:
       - "mock-data-holder:host-gateway"
-      - "mock-register:host-gateway"      
+      - "mock-register:host-gateway" 
+      - "authserver-ui:host-gateway" 
+      - "cdr-auth-server:host-gateway"            
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"       
     healthcheck:
       test: wget --no-check-certificate --no-verbose --spider https://localhost:9001/health || exit 1            
       timeout: 5s
@@ -48,8 +56,8 @@ services:
     depends_on:
       mssql:
         condition: service_healthy
-    networks:
-      - app-network        
+    # networks:
+    #   - app-network        
 
   cdr-auth-server:
     container_name: cdr-auth-server
@@ -67,17 +75,24 @@ services:
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
+<<<<<<< HEAD
       - "mock-data-recipient:host-gateway" 
     # healthcheck:
     #   test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/.well-known/openid-configuration || exit 1
     #   timeout: 5s
     #   interval: 5s
     #   retries: 50         
+=======
+      - "mock-data-recipient:host-gateway"     
+      - "authserver-ui:host-gateway" 
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"          
+>>>>>>> 81d091d0da8b6b05321f66c923b38d1fb137aaaf
     depends_on:
       mssql:
         condition: service_healthy      
-    networks:
-      - app-network       
+    # networks:
+    #   - app-network       
 
   authserver-ui:
     container_name: authserver-ui
@@ -91,13 +106,15 @@ services:
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-recipient:host-gateway"    
-      - "cdr-auth-server:host-gateway"          
-    networks:
-      - app-network       
+      - "cdr-auth-server:host-gateway"
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"                  
+    # networks:
+    #   - app-network       
 
   tls-gateway:
     container_name: tls-gateway
-    image: tls-gateway:dsb-0.1
+    # image: tls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.tlsgateway  
@@ -105,17 +122,19 @@ services:
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
-      - "cdr-auth-server:host-gateway"     
+      - "cdr-auth-server:host-gateway" 
+      - "authserver-ui:host-gateway"   
+      - "mtls-gateway:host-gateway"               
     ports: 
       - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
-    networks:
-      - app-network       
+    # networks:
+    #   - app-network       
 
   mtls-gateway:
     container_name: mtls-gateway
-    image: mtls-gateway:dsb-0.1
+    # image: mtls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.mtlsgateway    
@@ -125,15 +144,18 @@ services:
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
-      - "cdr-auth-server:host-gateway"        
+      - "cdr-auth-server:host-gateway"    
+      - "authserver-ui:host-gateway"   
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"   
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
-    networks:
-      - app-network     
+    # networks:
+    #   - app-network     
 
   mock-data-holder:
     container_name: mock-data-holder
-    image: dsb-test-data-server:dsb-0.1
+    # image: dsb-test-data-server:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.dsb-test-data-server    
@@ -144,14 +166,17 @@ services:
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
       - "cdr-auth-server:host-gateway" 
+      - "authserver-ui:host-gateway"
       - "mongodb:host-gateway"    
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"  
     depends_on:
       - mongodb
-      - cdr-auth-server
+      # - cdr-auth-server
     ports:
       - "3005:3005"
-    networks:
-      - app-network
+    # networks:
+    #   - app-network
 
   mssql:
     container_name: mssql
@@ -166,8 +191,8 @@ services:
       timeout: 10s
       interval: 10s
       retries: 10 
-    networks:
-      - app-network     
+    # networks:
+    #   - app-network     
 
   mongodb:
     image: mongo:6.0
@@ -178,8 +203,8 @@ services:
       - dbdata:/usr/local/var/mongodb
     ports:
       - "27017:27017"
-    networks:
-      - app-network  
+    # networks:
+    #   - app-network  
 
   dsb-data-loader:
     build:
@@ -190,12 +215,12 @@ services:
     env_file: .env.docker
     depends_on:
       - mongodb
-    networks:
-      - app-network
+    # networks:
+    #   - app-network
 
-networks:
-  app-network:
-    driver: bridge
+# networks:
+#   app-network:
+#     driver: bridge
 
 volumes:
   dbdata:
