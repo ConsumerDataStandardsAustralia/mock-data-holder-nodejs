@@ -1,5 +1,5 @@
 version: '3.8'
-
+name: dsb-data
 services:
   mock-register:
     container_name: mock-register
@@ -26,7 +26,6 @@ services:
       mssql:
         condition: service_healthy
 
-
   mock-data-recipient:
     container_name: mock-data-recipient
     build:
@@ -52,7 +51,6 @@ services:
       mssql:
         condition: service_healthy
     
-
   cdr-auth-server:
     container_name: cdr-auth-server
     build:
@@ -70,14 +68,19 @@ services:
       - "mock-data-recipient:host-gateway"     
       - "authserver-ui:host-gateway" 
       - "tls-gateway:host-gateway" 
-      - "mtls-gateway:host-gateway"          
+      - "mtls-gateway:host-gateway"   
+    healthcheck:
+      test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/health || exit 1
+      timeout: 5s
+      interval: 5s
+      retries: 50            
     depends_on:
       mssql:
         condition: service_healthy        
 
   authserver-ui:
     container_name: authserver-ui
-    image: authserver-ui:dsb-0.1
+    image: authserver-ui:dsb-0.2
     ports: 
       - "3000:3000"
     environment:
@@ -108,7 +111,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
      
-
   mtls-gateway:
     container_name: mtls-gateway
     build:
@@ -144,10 +146,13 @@ services:
       - "tls-gateway:host-gateway" 
       - "mtls-gateway:host-gateway"  
     depends_on:
-      - mongodb
-      - cdr-auth-server
+       mssql:
+          condition: service_healthy  
+       cdr-auth-server: 
+          condition: service_healthy      
     ports:
       - "3005:3005"
+  
   mssql:
     container_name: mssql
     image: 'mcr.microsoft.com/mssql/server:2019-latest'
@@ -162,7 +167,6 @@ services:
       interval: 10s
       retries: 10 
   
-
   mongodb:
     image: mongo:6.0
     container_name: mongodb
@@ -172,7 +176,6 @@ services:
       - dbdata:/usr/local/var/mongodb
     ports:
       - "27017:27017"
-
 
   dsb-data-loader:
     build:

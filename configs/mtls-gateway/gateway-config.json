@@ -124,7 +124,7 @@
       "DangerousAcceptAnyServerCertificateValidator": true
     },
 
-    // resource endpoints
+    // energy resource endpoints
 
     // customers
     {
@@ -498,6 +498,266 @@
     }, 
 
 
+    // banking resource points 
+    // accounts
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    // account direct debits
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/direct-debits",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/direct-debits",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/direct-debits",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/direct-debits",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    // account balances
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/balances",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/balances",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/balances",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/balances",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },     
+    // account transactions
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/transactions",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/transactions",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/transactions/{transactionId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/transactions/{transactionId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    // account direct debits
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/direct-debits",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/direct-debits",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    
+    
+    // account scheduled payments
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payments/scheduled",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payments/scheduled",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payments/scheduled",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payments/scheduled",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },    
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/payments/scheduled",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/payments/scheduled",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    // banking account payees
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payees",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payees",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payees/{payeeId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payees/{payeeId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    // banking products
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/products",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/products",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/products/{productId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/products/{productId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },      
+    // admin
     {
       "DownstreamPathTemplate": "/cds-au/v1/admin/register/metadata",
       "DownstreamScheme": "https",

@@ -23,7 +23,7 @@ export class AuthService {
     introspection_endpoint_internal: string | undefined;
     jwks_uri: string | undefined;
     issuer: string | undefined;
-    //scopes_supported: string[] | undefined;
+
 
     authUser: CdrUser| undefined;
     jwkKeys: JwkKey[] | undefined;

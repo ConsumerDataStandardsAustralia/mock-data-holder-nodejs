@@ -1,5 +1,4 @@
-FROM cdr-auth-server:dsb-0.1 AS build
-
+FROM cdr-auth-server:dsb-0.2 AS build
 
 # copy the certificate 
 COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.pfx /app/cdrauthserver/Certificates

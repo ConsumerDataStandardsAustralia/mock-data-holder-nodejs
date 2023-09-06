@@ -720,17 +720,18 @@ export class MongoData implements IDatabase {
     async getLoginInformation( sector: string): Promise<CustomerModel[] | undefined> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         var loginModel : CustomerModel[] = [];
-        let cursor = customers.find();
-        cursor.forEach(c => {
+        let cursor = await customers.find().toArray();
+
+        for (let cnt = 0; cnt < cursor.length; cnt++){
             let aModel: CustomerModel = {
                 LoginId: "",
                 Accounts: []
             };
-            aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+            aModel.LoginId = `${cursor[cnt].customer?.person?.lastName}.${cursor[cnt].customer?.person?.firstName}`;
             let accounts: AccountModel [] = [];
             if (sector.toLowerCase() == 'energy') {
                 // get the energy login data
-                c?.energy?.accounts.forEach((acc: any) => {
+                cursor[cnt]?.energy?.accounts.forEach((acc: any) => {
                     let loginAccount: AccountModel = {
                         AccountId: acc?.account?.accountId,
                         AccountNumber: acc?.account?.accountNumber,
@@ -745,7 +746,7 @@ export class MongoData implements IDatabase {
             }
             if (sector.toLowerCase() == 'banking') {
                 // get the banking login data
-                c?.banking?.accounts.forEach((acc: any) => {
+                cursor[cnt]?.banking?.accounts.forEach((acc: any) => {
                     let loginAccount: AccountModel = {
                         AccountId: acc?.account?.accountId,
                         AccountNumber: acc?.account?.accountNumber,
@@ -757,7 +758,7 @@ export class MongoData implements IDatabase {
                 aModel.Accounts = accounts;
                 loginModel.push(aModel);
             }  
-        })
+        }
 
         return loginModel;
     }
