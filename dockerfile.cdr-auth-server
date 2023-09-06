@@ -1,15 +1,6 @@
-<<<<<<< HEAD
-FROM consumerdataright/authorisation-server AS build
-=======
 FROM cdr-auth-server:dsb-0.1 AS build
->>>>>>> 81d091d0da8b6b05321f66c923b38d1fb137aaaf
 
 
 # copy the certificate 
 COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.pfx /app/cdrauthserver/Certificates
-<<<<<<< HEAD
 COPY ./configs/auth-server/appsettings.Release.json /app/cdrauthserver
-COPY ./configs/auth-server/supervisord.authserver.dsb.conf /app/supervisord.standalone.conf
-=======
-COPY ./configs/auth-server/appsettings.Release.json /app/cdrauthserver
->>>>>>> 81d091d0da8b6b05321f66c923b38d1fb137aaaf

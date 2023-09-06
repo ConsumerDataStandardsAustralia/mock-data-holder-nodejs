@@ -25,15 +25,10 @@ services:
     depends_on:
       mssql:
         condition: service_healthy
-    # networks:
-    #   - app-network    
+
 
   mock-data-recipient:
     container_name: mock-data-recipient
-
-    # image: consumerdataright/mock-data-recipient
-    # image: mock-data-recipient:dsb-0.2
-    # image: consumerdataright/authorisation-server
     build:
       context: . 
       dockerfile: dockerfile.mock-data-recipient
@@ -56,13 +51,10 @@ services:
     depends_on:
       mssql:
         condition: service_healthy
-    # networks:
-    #   - app-network        
+    
 
   cdr-auth-server:
     container_name: cdr-auth-server
-    #image: cdr-auth-server:accc-dsb
-    #image: consumerdataright/authorisation-server
     build:
       context: . 
       dockerfile: dockerfile.cdr-auth-server 
@@ -75,24 +67,13 @@ services:
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
-<<<<<<< HEAD
-      - "mock-data-recipient:host-gateway" 
-    # healthcheck:
-    #   test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/.well-known/openid-configuration || exit 1
-    #   timeout: 5s
-    #   interval: 5s
-    #   retries: 50         
-=======
       - "mock-data-recipient:host-gateway"     
       - "authserver-ui:host-gateway" 
       - "tls-gateway:host-gateway" 
       - "mtls-gateway:host-gateway"          
->>>>>>> 81d091d0da8b6b05321f66c923b38d1fb137aaaf
     depends_on:
       mssql:
-        condition: service_healthy      
-    # networks:
-    #   - app-network       
+        condition: service_healthy        
 
   authserver-ui:
     container_name: authserver-ui
@@ -108,13 +89,10 @@ services:
       - "mock-data-recipient:host-gateway"    
       - "cdr-auth-server:host-gateway"
       - "tls-gateway:host-gateway" 
-      - "mtls-gateway:host-gateway"                  
-    # networks:
-    #   - app-network       
+      - "mtls-gateway:host-gateway"                      
 
   tls-gateway:
     container_name: tls-gateway
-    # image: tls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.tlsgateway  
@@ -129,12 +107,10 @@ services:
       - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
-    # networks:
-    #   - app-network       
+     
 
   mtls-gateway:
     container_name: mtls-gateway
-    # image: mtls-gateway:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.mtlsgateway    
@@ -150,12 +126,9 @@ services:
       - "mtls-gateway:host-gateway"   
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
-    # networks:
-    #   - app-network     
 
   mock-data-holder:
     container_name: mock-data-holder
-    # image: dsb-test-data-server:dsb-0.1
     build:
       context: . 
       dockerfile: dockerfile.dsb-test-data-server    
@@ -172,12 +145,9 @@ services:
       - "mtls-gateway:host-gateway"  
     depends_on:
       - mongodb
-      # - cdr-auth-server
+      - cdr-auth-server
     ports:
       - "3005:3005"
-    # networks:
-    #   - app-network
-
   mssql:
     container_name: mssql
     image: 'mcr.microsoft.com/mssql/server:2019-latest'
@@ -191,8 +161,7 @@ services:
       timeout: 10s
       interval: 10s
       retries: 10 
-    # networks:
-    #   - app-network     
+  
 
   mongodb:
     image: mongo:6.0
@@ -203,8 +172,7 @@ services:
       - dbdata:/usr/local/var/mongodb
     ports:
       - "27017:27017"
-    # networks:
-    #   - app-network  
+
 
   dsb-data-loader:
     build:
@@ -215,12 +183,6 @@ services:
     env_file: .env.docker
     depends_on:
       - mongodb
-    # networks:
-    #   - app-network
-
-# networks:
-#   app-network:
-#     driver: bridge
 
 volumes:
   dbdata:
