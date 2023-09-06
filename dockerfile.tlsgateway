@@ -1,4 +1,4 @@
-FROM tls-gateway:dsb-0.1 AS build
+FROM cdradmin/tls-gateway:0.1 AS build
 
 WORKDIR /app
 

@@ -80,7 +80,7 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
-    image: authserver-ui:dsb-0.2
+    image: cdradmin/authserver-ui:0.1
     ports: 
       - "3000:3000"
     environment:
