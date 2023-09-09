@@ -4,5 +4,5 @@ FROM cdradmin/mtls-gateway:0.1 AS build
 WORKDIR /app
 
 COPY ./configs/mtls-gateway/gateway-config.json /app/gateway-mtls/
-COPY ./test-data-server/security/accc-certs/mtls-gateway/mtls-server.pfx /app/gateway-mtls/Certificates
+COPY ./security/mtls-gateway/mtls-server.pfx /app/gateway-mtls/Certificates
 

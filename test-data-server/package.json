@@ -4,8 +4,9 @@
   "description": "An app to host test data generated",
   "main": "app.js",
   "scripts": {
-    "start": "tsc && cp -r ./security ./dist/src/  && cp -r ./data ./dist && node ./dist/src/app.js",
-    "build": "tsc && cp -r ./security ./dist/src/  && cp -r ./data ./dist",
+    "start": "tsc && cp -r ../security ./dist/src/  && cp -r ./data ./dist && node ./dist/src/app.js",
+    "build:dev": "tsc && cp -r ../security ./dist/src/  && cp -r ./data ./dist",
+    "build:prod": "tsc && cp -r ./security ./dist/src/  && cp -r ./data ./dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon"
   },

@@ -25,15 +25,17 @@ WORKDIR /app
 COPY ./test-data-server/package*.json ./
 
 RUN npm install
+# COPY ./test-data-server/node_modules/ /app/
 # If you are building your code for production
 # RUN npm ci --only=production
 
 # Bundle app source
 COPY ./test-data-server/ .
+COPY ./security/mock-data-holder/ ./security
 
-RUN npm run build
+RUN npm run build:prod
 
-COPY ./test-data-server/security/accc-certs/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
+COPY ./security/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 
 CMD [ "node", "dist/src/app.js"]

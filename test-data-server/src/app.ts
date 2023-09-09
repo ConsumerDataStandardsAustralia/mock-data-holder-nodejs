@@ -517,6 +517,29 @@ app.post(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, re
     }
 });
 
+
+// get invoices for account, returns EnergyInvoiceListResponse
+app.post(`${standardsVersion}/energy/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received POST request on ${port} for ${req.url}`);
+    let temp = req.headers?.authorization as string;
+    let tokenIsValid = await authService.verifyAccessToken(temp) 
+    if (tokenIsValid == false) {
+        res.status(401).json('Not authorized');
+        return;
+    }
+    let userId = getUserId(req);
+    if (userId == undefined) {
+        res.status(401).json('Not authorized');
+        return;
+    }
+    let result = await dbService.getBalancesForMultipleAccount(userId, req.body?.data?.accountIds)
+    if (result == null) {
+        res.sendStatus(404);
+    } else {
+        res.send(result);
+    }
+});
+
 // get invoices for account, returns EnergyInvoiceListResponse
 app.get(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received GET request on ${port} for ${req.url}`);
@@ -736,10 +759,6 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
         res.status(404).json('Not Found');
         return;      
     }
-    // if (loginIsValid(req.params?.login) == false){
-    //     res.status(404).json('Not Found');
-    //     return;      
-    // }
     let customers = await dbService.getLoginInformation(req.params?.sector)
     let result = { Customers: customers};
     res.send(result);

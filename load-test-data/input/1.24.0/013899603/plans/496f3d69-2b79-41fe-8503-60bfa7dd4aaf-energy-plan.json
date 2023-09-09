@@ -1,0 +1,187 @@
+{
+  "brand": "AGL",
+  "brandName": "RED ENERGY",
+  "fuelType": "GAS",
+  "lastUpdated": "2022-04-16T01:26:38.396Z",
+  "planId": "496f3d69-2b79-41fe-8503-60bfa7dd4aaf",
+  "type": "REGULATED",
+  "effectiveFrom": "2025-06-08T09:05:22.299Z",
+  "effectiveTo": "2025-10-31T00:00:00.000Z",
+  "displayName": "Energy Plan 4",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://caring-crocodile.org",
+  "customerType": "RESIDENTIAL",
+  "additionalInformation": {
+    "pricingUri": "https://attractive-scallops.biz",
+    "bundleUri": "https://dapper-pest.info"
+  },
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includedPostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Hintz - Jacobson",
+      "Ernser LLC"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "30",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "OTHER"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-01-18T22:22:03.774Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-10-29T21:31:57.411Z",
+        "dailySupplyCharges": "0.78",
+        "timeZone": "AEST",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "generalUnitPrice": "3.8253",
+          "rates": [
+            {
+              "unitPrice": "1.87",
+              "volume": 0.56
+            },
+            {
+              "unitPrice": "0.82",
+              "volume": 0.51
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-01-25T21:38:13.556Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-06-27T06:33:06.960Z",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.67",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "0.83",
+            "maxDemand": "7.31",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "incentives": [
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "OTHER",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      },
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      }
+    ],
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOverThreshold",
+        "type": "CONDITIONAL",
+        "endDate": "2024-03-03T08:55:59.036Z",
+        "percentOverThreshold": {
+          "rate": "1.49",
+          "usageAmount": "84.12"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOverThreshold",
+        "type": "OTHER",
+        "percentOverThreshold": {
+          "rate": "0.62",
+          "usageAmount": "25.19"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOverThreshold",
+        "type": "CONDITIONAL",
+        "percentOverThreshold": {
+          "rate": "1.81",
+          "usageAmount": "65.55"
+        }
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "0.59",
+              "measureUnit": "DAYS"
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "2.44",
+              "measureUnit": "MONTH"
+            },
+            {
+              "unitPrice": "1.81"
+            },
+            {
+              "unitPrice": "1.55",
+              "measureUnit": "KVA",
+              "volume": 151.59
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "2_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "013899603"
+}

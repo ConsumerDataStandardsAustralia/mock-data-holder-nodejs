@@ -3,4 +3,4 @@ FROM cdradmin/tls-gateway:0.1 AS build
 WORKDIR /app
 
 COPY ./configs/tls-gateway/gateway-config.json /app/gateway-tls/
-COPY ./test-data-server/security/accc-certs/tls-gateway/tls-server.pfx /app/gateway-tls/Certificates
+COPY ./security/tls-gateway/tls-server.pfx /app/gateway-tls/Certificates
