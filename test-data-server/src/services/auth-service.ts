@@ -145,10 +145,7 @@ export class AuthService {
     buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
             ca: readFileSync(path.join(__dirname, '../security/accc-certs/cdr-auth-server/mtls', process.env.CA_FILE as string))
-            
-            // cert: readFileSync(path.join(__dirname, '../security/accc-certs/mock-data-holder/tls', process.env.CERT_FILE as string)),
-            // key: readFileSync(path.join(__dirname, '../security/accc-certs/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)),
-          })
+           })
         return httpsAgent;
     }
 

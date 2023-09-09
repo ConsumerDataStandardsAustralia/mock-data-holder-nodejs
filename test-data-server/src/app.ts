@@ -108,10 +108,6 @@ dbService.connectDatabase()
     })
 
 async function initAuthService() {
-    // const certFile = path.join(__dirname, '/certificates/mtls/tlsgateway-cert.pem')
-    // const keyFile = path.join(__dirname, '/certificates/mtls/tlsgateway-key.pem')
-    // const rCert = readFileSync(certFile, 'utf8');
-    // const rKey = readFileSync(keyFile, 'utf8');
     const otions = {
         key: rKey,
         cert: rCert

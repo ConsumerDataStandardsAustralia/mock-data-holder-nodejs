@@ -592,7 +592,7 @@ export class SingleData implements IDatabase {
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
-                    ret.data.balance = acc.balance.balance
+                    ret.data.balance = acc.balance
                 }
             })
         }
