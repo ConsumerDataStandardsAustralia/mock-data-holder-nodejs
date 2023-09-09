@@ -140,13 +140,14 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
         res.status(401).json('Not authorized');
         return;
     }
-    if (accountIsValid(req.params?.accountId) == false){
-        res.status(404).json('Not Found');
-        return;      
-    }
+
     console.log(`Received request on ${port} for ${req.url}`);
     var excludes = ["invoices", "billing", "balances"];
     if (excludes.indexOf(req.params?.accountId) == -1) {
+        if (accountIsValid(req.params?.accountId) == false){
+            res.status(404).json('Not Found');
+            return;      
+        }
         let result = await dbService.getEnergyAccountDetails(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
