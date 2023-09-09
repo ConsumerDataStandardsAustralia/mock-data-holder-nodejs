@@ -15,7 +15,8 @@ dbService = new MongoData();
 
 const version = process.env.VERSION;
 
-const holderId = null;
+// specifify a holderid here. If not given all holders are processes
+const holderId = process.env?.HOLDER_TO_BE_PROCESSES;
 let inputPath = 'input/' + version
 let outputPath = 'output/' + version
 
