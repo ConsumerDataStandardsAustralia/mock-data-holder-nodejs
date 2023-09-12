@@ -1,7 +1,0 @@
-{
-  "name": "test-data-server",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "custom"
-}

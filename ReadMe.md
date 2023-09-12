@@ -1,7 +1,7 @@
 
 # DSB Test Data
 
-This repository consist of a 
+This repository contains the source for
 
 - data loader (load-test-data), which will load data from the `load-test-data\input` into a MongoDB, and 
 - a data server (test-data-server), which exposes the API endpoints as documented in the DSB published technical standards.
