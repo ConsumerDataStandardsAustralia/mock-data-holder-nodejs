@@ -32,13 +32,11 @@ export class MongoData implements IDatabase {
         cust?.energy?.accounts?.forEach((acc: any) => {
             var idx = accountIds?.indexOf(acc.account.accountId)
             if (idx > -1) {
-                if (acc?.balance != null) {
-                    let balance: any = {
-                        balance: acc.balance.balance,
-                        accountId: acc.account.accountId
-                    }
-                    balances.push(balance);
+                let balance: any = {
+                    balance: acc.balance,
+                    accountId: acc.account.accountId
                 }
+                balances.push(balance);
             }
         })
         let ret: EnergyBalanceListResponse = {
@@ -143,14 +141,11 @@ export class MongoData implements IDatabase {
         }
         let balances: any[] = [];
         cust?.energy?.accounts?.forEach((acc: any) => {
-
-                if (acc?.balance != null) {
-                    let balance: any = {
-                        balance: acc.balance.balance,
-                        accountId: acc.account.accountId
-                    }
-                    balances.push(balance);
-                }
+            let balance: any = {
+                balance: acc.balance,
+                accountId: acc.account.accountId
+            }
+            balances.push(balance);
         })
         let ret: EnergyBalanceListResponse = {
             data: {
@@ -533,7 +528,7 @@ export class MongoData implements IDatabase {
         }
         cust?.energy?.accounts?.forEach((acc: any) => {
             if (acc.account.accountId == accountId) {
-                ret.data.balance = acc.balance.balance
+                ret.data.balance = acc.balance
             }
         })
         return ret;
