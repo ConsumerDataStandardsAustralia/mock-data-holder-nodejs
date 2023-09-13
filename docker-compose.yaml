@@ -80,6 +80,7 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
+    # the image is build from  https://github.com/ConsumerDataStandardsAustralia/accc-authorisation-server
     image: cdradmin/authserver-ui:0.1
     ports: 
       - "3000:3000"

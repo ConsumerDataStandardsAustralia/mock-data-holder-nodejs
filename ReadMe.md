@@ -5,10 +5,9 @@ This repository contains the source for
 
 - data loader (load-test-data), which will load data from the `load-test-data\input` into a MongoDB, and 
 - a data server (test-data-server), which exposes the API endpoints as documented in the DSB published technical standards.
+- a set of docker files to create the containerised environment
 
-The two programs have been containerised and can easily be run with `docker compose`.
-
-*Note: Currently only the Energy API endpoints have been implemented*
+*Note: Currently only the Energy API and the Common API endpoints have been implemented*
 
 ## Disclaimer
 
@@ -31,17 +30,19 @@ with respect to [accreditation](https://www.accc.gov.au/focus-areas/consumer-dat
 
 This repository provides a convenient way to create a test data server. The system consist of a number of docker containers, some of which are maintained by the ACCC, others are maintained by the Data Standards Body.
 
-
+![alt text](images/InfosecIntegration.png)
 
 ## How to use
 
-A number of setup and configuration steps need to be followed. This instructions are if you want to run this system in a containerised.
+This instructions are if you want to run this system in a containerised environment
 
 **Run `docker compose up`**
 
 Wait until all containers have started and are *healthy*, then follow the *Additional Setup Steps* below where this applies
 
 ### Additional Setup Steps
+
+Some manual setup steps need to be completed for the system to function. 
 
 1. Initialisation script (essential)
 
@@ -55,7 +56,7 @@ Wait until all containers have started and are *healthy*, then follow the *Addit
 
 2. Edit Host file  (essential)
    
-   A number of entries are required in the `host` file. This file typically sits in C:\Windows\System32\drivers\etc\hosts on Windows platforms, and /private/etc/hosts on MacOS (although this may be different).
+   A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, and */private/etc/hosts* on MacOS (although this may be different).
 
    - 127.0.0.1 mock-data-holder
    - 127.0.0.1 mock-data-recipient
@@ -69,10 +70,11 @@ Wait until all containers have started and are *healthy*, then follow the *Addit
    The `config` folder contains a number of appsettings files, which are utilised during the docker build process.
    Normally you would leave these files as they are unless you start changing urls, ids, etc.
 
-   At time there may be a need to edit some values. For instance, the default validity period for an access token can be set in the `auth-server\appsettings.Release.json`
+   At time there may be a need to edit some values. For instance, the default validity period for an access token can be set in the `auth-server\appsettings.Release.json`.
 
    If any setting is changed, the containers need to be rebuild.
-   Ie, `docker compose down`, followed by `docker compose up --build`
+   Ie, `docker compose down`, followed by `docker compose up --build`.
+   
    Step 1 may need to be repeated.
 
 4. Certificates (depends)
@@ -80,12 +82,21 @@ Wait until all containers have started and are *healthy*, then follow the *Addit
    The certificates being used by the containers have been created for this setup. In particular, the naming of hosts is important when certificates are created. So, unless you change stuff in that space or you want to use your own CA, there should be nothing that requires change her.
 
    If any setting is changed, the containers need to be rebuild.
-   Ie, `docker compose down`, followed by `docker compose up --build`
+   Ie, `docker compose down`, followed by `docker compose up --build`.
+   
    Step 1 may need to be repeated.
 
-## Testing the server
+## Accessing the resource API
 
-If you want to use Postman, the `mtls-gateway\client.pfx` certificate must be associated with `https://mtls-gateway:8082` and the `mtls-gateway\ca.pem` must be specified as the Certificate Authority. Please refer to the Post certificate management documentation for more information
+In order to obtain an access token, the PAR authorisation flow must be completed using the mock-data-recipient. The ACCC [documentation](https://github.com/ConsumerDataRight/mock-data-recipient) on the mock-data-recipient contains more detailed information.
+
+Required for authorisation flow is a LoginID. The resource dataset will contain all the user loaded by the `dsb-data-loader` container. Refer to the data files in the `load-test-data\input` directory to obtain a LoginID (LastName.FirstName).</br>
+*Note:You could also use a UI to the actual data, such as MongoDB Compass to read this directly*
+
+To access the resource API you can utilise the swagger UI provided by mock-data-recipient container, or alternatively retrieve the access token from the mock-data-recipient UI and use as required.</br> The authenticated resource endpoints accessed via the mtls-gateway, the unauthenticated ones via the tls-gateway.
+Present the `mtls-gateway\client.pfx` for any calls to the mtls-gateway.
+
+If you want to use Postman, the `mtls-gateway\client.pfx` certificate must be associated with `https://mtls-gateway:8082` and the `mtls-gateway\ca.pem` must be specified as the Certificate Authority. Please refer to the Post certificate management documentation for more information.
 
 The running test data server can then be interrogated using the `CDR_Energy_Sector_Conformance_tests` collection
 from the [Postman collection](https://github.com/ConsumerDataStandardsAustralia/dsb-postman) repository.
