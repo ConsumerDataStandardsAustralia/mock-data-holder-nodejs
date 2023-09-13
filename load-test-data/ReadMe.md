@@ -18,6 +18,14 @@ Consequently, the development work provided on the artefacts in this repo is on 
 and the DSB acknowledges the use of these tools alone is not sufficient for, nor should they be relied upon
 with respect to [accreditation](https://www.accc.gov.au/focus-areas/consumer-data-right-cdr-0/cdr-draft-accreditation-guidelines),
 
+# Overview
+
+The `load-test-data` program will upload an existing dataset as produced by the [DSB testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli) into a MongoDB instance as configured in the `.env` file.
+
+The testdata-cli can produce a single object file, or it can be configured to produce a file per customer generated (refer the [testdata-cli documentation](https://github.com/ConsumerDataStandardsAustralia/testdata-cli)) for more information.
+
+If a single object is used, the "Simple Mode" upload mechanism needs to be applied, otherwise the "Structured Mode".
+
 # How to use
 
 There is two approaches on how to load test data
@@ -28,27 +36,26 @@ The maximum document size is determined by the MongoDB server (16 Mb)
 The [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli) can produce the files required for this purpose. (see the setting `individualFileOutDir` in the ReadMe file for the [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli))
 
 ## Simple Mode - Small Datasets
+
 Use the NodeJS data server and serve a data set which must be of the structure as defined in [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli).
 
 For this approach the data generate by the test-data is a single document database.
 This is suitable for smalled data sets.
 
-- Set the value for DATA_IS_SINGLE_DOCUMENT in the `.env.docker` file to `true`.
+- Set the value for DATA_IS_SINGLE_DOCUMENT in the appropriate environment file (eg `.env.docker`)file to `true`.
 - Put a data file in the `input\VERSION\all-data` folder. The structure of this file must be as per [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli) schema
-- Set the value for SINGLE_COLLECTION_NAME in the `.env.docker` file to the name of the data file (less extension).
-- Leave all other values in the `.env.docker`.
-- Run `docker-compose up` from the root directory.
+- Set the value for SINGLE_COLLECTION_NAME in the appropriate environment file (eg `.env.docker`)file to the name of the data file (less extension).
+- Leave all other values in the environment file.
 
-This will create a NodeJS data server `dsb-test-data-server` interrogating a MongoDB which is initialised with generated data in the collection as per SINGLE_COLLECTION_NAME.
+This will populate the MongoDB with generated data in the collection as per SINGLE_COLLECTION_NAME.
 
 ## Structured Mode - Larger datasets
 
 For this approach the data is broken up into documents per customer and plans. The testdata-cli can create the segmented files required for this approach. (see the setting `individualFileOutDir` in the ReadMe file for the [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli))
 
-- Set the value for DATA_IS_SINGLE_DOCUMENT in the `.env.docker` file to `false`.
-- Put a data files in the `input\VERSION\` folder. 
-- Leave all other values in the `.env.docker`.
-- Run `docker-compose up` from the root directory.
+- Set the value for DATA_IS_SINGLE_DOCUMENT in the appropriate environment file (eg `.env.docker`)file to `false`
+- Put a data files in the `input\VERSION\` folder
+- Leave all other values in the environment file
 
 The `dsb-data-loader` program will run once when the containers are generated, and populated a MongoDB
 with the data from `load-test-data/input/VERSION/HOLDER_ID` folder.
@@ -75,27 +82,3 @@ The `load-test-data/output` contains the necessary ids for plans, customers, acc
 │   │   |   |   |   ├── [service-points.json]
 │   |   |   |   ├── [plan-ids.json]
 ```
-
-## Testing the server
-
-The running test data server can then be interrogated using the `CDR_Energy_Sector_Conformance_tests` collection
-from the [Postman collection](https://github.com/ConsumerDataStandardsAustralia/dsb-postman) repository.
-
-The Postman environment file `Data Factory Work - <VERSION>.postman_environment.json` in the `test-data-server\postman` folder within *this* repo will set identifiers for accounts, service points, and plans for a customer for the datasets found in the `input\1.24.0` in this repo.
-
-## Emulation of Identity Provider
-
-The  *customer id*  MUST be passed in the header for authenticated endpoints.
-The returned datasets for authenticated endpoints will then be for that particular user.
-
-Ensure that the following header exists:
-
-`authorization: "Bearer CUSTOMER_ID"`
-
-Eg, `authorization: "Bearer 02bce083-7e64-46e0-b373-71b53189928c"`
-
-# Setup steps
-
-1. App config settings in 
-2. Initialisation script
-3. Edit Host file

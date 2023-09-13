@@ -18,3 +18,15 @@ and the DSB acknowledges the use of these tools alone is not sufficient for, nor
 with respect to [accreditation](https://www.accc.gov.au/focus-areas/consumer-data-right-cdr-0/cdr-draft-accreditation-guidelines),
 
 # How to use
+
+The `test-data-server` is designed to work in conjunction with the [authorisation server](https://github.com/ConsumerDataStandardsAustralia/accc-authorisation-server) published by the [The Data Standards Body](https://www.csiro.au/en/News/News-releases/2018/Data61-appointed-to-Data-Standards-Body-role), which is  a Git fork of the published [ACCC authorisation server](https://github.com/ConsumerDataRight/authorisation-server).
+
+The configuration of the test-data-server is achieved via an environment file eg `.env`.
+
+
+## Testing the server
+
+The running test data server can then be interrogated using the `CDR_Energy_Sector_Conformance_tests` collection
+from the [Postman collection](https://github.com/ConsumerDataStandardsAustralia/dsb-postman) repository.
+
+The Postman environment file `DSB Energy Data - <VERSION>.postman_environment.json` in the `test-data-server\postman` folder within *this* repo will set identifiers for accounts, service points, and plans for a customer for the datasets found in the `input\1.24.0` in this repo.
