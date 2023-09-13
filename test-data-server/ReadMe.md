@@ -15,18 +15,23 @@ for [developing the Data Standards](https://github.com/ConsumerDataStandardsAust
 
 Consequently, the development work provided on the artefacts in this repo is on a best-effort basis,
 and the DSB acknowledges the use of these tools alone is not sufficient for, nor should they be relied upon
-with respect to [accreditation](https://www.accc.gov.au/focus-areas/consumer-data-right-cdr-0/cdr-draft-accreditation-guidelines),
+with respect to [accreditation](https://www.accc.gov.au/focus-areas/consumer-data-right-cdr-0/cdr-draft-accreditation-guidelines).
 
-# How to use
+## Overview
+
+The `test-data-server` program will provide an API to an existing dataset as produced by the [DSB testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli), which has been loaded into a MongoDB instance ny the `load-test-data` program.
+
+The `test-data-server` utilises the [JS Holder SDK](https://www.npmjs.com/package/@cds-au/holder-sdk) to validate headers, generate compliant error objects, and provide appropriate return codes.
+
+## How to use
 
 The `test-data-server` is designed to work in conjunction with the [authorisation server](https://github.com/ConsumerDataStandardsAustralia/accc-authorisation-server) published by the [The Data Standards Body](https://www.csiro.au/en/News/News-releases/2018/Data61-appointed-to-Data-Standards-Body-role), which is  a Git fork of the published [ACCC authorisation server](https://github.com/ConsumerDataRight/authorisation-server).
 
 The configuration of the test-data-server is achieved via an environment file eg `.env`.
-
 
 ## Testing the server
 
 The running test data server can then be interrogated using the `CDR_Energy_Sector_Conformance_tests` collection
 from the [Postman collection](https://github.com/ConsumerDataStandardsAustralia/dsb-postman) repository.
 
-The Postman environment file `DSB Energy Data - <VERSION>.postman_environment.json` in the `test-data-server\postman` folder within *this* repo will set identifiers for accounts, service points, and plans for a customer for the datasets found in the `input\1.24.0` in this repo.
+The Postman environment file `DSB Test Data Server - Authenticated.postman_environment.json` in the `test-data-server\postman` folder within *this* repo can be used to identifiers for accounts, service points, and plans for a customer for the datasets loaded with the `load-test-data` program.
