@@ -48,6 +48,11 @@ Some manual setup steps need to be completed for the system to function.
 
    The current setup bypasses the client registration, i.e. it the "accredited data recipient" is created via the backdoor using an SQL script.
    This step is essential for the functioning of the `mock-data-recpient` and the authorisation process.
+   In order to complete this step, you a need to connect to the SQL database used by the mock-register.
+   
+   The conenction detail (i.e. username/ passowrd) can be found in the `docker-compose.yaml` for the `mssql` container.
+   
+   *Default is user=sa, pwd=Pa{}w0rd2019*
 
    - connect to the the SQL instance running
    - run the script in `utils\sql\\AddClientScriptRelease.sql`
@@ -64,6 +69,8 @@ Some manual setup steps need to be completed for the system to function.
    - 127.0.0.1 mock-register
    - 127.0.0.1 mtls-gateway
    - 127.0.0.1 tls-gateway
+
+These entries match the names of the containers and are required to resolve host names.
 
 3. App config settings (depends)
    
@@ -88,13 +95,28 @@ Some manual setup steps need to be completed for the system to function.
 
 ## Accessing the resource API
 
+To acces the resource API you need
+- generate an access token
+- call the resource API with a client certificate
+
+### Generate an access token
+
 In order to obtain an access token, the PAR authorisation flow must be completed using the mock-data-recipient. The ACCC [documentation](https://github.com/ConsumerDataRight/mock-data-recipient) on the mock-data-recipient contains more detailed information.
+
+Navigate to `https://mock-data-recipient:9001` and complete the authentication flow.
 
 Required for authorisation flow is a LoginID. The resource dataset will contain all the user loaded by the `dsb-data-loader` container. Refer to the data files in the `load-test-data\input` directory to obtain a LoginID (LastName.FirstName).</br>
 *Note:You could also use a UI to the actual data, such as MongoDB Compass to read this directly*
 
-To access the resource API you can utilise the swagger UI provided by mock-data-recipient container, or alternatively retrieve the access token from the mock-data-recipient UI and use as required.</br> The authenticated resource endpoints accessed via the mtls-gateway, the unauthenticated ones via the tls-gateway.
-Present the `mtls-gateway\client.pfx` for any calls to the mtls-gateway.
+### Call the resource API
+
+To access the resource API you can utilise the swagger UI provided by mock-data-recipient container, or alternatively retrieve the access token from the mock-data-recipient UI and use as required.</br> The authenticated resource endpoints accessed via the mtls-gateway (`https://mtls-gateway:8082`), the unauthenticated ones via the tls-gateway (`https://tls-gateway:8081`).
+
+When using the mock-data-recipient UI the client certificate is automatically presented when the data holder API is beign called.
+
+If another UI is used to call the data holder via the mtls-gateway the `mtls-gateway\client.pfx` for any calls to authenticated endpoints is required.
+
+## Use Postman to interrogate the data holder resource API
 
 If you want to use Postman, the `mtls-gateway\client.pfx` certificate must be associated with `https://mtls-gateway:8082` and the `mtls-gateway\ca.pem` must be specified as the Certificate Authority. Please refer to the Post certificate management documentation for more information.
 
