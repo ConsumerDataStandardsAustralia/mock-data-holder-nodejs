@@ -1,0 +1,9 @@
+# the image is build from  https://github.com/ConsumerDataStandardsAustralia/accc-authorisation-server
+FROM cdradmin/mtls-gateway:0.1 AS build
+
+
+WORKDIR /app
+
+COPY ./configs/mtls-gateway/gateway-config.json /app/gateway-mtls/
+COPY ./security/mtls-gateway/mtls-server.pfx /app/gateway-mtls/Certificates
+

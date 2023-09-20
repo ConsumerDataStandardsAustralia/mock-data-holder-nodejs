@@ -1,0 +1,780 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/connect/register",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/register",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/register/{clientId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/register/{clientId}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/token",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/token",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/userinfo",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/userinfo",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/revocation",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/revocation",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/arrangements/revoke",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/arrangements/revoke",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/introspect",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/introspect",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/connect/par",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cdr-auth-server",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/par",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
+    // energy resource endpoints
+
+    // customers
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/common/customer",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/common/customer",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/common/customer/detail",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/common/customer/detail",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },    
+    // energy plans
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/plans",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/plans",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/plans/{planId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/plans/{planId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+    
+    // energy service points
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/{servicePointId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/{servicePointId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/usage",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/usage",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },      
+    
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/usage",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/usage",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/der",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/der",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },   
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/der",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/der",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },       
+
+    // energy accounts
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },     
+
+    // payment schedule
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/payment-schedule",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/payment-schedule",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },    
+
+    // energy account concessions
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/concession",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/concession",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },    
+
+    // energy account balances
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/balance",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/balance",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/balances",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/balances",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/balances",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/balances",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },       
+
+    // energy account invoices
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/invoices",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/invoices",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },    
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/invoices",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/invoices",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/invoices",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/invoices",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },     
+
+    // energy account billing
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/billing",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/billing",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/billing",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/billing",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/energy/accounts/billing",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/billing",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+
+    // banking resource points 
+    // accounts
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    // account direct debits
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/direct-debits",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/direct-debits",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/direct-debits",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/direct-debits",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    // account balances
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/balances",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/balances",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/balances",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/balances",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },     
+    // account transactions
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/transactions",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/transactions",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/transactions/{transactionId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/transactions/{transactionId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    // account direct debits
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/direct-debits",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/direct-debits",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    
+    
+    // account scheduled payments
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payments/scheduled",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payments/scheduled",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payments/scheduled",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payments/scheduled",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },    
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/payments/scheduled",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/payments/scheduled",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+
+    // banking account payees
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payees",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payees",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }, 
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/payees/{payeeId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payees/{payeeId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    // banking products
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/products",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/products",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },  
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/banking/products/{productId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "mock-data-holder",
+          "Port": 3005
+        }
+      ],
+      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/products/{productId}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },      
+    // admin
+    {
+      "DownstreamPathTemplate": "/cds-au/v1/admin/register/metadata",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8001
+        }
+      ],
+      "UpstreamPathTemplate": "/cds-au/v1/admin/register/metadata",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:8082"
+  }
+}

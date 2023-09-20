@@ -1,0 +1,6 @@
+# the image is build from  https://github.com/ConsumerDataStandardsAustralia/accc-authorisation-server
+FROM cdradmin/cdr-auth-server:0.1 AS build
+
+# copy the certificate 
+COPY ./security/tls-gateway/tls-server.pfx /app/cdrauthserver/Certificates
+COPY ./configs/auth-server/appsettings.Release.json /app/cdrauthserver

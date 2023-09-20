@@ -1,0 +1,215 @@
+{
+  "brand": "ALINTA ENERGY",
+  "brandName": "ENERGY AUSTRALIA",
+  "fuelType": "GAS",
+  "lastUpdated": "2022-02-14T16:24:25.170Z",
+  "planId": "5a8cc12e-d207-4fa8-b173-71afbea51467",
+  "type": "REGULATED",
+  "effectiveFrom": "2024-08-07T07:26:38.652Z",
+  "effectiveTo": "2024-10-12T00:00:00.000Z",
+  "displayName": "Energy Plan 0",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://expensive-platelet.org",
+  "customerType": "RESIDENTIAL",
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "83",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "CREDIT_CARD"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-09-29T11:40:56.058Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-11-22T17:38:04.338Z",
+        "dailySupplyCharges": "0.69",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "0.55",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "maxDemand": "7.49",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "DAY"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-04-25T02:35:03.995Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-07-17T00:16:06.416Z",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.69",
+            "measureUnit": "KWH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "MON",
+              "THU",
+              "TUE"
+            ],
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "TARIFF_PERIOD"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "amount": "1.48",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "TUE",
+              "MON",
+              "SUN"
+            ],
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "DAY"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "3.06"
+    },
+    "incentives": [
+      {
+        "category": "OTHER",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "ACCOUNT_CREDIT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.13",
+            "amount": "3.39"
+          },
+          {
+            "percentGreen": "0.25",
+            "amount": "1.94"
+          },
+          {
+            "percentGreen": "0.45",
+            "amount": "3.25"
+          }
+        ],
+        "type": "FIXED_PER_DAY"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.01",
+            "rate": "0.88"
+          },
+          {
+            "percentGreen": "0.1",
+            "rate": "1.16"
+          }
+        ],
+        "type": "PERCENT_OF_BILL"
+      }
+    ],
+    "fees": [
+      {
+        "term": "VARIABLE",
+        "type": "OTHER",
+        "amount": "7.02"
+      },
+      {
+        "term": "BIANNUAL",
+        "type": "PAYMENT_PROCESSING",
+        "amount": "13.99"
+      },
+      {
+        "term": "PERCENT_OF_BILL",
+        "type": "CONNECTION",
+        "description": "Optional description for this fee",
+        "rate": "13.46"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "OTHER",
+        "tariffUType": "timeVaryingTariffs",
+        "description": "Optional description for Solar Feed Tariff",
+        "timeVaryingTariffs": {
+          "type": "PEAK",
+          "timeVariations": [
+            {
+              "endTime": "2024-12-08T12:30:12.564Z",
+              "days": [
+                "PUBLIC_HOLIDAYS",
+                "PUBLIC_HOLIDAYS",
+                "WED",
+                "THU"
+              ]
+            },
+            {
+              "startTime": "2022-09-13T16:05:25.646Z",
+              "endTime": "2024-05-10T04:49:26.005Z",
+              "days": [
+                "SUN",
+                "SAT",
+                "TUE",
+                "WED"
+              ]
+            },
+            {
+              "days": [
+                "THU",
+                "THU",
+                "THU",
+                "PUBLIC_HOLIDAYS"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "ONGOING",
+    "benefitPeriod": "Description for the benefit period",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "013899603"
+}

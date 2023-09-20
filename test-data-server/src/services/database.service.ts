@@ -3,8 +3,11 @@ import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponse, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
+import { Service } from "typedi";
+import { AccountModel, CustomerModel } from "../models/login";
+import { response } from "express";
 
-
+@Service()
 export class MongoData implements IDatabase {
 
     public collections: mongoDB.Collection[] = [];
@@ -15,6 +18,7 @@ export class MongoData implements IDatabase {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
         this.dsbData = this.client.db(dbName);
     }
+
     async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         const query = { customerId: customerId };
@@ -654,7 +658,7 @@ export class MongoData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string): Promise<any> {
+    async getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         const query = { customerId: customerId };
         let cust: any = await customers.findOne(query);
@@ -665,7 +669,7 @@ export class MongoData implements IDatabase {
                 let cnt = acc?.account?.plans?.length;
                 let planList: any[] = [];
                 for (let i = 0; i < cnt; i++) {
-
+                    
                     let newPlan: any = {
                         nickname: acc.account?.plans[i]?.nickname,
                         servicePointIds: []
@@ -708,6 +712,52 @@ export class MongoData implements IDatabase {
 
     }
 
+    async getLoginInformation( sector: string): Promise<CustomerModel[] | undefined> {
+        let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
+        var loginModel : CustomerModel[] = [];
+        let cursor = await customers.find().toArray();
+
+        for (let cnt = 0; cnt < cursor.length; cnt++){
+            let aModel: CustomerModel = {
+                LoginId: "",
+                Accounts: []
+            };
+            aModel.LoginId = `${cursor[cnt].customer?.person?.lastName}.${cursor[cnt].customer?.person?.firstName}`;
+            let accounts: AccountModel [] = [];
+            if (sector.toLowerCase() == 'energy') {
+                // get the energy login data
+                cursor[cnt]?.energy?.accounts.forEach((acc: any) => {
+                    let loginAccount: AccountModel = {
+                        AccountId: acc?.account?.accountId,
+                        AccountNumber: acc?.account?.accountNumber,
+                        MaskedName: acc?.account?.maskedNumber,
+                        DisplayName: acc?.account?.displayName
+                    };
+                    accounts.push(loginAccount)
+                })
+                aModel.Accounts = accounts;
+                loginModel.push(aModel);
+
+            }
+            if (sector.toLowerCase() == 'banking') {
+                // get the banking login data
+                cursor[cnt]?.banking?.accounts.forEach((acc: any) => {
+                    let loginAccount: AccountModel = {
+                        AccountId: acc?.account?.accountId,
+                        AccountNumber: acc?.account?.accountNumber,
+                        MaskedName: acc?.account?.maskedNumber,
+                        DisplayName: acc?.account?.displayName
+                    };
+                    accounts.push(loginAccount)
+                })
+                aModel.Accounts = accounts;
+                loginModel.push(aModel);
+            }  
+        }
+
+        return loginModel;
+    }
+
     async connectDatabase() {
         try {
             await this.client.connect();
@@ -736,6 +786,19 @@ export class MongoData implements IDatabase {
             retList.push(c.collectionName)
         })
         return retList;
+    }
+
+    async getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>{
+        // split login name to find first and last name
+        let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
+        let arr: string[] = loginId.split('.');
+        if (arr.length < 2)
+            return undefined;
+        let firstName = arr[1];
+        let lastName = arr[0];
+        const query = { firstName: firstName, lastName: lastName };
+        let cust: any = await customers.findOne(query);
+        return cust?.customerId;
     }
 
 }

@@ -1,0 +1,14 @@
+authorityKeyIdentifier=keyid,issuer
+basicConstraints    = CA:FALSE
+keyUsage            = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage    = critical, serverAuth
+subjectAltName      = @alt_names
+[alt_names]
+DNS.1               = localhost
+DNS.2               = authserver.mock
+DNS.3               = cdr-auth-server
+<<<<<<< HEAD:test-data-server/security/accc-certs/mtls-gateway/mtls-server.ext
+DNS.4				= mtls-gateway
+=======
+DNS.4				= mtls-server
+>>>>>>> 81d091d0da8b6b05321f66c923b38d1fb137aaaf:test-data-server/security/accc-certs/cdr-auth-server/mtls/mtls-server.ext

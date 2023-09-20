@@ -15,7 +15,8 @@ dbService = new MongoData();
 
 const version = process.env.VERSION;
 
-const holderId = null;
+// specifify a holderid here. If not given all holders are processes
+const holderId = process.env?.HOLDER_TO_BE_PROCESSES;
 let inputPath = 'input/' + version
 let outputPath = 'output/' + version
 
@@ -23,9 +24,7 @@ inputPath = path.join(__dirname, inputPath);
 outputPath = path.join(__dirname, outputPath);
 
 const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
-var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
 var isSingle = isSingleStr?.toLowerCase()  == 'false' ? false : true;
-
 
 console.log("Uploading data for version " + version);
 

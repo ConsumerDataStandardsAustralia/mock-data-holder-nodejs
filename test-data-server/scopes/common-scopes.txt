@@ -1,0 +1,1 @@
+openid profile common:customer.basic:read common:customer.detail:read cdr:registration

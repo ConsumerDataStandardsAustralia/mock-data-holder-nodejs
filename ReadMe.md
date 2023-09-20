@@ -1,14 +1,13 @@
 
 # DSB Test Data
 
-This repository consist of a 
+This repository contains the source for
 
 - data loader (load-test-data), which will load data from the `load-test-data\input` into a MongoDB, and 
 - a data server (test-data-server), which exposes the API endpoints as documented in the DSB published technical standards.
+- a set of docker files to create the containerised environment
 
-The two programs have been containerised and can easily be run with `docker compose`.
-
-*Note: Currently only the Energy API endpoints have been implemented*
+*Note: Currently only the Energy API and the Common API endpoints have been implemented*
 
 ## Disclaimer
 
@@ -27,78 +26,102 @@ Consequently, the development work provided on the artefacts in this repo is on 
 and the DSB acknowledges the use of these tools alone is not sufficient for, nor should they be relied upon
 with respect to [accreditation](https://www.accc.gov.au/focus-areas/consumer-data-right-cdr-0/cdr-draft-accreditation-guidelines),
 
-# How to use
+# Overview
 
-There is two approaches on how to use this repo
+This repository provides a convenient way to create a test data server. The system consist of a number of docker containers, some of which are maintained by the ACCC, others are maintained by the Data Standards Body.
 
-- a simple mode, which is suitable for smaller data sets. In this implementation the entire database is a single document which must be of the structure as defined in [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli)
-The maximum document size is determined by the MongoDB server (16 Mb)
-- a structured mode, which is suitable for larger datasets where the data is broken up into documents per customer. 
-The [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli) can produce the files required for this purpose. (see the setting `individualFileOutDir` in the ReadMe file for the [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli))
+![alt text](images/InfosecIntegration.png)
 
-## Simple Mode - Small Datasets
-Use the NodeJS data server and serve a data set which must be of the structure as defined in [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli).
+## How to use
 
-For this approach the data generate by the test-data is a single document database.
-This is suitable for smalled data sets.
+This instructions are if you want to run this system in a containerised environment
 
-- Set the value for DATA_IS_SINGLE_DOCUMENT in the `.env.docker` file to `true`.
-- Put a data file in the `input\VERSION\all-data` folder. The structure of this file must be as per [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli) schema
-- Set the value for SINGLE_COLLECTION_NAME in the `.env.docker` file to the name of the data file (less extension).
-- Leave all other values in the `.env.docker`.
-- Run `docker-compose up` from the root directory.
+**Run `docker compose up`**
 
-This will create a NodeJS data server `dsb-test-data-server` interrogating a MongoDB which is initialised with generated data in the collection as per SINGLE_COLLECTION_NAME.
+Wait until all containers have started and are *healthy*, then follow the *Additional Setup Steps* below where this applies
 
-## Structured Mode - Larger datasets
+### Additional Setup Steps
 
-For this approach the data is broken up into documents per customer and plans. The testdata-cli can create the segmented files required for this approach. (see the setting `individualFileOutDir` in the ReadMe file for the [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli))
+Some manual setup steps need to be completed for the system to function. 
 
-- Set the value for DATA_IS_SINGLE_DOCUMENT in the `.env.docker` file to `false`.
-- Put a data files in the `input\VERSION\` folder. 
-- Leave all other values in the `.env.docker`.
-- Run `docker-compose up` from the root directory.
+1. Initialisation script (essential)
 
-The `dsb-data-loader` program will run once when the containers are generated, and populated a MongoDB
-with the data from `load-test-data/input/VERSION/HOLDER_ID` folder.
-The data in this the folder was generated withe DSB [testdata-cli](https://github.com/ConsumerDataStandardsAustralia/testdata-cli).
+   The current setup bypasses the client registration, i.e. it the "accredited data recipient" is created via the backdoor using an SQL script.
+   This step is essential for the functioning of the `mock-data-recpient` and the authorisation process.
+   In order to complete this step, you a need to connect to the SQL database used by the mock-register.
+   
+   The conenction detail (i.e. username/ passowrd) can be found in the `docker-compose.yaml` for the `mssql` container.
+   
+   *Default is user=sa, pwd=Pa{}w0rd2019*
 
-The resulting database (DSB), will have a `plans` collection, and a `customers` collection.
+   - connect to the the SQL instance running
+   - run the script in `utils\sql\\AddClientScriptRelease.sql`
 
-The holder data generated has multiple customers with a complete set of energy data.
-The `load-test-data/output` contains the necessary ids for plans, customers, accounts, and service points.
+   This will create a registered client.
 
-```
-├── load-test-data
-│   ├── input
-│   │   ├── [VERSION]
-│   │   |   ├── [HOLDER ID]
-│   │   |   |   ├── [customers]
-│   │   |   |   ├── [plans]
-│   │   |   |   ├── [postman]
-│   ├── output
-│   │   ├── [VERSION]
-│   │   |   ├── [HOLDER ID]
-│   │   |   |   ├── [USER ID]
-│   │   |   |   |   ├── [accounts.json]
-│   │   |   |   |   ├── [service-points.json]
-│   |   |   |   ├── [plan-ids.json]
-```
+2. Edit Host file  (essential)
+   
+   A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, and */private/etc/hosts* on MacOS (although this may be different).
 
-## Testing the server
+   - 127.0.0.1 mock-data-holder
+   - 127.0.0.1 mock-data-recipient
+   - 127.0.0.1 mock-data-holder-energy
+   - 127.0.0.1 mock-register
+   - 127.0.0.1 mtls-gateway
+   - 127.0.0.1 tls-gateway
+
+These entries match the names of the containers and are required to resolve host names.
+
+3. App config settings (depends)
+   
+   The `config` folder contains a number of appsettings files, which are utilised during the docker build process.
+   Normally you would leave these files as they are unless you start changing urls, ids, etc.
+
+   At time there may be a need to edit some values. For instance, the default validity period for an access token can be set in the `auth-server\appsettings.Release.json`.
+
+   If any setting is changed, the containers need to be rebuild.
+   Ie, `docker compose down`, followed by `docker compose up --build`.
+   
+   Step 1 may need to be repeated.
+
+4. Certificates (depends)
+   
+   The certificates being used by the containers have been created for this setup. In particular, the naming of hosts is important when certificates are created. So, unless you change stuff in that space or you want to use your own CA, there should be nothing that requires change her.
+
+   If any setting is changed, the containers need to be rebuild.
+   Ie, `docker compose down`, followed by `docker compose up --build`.
+   
+   Step 1 may need to be repeated.
+
+## Accessing the resource API
+
+To acces the resource API you need
+- generate an access token
+- call the resource API with a client certificate
+
+### Generate an access token
+
+In order to obtain an access token, the PAR authorisation flow must be completed using the mock-data-recipient. The ACCC [documentation](https://github.com/ConsumerDataRight/mock-data-recipient) on the mock-data-recipient contains more detailed information.
+
+Navigate to `https://mock-data-recipient:9001` and complete the authentication flow.
+
+Required for authorisation flow is a LoginID. The resource dataset will contain all the user loaded by the `dsb-data-loader` container. Refer to the data files in the `load-test-data\input` directory to obtain a LoginID (LastName.FirstName).</br>
+*Note:You could also use a UI to the actual data, such as MongoDB Compass to read this directly*
+
+### Call the resource API
+
+To access the resource API you can utilise the swagger UI provided by mock-data-recipient container, or alternatively retrieve the access token from the mock-data-recipient UI and use as required.</br> The authenticated resource endpoints accessed via the mtls-gateway (`https://mtls-gateway:8082`), the unauthenticated ones via the tls-gateway (`https://tls-gateway:8081`).
+
+When using the mock-data-recipient UI the client certificate is automatically presented when the data holder API is beign called.
+
+If another UI is used to call the data holder via the mtls-gateway the `mtls-gateway\client.pfx` for any calls to authenticated endpoints is required.
+
+## Use Postman to interrogate the data holder resource API
+
+If you want to use Postman, the `mtls-gateway\client.pfx` certificate must be associated with `https://mtls-gateway:8082` and the `mtls-gateway\ca.pem` must be specified as the Certificate Authority. Please refer to the Post certificate management documentation for more information.
 
 The running test data server can then be interrogated using the `CDR_Energy_Sector_Conformance_tests` collection
 from the [Postman collection](https://github.com/ConsumerDataStandardsAustralia/dsb-postman) repository.
 
-The Postman environment file `Data Factory Work - <VERSION>.postman_environment.json` in the `test-data-server\postman` folder within *this* repo will set identifiers for accounts, service points, and plans for a customer for the datasets found in the `input\1.24.0` in this repo.
+The Postman environment file `DSB Test Data Server - Authenticated.postman_environment.json` in the `test-data-server\postman` folder within *this* repo will set identifiers for accounts, service points, and plans for a customer for the datasets found in the `input\1.24.0` in this repo.
 
-## Emulation of Identity Provider
-
-The  *customer id*  MUST be passed in the header for authenticated endpoints.
-The returned datasets for authenticated endpoints will then be for that particular user.
-
-Ensure that the following header exists:
-
-`authorization: "Bearer CUSTOMER_ID"`
-
-Eg, `authorization: "Bearer 02bce083-7e64-46e0-b373-71b53189928c"`

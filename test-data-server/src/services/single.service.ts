@@ -4,8 +4,10 @@ import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, Ener
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { devNull } from "os";
+import { Service } from "typedi";
+import { AccountModel, CustomerModel } from "../models/login";
 
-
+@Service()
 export class SingleData implements IDatabase {
 
     public collections: mongoDB.Collection[] = [];
@@ -17,6 +19,30 @@ export class SingleData implements IDatabase {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
         this.dsbName = dbName;
         this.dsbData = this.client.db(dbName);
+    }
+
+    async getUserForLoginId(loginId: string, userType: string): Promise<string| undefined> {
+        // split loginId into first and last name
+        var customerId;
+        let arr: string[] = loginId.split('.');
+        if (arr.length < 2)
+            return undefined;
+        let firstName = arr[1];
+        let lastName = arr[0];
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let allData = await allDataCollection.findOne();
+        if (allData?.holders != undefined) {
+            let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
+            if (allCustomers.length < 1)
+                return undefined;
+            allCustomers.forEach( (c: any) => {
+                if (c?.customer?.person?.firstName.toUpperCase() == firstName.toUpperCase()
+                && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
+                    customerId = c.customerId;
+                }
+            })    
+        } 
+        return customerId;
     }
 
     async getCustomer(allDataCollection: mongoDB.Collection, customerId: string): Promise<any> {
@@ -566,7 +592,7 @@ export class SingleData implements IDatabase {
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
-                    ret.data.balance = acc.balance.balance
+                    ret.data.balance = acc.balance
                 }
             })
         }
@@ -689,7 +715,7 @@ export class SingleData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string): Promise<any> {
+    async getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let accList: any[] = [];
@@ -697,28 +723,31 @@ export class SingleData implements IDatabase {
         if (accDetailList != null) {
             accDetailList.forEach((acc: any) => {
                 let cnt = acc?.account?.plans?.length;
-                let planList: any[] = [];
-                for (let i = 0; i < cnt; i++) {
-
-                    let newPlan: any = {
-                        nickname: acc.account?.plans[i]?.nickname,
-                        servicePointIds: []
+                if (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1) {
+                    let planList: any[] = [];
+                    for (let i = 0; i < cnt; i++) {
+    
+                        let newPlan: any = {
+                            nickname: acc.account?.plans[i]?.nickname,
+                            servicePointIds: []
+                        }
+                        if (acc.account?.openStatus == null || acc.account?.openStatus == 'OPEN')
+                            newPlan.planOverview = acc.account?.plans[i]?.planOverview;
+                        if (acc.account?.plans[i]?.servicePointsIds)
+                            newPlan.servicePointIds = acc.account?.plans[i]?.servicePointsIds
+                        planList.push(newPlan);
                     }
-                    if (acc.account?.openStatus == null || acc.account?.openStatus == 'OPEN')
-                        newPlan.planOverview = acc.account?.plans[i]?.planOverview;
-                    if (acc.account?.plans[i]?.servicePointsIds)
-                        newPlan.servicePointIds = acc.account?.plans[i]?.servicePointsIds
-                    planList.push(newPlan);
+                    let newAccount: EnergyAccount = {
+                        plans: planList,
+                        accountNumber: acc.account?.accountNumber,
+                        accountId: acc.account?.accountId,
+                        displayName: acc.account?.displayName,
+                        openStatus: acc.account?.openStatus,
+                        creationDate: acc.account?.creationDate as string
+                    }
+                    accList.push(newAccount);
                 }
-                let newAccount: EnergyAccount = {
-                    plans: planList,
-                    accountNumber: acc.account?.accountNumber,
-                    accountId: acc.account?.accountId,
-                    displayName: acc.account?.displayName,
-                    openStatus: acc.account?.openStatus,
-                    creationDate: acc.account?.creationDate as string
-                }
-                accList.push(newAccount);
+
             })
         }
 
@@ -771,6 +800,57 @@ export class SingleData implements IDatabase {
             retList.push(c.collectionName)
         })
         return retList;
+    }
+
+    // get all the logins for the ACCC cdr-auth-server UI
+    async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
+          var loginModel : CustomerModel[] = [];
+          let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+          let allData = await allDataCollection.findOne();
+          if (allData?.holders != undefined) {
+              let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
+              if (allCustomers.length < 1)
+                  return undefined;
+              allCustomers.forEach( (c: any) => {
+                    let aModel: CustomerModel = {
+                        LoginId: "",
+                        Accounts: []
+                    };
+                    aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+                    let accounts: AccountModel [] = [];
+                    if (sector.toLowerCase() == 'energy') {
+                        // get the energy login data
+                        c?.energy?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: acc?.account?.displayName
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+
+                    }
+                    if (sector.toLowerCase() == 'banking') {
+                        // get the banking login data
+                        c?.banking?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: acc?.account?.displayName
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+                    }              
+
+              })    
+          } 
+          return loginModel;      
     }
 
 }

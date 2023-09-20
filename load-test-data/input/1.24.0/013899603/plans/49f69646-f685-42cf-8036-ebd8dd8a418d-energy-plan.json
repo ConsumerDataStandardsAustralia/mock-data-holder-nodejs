@@ -1,0 +1,272 @@
+{
+  "brand": "ERGON",
+  "brandName": "RED ENERGY",
+  "fuelType": "DUAL",
+  "lastUpdated": "2023-03-16T04:58:06.064Z",
+  "planId": "49f69646-f685-42cf-8036-ebd8dd8a418d",
+  "type": "MARKET",
+  "effectiveFrom": "2024-07-03T08:49:57.813Z",
+  "effectiveTo": "2024-08-11T00:00:00.000Z",
+  "displayName": "Energy Plan 1",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://silent-carpenter.com",
+  "customerType": "BUSINESS",
+  "additionalInformation": {
+    "overviewUri": "http://snappy-aspect.info",
+    "eligibilityUri": "http://fixed-disco.name",
+    "pricingUri": "https://darling-preference.org"
+  },
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includedPostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Kerluke and Sons",
+      "Hilll, Morissette and Lockman"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "26",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "PAPER_BILL"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-01-07T08:15:56.080Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-07-19T11:59:30.803Z",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.09",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "THU",
+              "WED",
+              "FRI"
+            ],
+            "minDemand": "1.18",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-06-15T04:55:29.742Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-11-13T04:48:09.269Z",
+        "dailySupplyCharges": "0.86",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.82",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "TUE",
+              "SAT",
+              "THU"
+            ],
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "DAY"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "0.92",
+            "measureUnit": "KW",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "FRI",
+              "TUE",
+              "MON"
+            ],
+            "maxDemand": "9.37",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "incentives": [
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      }
+    ],
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfUse",
+        "type": "CONDITIONAL",
+        "endDate": "2024-05-05T07:54:18.368Z",
+        "percentOfUse": {
+          "rate": "1.33"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfUse",
+        "type": "CONDITIONAL",
+        "percentOfUse": {
+          "rate": "3.32"
+        }
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "REQ_EQUIP_SUPPLIER"
+      }
+    ],
+    "termType": "2_YEAR",
+    "coolingOffDays": 27,
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "electricityContract": {
+    "isFixed": true,
+    "paymentOption": [
+      "BPAY"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-04-14T07:33:37.819Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2023-04-20T22:30:21.941Z",
+        "timeZone": "AEST",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "3.4013",
+          "rates": [
+            {
+              "unitPrice": "0.90",
+              "measureUnit": "KVARH",
+              "volume": 1.28
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-08-27T07:59:15.435Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-09-21T07:59:30.750Z",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "generalUnitPrice": "2.1741",
+          "rates": [
+            {
+              "unitPrice": "2.31",
+              "measureUnit": "METER",
+              "volume": 0.82
+            }
+          ]
+        }
+      }
+    ],
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "incentives": [
+      {
+        "category": "OTHER",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.47",
+            "amount": "3.13"
+          }
+        ],
+        "type": "FIXED_PER_DAY"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.12",
+            "rate": "2.46"
+          },
+          {
+            "percentGreen": "0.27",
+            "rate": "3.19"
+          }
+        ],
+        "type": "PERCENT_OF_BILL"
+      },
+      {
+        "displayName": "Energy Green Power Charge 2",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.24",
+            "amount": "1.29"
+          }
+        ],
+        "type": "FIXED_PER_DAY"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SMALL_BUSINESS"
+      },
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SMALL_BUSINESS"
+      }
+    ],
+    "fees": [
+      {
+        "term": "3_YEAR",
+        "type": "OTHER",
+        "description": "Optional description for this fee",
+        "amount": "5.07"
+      }
+    ],
+    "termType": "2_YEAR",
+    "coolingOffDays": 33,
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "013899603"
+}

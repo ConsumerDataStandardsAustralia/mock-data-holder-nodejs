@@ -1,0 +1,7 @@
+# the image is build from  https://github.com/ConsumerDataStandardsAustralia/accc-authorisation-server
+FROM cdradmin/tls-gateway:0.1 AS build
+
+WORKDIR /app
+
+COPY ./configs/tls-gateway/gateway-config.json /app/gateway-tls/
+COPY ./security/tls-gateway/tls-server.pfx /app/gateway-tls/Certificates
