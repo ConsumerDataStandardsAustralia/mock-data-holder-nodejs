@@ -63,3 +63,4 @@ common/autoinstallers/*/.npmrc
 
 # compiled output
 dist
+.vscode
