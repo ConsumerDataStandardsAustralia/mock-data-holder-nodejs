@@ -1,0 +1,330 @@
+{
+  "brand": "AURORO ENERGY",
+  "brandName": "RED ENERGY",
+  "fuelType": "ELECTRICITY",
+  "lastUpdated": "2022-08-19T03:47:32.038Z",
+  "planId": "892b9f7c-0b2c-4ed1-8b4f-b234fb2d1143",
+  "type": "REGULATED",
+  "effectiveFrom": "2024-06-01T14:08:49.690Z",
+  "effectiveTo": "2025-03-01T00:00:00.000Z",
+  "displayName": "Energy Plan 2",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://elastic-skull.com",
+  "customerType": "RESIDENTIAL",
+  "additionalInformation": {
+    "eligibilityUri": "https://awkward-highlight.net"
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "42",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "electricityContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "CREDIT_CARD"
+    ],
+    "pricingModel": "FLEXIBLE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-05-31T15:19:30.166Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-04-24T14:28:28.179Z",
+        "dailySupplyCharges": "1.20",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "0.53",
+            "measureUnit": "KVA",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "FRI",
+              "MON",
+              "SAT"
+            ],
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-07-24T03:51:29.014Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-10-25T20:54:52.644Z",
+        "dailySupplyCharges": "2.04",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "2.18",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "MONTH"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "1.19",
+            "measureUnit": "KVA",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "maxDemand": "4.99",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-07-29T11:14:17.487Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-10-05T03:40:05.660Z",
+        "dailySupplyCharges": "0.82",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "2.07",
+            "measureUnit": "MONTH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "THU",
+              "SUN",
+              "TUE"
+            ],
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "DAY"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "amount": "1.65",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "MON",
+              "WED",
+              "FRI"
+            ],
+            "maxDemand": "7.08",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "DAY"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-12-26T23:38:26.549Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2022-01-03T22:23:03.899Z",
+        "timeZone": "AEST",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "description": "Time Of Use Display Description",
+            "rates": [
+              {
+                "unitPrice": "1.01",
+                "volume": 0.76
+              },
+              {
+                "unitPrice": "2.14",
+                "volume": 0.6
+              },
+              {
+                "unitPrice": "2.41",
+                "measureUnit": "KWH",
+                "volume": 1.14
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "MON",
+                  "SAT",
+                  "WED"
+                ],
+                "startTime": "2023-02-21T09:26:33.544Z",
+                "endTime": "2025-05-29T16:39:42.303Z"
+              },
+              {
+                "days": [
+                  "WED",
+                  "THU",
+                  "TUE"
+                ],
+                "startTime": "2021-11-28T17:45:15.703Z",
+                "endTime": "2025-05-19T01:04:40.998Z"
+              },
+              {
+                "days": [
+                  "MON",
+                  "FRI",
+                  "THU"
+                ],
+                "startTime": "2023-03-12T20:47:32.226Z",
+                "endTime": "2025-01-16T23:41:53.907Z"
+              },
+              {
+                "days": [
+                  "MON",
+                  "SAT",
+                  "WED"
+                ],
+                "startTime": "2023-02-21T09:26:33.544Z",
+                "endTime": "2025-05-29T16:39:42.303Z"
+              },
+              {
+                "days": [
+                  "WED",
+                  "THU",
+                  "TUE"
+                ],
+                "startTime": "2021-11-28T17:45:15.703Z",
+                "endTime": "2025-05-19T01:04:40.998Z"
+              },
+              {
+                "days": [
+                  "MON",
+                  "FRI",
+                  "THU"
+                ],
+                "startTime": "2023-03-12T20:47:32.226Z",
+                "endTime": "2025-01-16T23:41:53.907Z"
+              }
+            ],
+            "type": "PEAK"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "1.62"
+    },
+    "incentives": [
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      }
+    ],
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "fixedAmount",
+        "type": "GUARANTEED",
+        "endDate": "2024-09-23T23:39:18.614Z",
+        "fixedAmount": {
+          "amount": "2.23"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfUse",
+        "type": "CONDITIONAL",
+        "endDate": "2024-08-07T02:17:14.714Z",
+        "percentOfUse": {
+          "rate": "2.85"
+        }
+      },
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOverThreshold",
+        "type": "CONDITIONAL",
+        "percentOverThreshold": {
+          "rate": "1.16",
+          "usageAmount": "21.22"
+        }
+      }
+    ],
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "OTHER",
+        "tiers": [
+          {
+            "percentGreen": "0.25",
+            "rate": "2.59"
+          }
+        ],
+        "type": "PERCENT_OF_USE"
+      },
+      {
+        "displayName": "Energy Green Power Charge 1",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.22",
+            "rate": "1.25"
+          }
+        ],
+        "type": "PERCENT_OF_USE"
+      },
+      {
+        "displayName": "Energy Green Power Charge 2",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.1",
+            "rate": "2.11"
+          },
+          {
+            "percentGreen": "0.38",
+            "rate": "2.69"
+          },
+          {
+            "percentGreen": "0.43",
+            "rate": "2.74"
+          }
+        ],
+        "type": "PERCENT_OF_USE"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "EXISTING_POOL",
+        "description": "Energy Plan Eligibility Description"
+      }
+    ],
+    "fees": [
+      {
+        "term": "5_YEAR",
+        "type": "CONTRIBUTION",
+        "description": "Optional description for this fee",
+        "amount": "13.19"
+      },
+      {
+        "term": "3_YEAR",
+        "type": "OTHER",
+        "amount": "12.47"
+      },
+      {
+        "term": "2_YEAR",
+        "type": "DISCONNECT_NON_PAY",
+        "description": "Optional description for this fee",
+        "amount": "9.39"
+      }
+    ],
+    "termType": "OTHER",
+    "terms": "Free text description of the terms for the contract"
+  },
+  "holderId": "458975289"
+}

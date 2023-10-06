@@ -1,0 +1,220 @@
+{
+  "brand": "ERGON",
+  "brandName": "AGL",
+  "fuelType": "GAS",
+  "lastUpdated": "2023-06-28T05:22:33.149Z",
+  "planId": "36b2f77d-0239-434a-81bd-465a885d51d3",
+  "type": "REGULATED",
+  "effectiveFrom": "2025-03-02T11:30:26.728Z",
+  "effectiveTo": "2026-01-01T00:00:00.000Z",
+  "displayName": "Energy Plan 1",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://big-oversight.com",
+  "customerType": "RESIDENTIAL",
+  "additionalInformation": {
+    "overviewUri": "http://lopsided-inspection.com",
+    "pricingUri": "http://grandiose-dryer.org",
+    "bundleUri": "http://juicy-thump.org"
+  },
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includedPostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Macejkovic Inc",
+      "Tillman - Kulas"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "28",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "OTHER"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-03-19T09:24:15.082Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-07-16T06:07:22.026Z",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "2.6696",
+          "rates": [
+            {
+              "unitPrice": "1.54",
+              "measureUnit": "KVA",
+              "volume": 1.45
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-09-15T03:48:56.293Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-04-28T12:41:27.523Z",
+        "dailySupplyCharges": "2.43",
+        "timeZone": "AEST",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "2.11",
+            "measureUnit": "MONTH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "MONTH"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "amount": "1.33",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "0.96",
+            "maxDemand": "7.40",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-10-26T05:30:53.587Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-05-19T17:23:27.377Z",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.68",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "MON",
+              "WED",
+              "SUN"
+            ],
+            "maxDemand": "4.21",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "4.63"
+    },
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "OTHER",
+        "tariffUType": "singleTariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "2.04",
+              "volume": 391.01
+            },
+            {
+              "unitPrice": "1.35",
+              "measureUnit": "DAYS",
+              "volume": 989.61
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "0.62"
+            },
+            {
+              "unitPrice": "2.14",
+              "volume": 167.53
+            },
+            {
+              "unitPrice": "0.54",
+              "volume": 148.51
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "timeVaryingTariffs",
+        "description": "Optional description for Solar Feed Tariff",
+        "timeVaryingTariffs": {
+          "type": "OFF_PEAK",
+          "timeVariations": [
+            {
+              "endTime": "2025-09-20T17:43:09.285Z",
+              "days": [
+                "MON",
+                "TUE",
+                "PUBLIC_HOLIDAYS",
+                "TUE",
+                "SAT"
+              ]
+            },
+            {
+              "startTime": "2021-12-13T00:08:37.432Z",
+              "endTime": "2025-05-19T02:23:44.950Z",
+              "days": [
+                "THU",
+                "THU",
+                "SAT",
+                "FRI",
+                "THU"
+              ]
+            },
+            {
+              "startTime": "2021-10-25T05:23:55.717Z",
+              "endTime": "2025-03-16T12:34:04.641Z",
+              "days": [
+                "SAT",
+                "PUBLIC_HOLIDAYS",
+                "SAT",
+                "THU",
+                "WED"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "3_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "458975289"
+}

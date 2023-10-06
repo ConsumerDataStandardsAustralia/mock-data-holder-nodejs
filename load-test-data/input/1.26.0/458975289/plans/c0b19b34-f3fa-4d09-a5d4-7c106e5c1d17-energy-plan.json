@@ -1,0 +1,322 @@
+{
+  "brand": "ORIGIN",
+  "brandName": "ALINTA ENERGY",
+  "fuelType": "GAS",
+  "lastUpdated": "2022-12-09T17:44:18.012Z",
+  "planId": "c0b19b34-f3fa-4d09-a5d4-7c106e5c1d17",
+  "type": "REGULATED",
+  "effectiveFrom": "2025-04-02T13:37:52.374Z",
+  "effectiveTo": "2025-09-21T00:00:00.000Z",
+  "displayName": "Energy Plan 4",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://brilliant-sari.name",
+  "customerType": "RESIDENTIAL",
+  "additionalInformation": {
+    "overviewUri": "http://circular-discharge.biz",
+    "termsUri": "https://cold-pole.info",
+    "bundleUri": "http://pitiful-online.com"
+  },
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includedPostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Kuvalis and Sons",
+      "McKenzie Group"
+    ]
+  },
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "CREDIT_CARD"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2023-11-27T12:57:30.455Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2023-02-08T15:33:17.477Z",
+        "dailySupplyCharges": "0.58",
+        "timeZone": "LOCAL",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "1.20",
+                "volume": 1.26
+              },
+              {
+                "unitPrice": "2.07",
+                "measureUnit": "KVARH",
+                "volume": 0.53
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "THU",
+                  "FRI",
+                  "WED"
+                ],
+                "startTime": "2023-04-12T13:20:10.395Z",
+                "endTime": "2024-08-03T01:54:59.447Z"
+              },
+              {
+                "days": [
+                  "THU",
+                  "FRI",
+                  "WED"
+                ],
+                "startTime": "2023-04-12T13:20:10.395Z",
+                "endTime": "2024-08-03T01:54:59.447Z"
+              }
+            ],
+            "type": "OFF_PEAK"
+          },
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "1.39",
+                "measureUnit": "DAYS",
+                "volume": 0.81
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "FRI",
+                  "MON",
+                  "TUE"
+                ],
+                "startTime": "2023-06-25T17:23:18.599Z",
+                "endTime": "2025-02-25T14:23:45.932Z"
+              },
+              {
+                "days": [
+                  "FRI",
+                  "MON",
+                  "TUE"
+                ],
+                "startTime": "2023-06-25T17:23:18.599Z",
+                "endTime": "2025-02-25T14:23:45.932Z"
+              }
+            ],
+            "type": "SHOULDER2"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-11-11T23:02:49.896Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2023-04-07T22:41:38.195Z",
+        "timeZone": "LOCAL",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "0.82",
+                "measureUnit": "METER",
+                "volume": 1.37
+              },
+              {
+                "unitPrice": "0.92",
+                "volume": 0.92
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "TUE",
+                  "MON",
+                  "WED"
+                ],
+                "startTime": "2022-11-15T10:34:36.482Z",
+                "endTime": "2024-01-15T16:04:14.647Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "MON",
+                  "WED"
+                ],
+                "startTime": "2022-11-15T10:34:36.482Z",
+                "endTime": "2024-01-15T16:04:14.647Z"
+              }
+            ],
+            "type": "PEAK"
+          },
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "0.86",
+                "measureUnit": "METER",
+                "volume": 1.09
+              },
+              {
+                "unitPrice": "2.41",
+                "measureUnit": "MONTH",
+                "volume": 0.57
+              },
+              {
+                "unitPrice": "0.74",
+                "measureUnit": "KVARH",
+                "volume": 1.48
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "SAT",
+                  "MON",
+                  "TUE"
+                ],
+                "startTime": "2021-12-28T07:47:45.280Z",
+                "endTime": "2024-02-26T18:29:04.802Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "THU",
+                  "FRI"
+                ],
+                "startTime": "2022-10-31T11:34:40.816Z",
+                "endTime": "2024-08-27T18:34:17.952Z"
+              },
+              {
+                "days": [
+                  "SAT",
+                  "MON",
+                  "TUE"
+                ],
+                "startTime": "2021-12-28T07:47:45.280Z",
+                "endTime": "2024-02-26T18:29:04.802Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "THU",
+                  "FRI"
+                ],
+                "startTime": "2022-10-31T11:34:40.816Z",
+                "endTime": "2024-08-27T18:34:17.952Z"
+              }
+            ],
+            "type": "PEAK"
+          },
+          {
+            "displayName": "Time Of Use Display Name",
+            "rates": [
+              {
+                "unitPrice": "1.47",
+                "volume": 1.33
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "FRI",
+                  "MON",
+                  "SUN"
+                ],
+                "startTime": "2023-04-21T22:34:02.273Z",
+                "endTime": "2024-05-28T23:19:04.630Z"
+              },
+              {
+                "days": [
+                  "FRI",
+                  "MON",
+                  "SUN"
+                ],
+                "startTime": "2023-04-21T22:34:02.273Z",
+                "endTime": "2024-05-28T23:19:04.630Z"
+              }
+            ],
+            "type": "OFF_PEAK"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-04-06T15:02:00.146Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-01-01T20:53:31.229Z",
+        "dailySupplyCharges": "1.74",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.34",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "1.80",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "DAY"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "1.81",
+            "measureUnit": "KVARH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "2.02",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "1.51"
+    },
+    "fees": [
+      {
+        "term": "WEEKLY",
+        "type": "CC_PROCESSING",
+        "description": "Optional description for this fee",
+        "amount": "11.26"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "description": "Optional description for Solar Feed Tariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "0.96",
+              "measureUnit": "DAYS",
+              "volume": 347.24
+            },
+            {
+              "unitPrice": "0.84",
+              "measureUnit": "KWH",
+              "volume": 497.1
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "5_YEAR",
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "holderId": "458975289"
+}

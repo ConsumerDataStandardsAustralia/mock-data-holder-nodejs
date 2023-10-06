@@ -1,0 +1,353 @@
+{
+  "brand": "RED ENERGY",
+  "brandName": "ENERGY AUSTRALIA",
+  "fuelType": "DUAL",
+  "lastUpdated": "2022-07-01T16:07:28.369Z",
+  "planId": "41dcf051-b80b-446a-bfd2-37d403415431",
+  "type": "MARKET",
+  "effectiveFrom": "2024-02-12T21:09:22.722Z",
+  "effectiveTo": "2024-11-17T00:00:00.000Z",
+  "displayName": "Energy Plan 0",
+  "description": "Energy plan optional description",
+  "applicationUri": "https://necessary-confirmation.net",
+  "customerType": "BUSINESS",
+  "additionalInformation": {
+    "overviewUri": "https://acrobatic-cameo.org",
+    "termsUri": "http://brief-expression.com",
+    "eligibilityUri": "https://tired-raise.net",
+    "pricingUri": "https://stunning-resource.com",
+    "bundleUri": "https://tempting-tentacle.org"
+  },
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includedPostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Ward - Nader",
+      "Lind LLC"
+    ]
+  },
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "7",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "OTHER"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-06-27T16:47:22.898Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2023-03-27T02:12:07.396Z",
+        "dailySupplyCharges": "1.96",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "0.72",
+            "measureUnit": "MONTH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-08-29T21:12:56.383Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2023-05-19T07:43:25.497Z",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "generalUnitPrice": "2.2382",
+          "rates": [
+            {
+              "unitPrice": "2.10",
+              "measureUnit": "METER",
+              "volume": 0.62
+            },
+            {
+              "unitPrice": "1.02",
+              "volume": 0.71
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "fixedAmount",
+        "type": "OTHER",
+        "endDate": "2024-11-13T21:48:43.875Z",
+        "fixedAmount": {
+          "amount": "4.30"
+        }
+      }
+    ],
+    "fees": [
+      {
+        "term": "MONTHLY",
+        "type": "DISCONNECT_NON_PAY",
+        "description": "Optional description for this fee",
+        "amount": "14.68"
+      },
+      {
+        "term": "3_YEAR",
+        "type": "MEMBERSHIP",
+        "amount": "9.14"
+      },
+      {
+        "term": "2_YEAR",
+        "type": "CHEQUE_DISHONOUR",
+        "amount": "7.54"
+      }
+    ],
+    "solarFeedInTariff": [
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "PREMIUM",
+        "tariffUType": "singleTariff",
+        "singleTariff": {
+          "rates": [
+            {
+              "unitPrice": "0.63",
+              "volume": 776.02
+            },
+            {
+              "unitPrice": "2.48",
+              "measureUnit": "KW"
+            },
+            {
+              "unitPrice": "1.51",
+              "measureUnit": "MONTH"
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "GOVERNMENT",
+        "scheme": "PREMIUM",
+        "tariffUType": "timeVaryingTariffs",
+        "description": "Optional description for Solar Feed Tariff",
+        "timeVaryingTariffs": {
+          "type": "OFF_PEAK",
+          "timeVariations": [
+            {
+              "startTime": "2023-05-11T13:35:59.886Z",
+              "days": [
+                "FRI",
+                "SUN",
+                "THU",
+                "SAT",
+                "SUN"
+              ]
+            },
+            {
+              "endTime": "2025-06-25T03:57:01.521Z",
+              "days": [
+                "SAT",
+                "THU",
+                "SUN",
+                "SAT"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "Mandatory display name for Solar Feed Tariff",
+        "payerType": "RETAILER",
+        "scheme": "OTHER",
+        "tariffUType": "timeVaryingTariffs",
+        "description": "Optional description for Solar Feed Tariff",
+        "timeVaryingTariffs": {
+          "type": "SHOULDER",
+          "timeVariations": [
+            {
+              "startTime": "2022-08-26T12:12:37.445Z",
+              "days": [
+                "TUE",
+                "MON",
+                "TUE",
+                "TUE",
+                "SAT"
+              ]
+            },
+            {
+              "startTime": "2023-06-26T01:48:44.309Z",
+              "days": [
+                "FRI",
+                "MON",
+                "FRI",
+                "FRI",
+                "SUN"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "termType": "4_YEAR",
+    "coolingOffDays": 20,
+    "terms": "Free text description of the terms for the contract",
+    "billFrequency": [
+      "P1M1"
+    ]
+  },
+  "electricityContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "OTHER"
+    ],
+    "pricingModel": "FLEXIBLE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-05-12T04:10:51.737Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2023-04-22T11:34:45.658Z",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "3.4817",
+          "rates": [
+            {
+              "unitPrice": "1.01",
+              "measureUnit": "KVA",
+              "volume": 0.82
+            },
+            {
+              "unitPrice": "0.64",
+              "measureUnit": "DAYS",
+              "volume": 1
+            },
+            {
+              "unitPrice": "2.17",
+              "volume": 0.57
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-07-13T13:21:08.662Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-10-29T06:01:49.825Z",
+        "dailySupplyCharges": "1.92",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.56",
+            "measureUnit": "KVA",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "2.32",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-05-11T23:54:47.390Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2021-10-27T18:50:32.641Z",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "amount": "1.68",
+            "measureUnit": "METER",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "2.37",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "DAY"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-04-10T19:30:30.776Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-11-25T13:47:23.489Z",
+        "dailySupplyCharges": "0.54",
+        "timeZone": "LOCAL",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "1.44",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "maxDemand": "9.05",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "TARIFF_PERIOD"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "amount": "1.27",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "minDemand": "1.51",
+            "measurementPeriod": "DAY",
+            "chargePeriod": "MONTH"
+          }
+        ]
+      }
+    ],
+    "variation": "Variation details for this contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "4.76"
+    },
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.06",
+            "amount": "2.19"
+          }
+        ],
+        "type": "FIXED_PER_UNIT"
+      }
+    ],
+    "eligibility": [
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SMALL_BUSINESS",
+        "description": "Energy Plan Eligibility Description"
+      },
+      {
+        "information": "Energy Plan Eligibility Information",
+        "type": "SPORT_CLUB_MEMBER",
+        "description": "Energy Plan Eligibility Description"
+      }
+    ],
+    "termType": "OTHER",
+    "coolingOffDays": 34
+  },
+  "holderId": "458975289"
+}

@@ -1,0 +1,134 @@
+{
+  "brand": "AGL",
+  "brandName": "ALINTA ENERGY",
+  "fuelType": "ELECTRICITY",
+  "lastUpdated": "2022-12-27T19:31:44.474Z",
+  "planId": "76a26645-10c8-45fd-8156-85aeaf0ea35e",
+  "type": "REGULATED",
+  "effectiveFrom": "2025-06-10T13:13:53.644Z",
+  "effectiveTo": "2026-05-15T00:00:00.000Z",
+  "displayName": "Energy Plan 0",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://idealistic-graft.com",
+  "customerType": "RESIDENTIAL",
+  "meteringCharges": [
+    {
+      "displayName": "Metering Display Name",
+      "description": "Optional description for metering charges",
+      "minimumValue": "79",
+      "maximumValue": "999999",
+      "period": "P3Y6M4DT12H30M5S"
+    }
+  ],
+  "electricityContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "BPAY"
+    ],
+    "pricingModel": "FLEXIBLE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-10-28T17:17:13.587Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2022-07-21T22:58:26.531Z",
+        "dailySupplyCharges": "1.71",
+        "timeZone": "LOCAL",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "generalUnitPrice": "3.9920",
+          "rates": [
+            {
+              "unitPrice": "1.12",
+              "volume": 0.92
+            },
+            {
+              "unitPrice": "1.70",
+              "measureUnit": "MONTH",
+              "volume": 0.96
+            },
+            {
+              "unitPrice": "0.51",
+              "volume": 1.27
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2025-03-05T01:02:02.037Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-03-24T22:23:53.809Z",
+        "dailySupplyCharges": "1.09",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "2.41",
+            "measureUnit": "KVA",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "maxDemand": "4.15",
+            "measurementPeriod": "MONTH",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "4.59"
+    },
+    "incentives": [
+      {
+        "category": "ACCOUNT_CREDIT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive",
+        "eligibility": "Eligibility criteria for this incentive"
+      },
+      {
+        "category": "GIFT",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      },
+      {
+        "category": "OTHER",
+        "description": "Mandatory description for energy plan incentive",
+        "displayName": "Plan Incentive"
+      }
+    ],
+    "discounts": [
+      {
+        "displayName": "Mandatory display name",
+        "methodUType": "percentOfBill",
+        "type": "OTHER",
+        "percentOfBill": {
+          "rate": "1.00"
+        }
+      }
+    ],
+    "fees": [
+      {
+        "term": "1_YEAR",
+        "type": "DD_DISHONOUR",
+        "amount": "15.56"
+      },
+      {
+        "term": "1_YEAR",
+        "type": "OTHER",
+        "amount": "9.27"
+      },
+      {
+        "term": "PERCENT_OF_BILL",
+        "type": "CONTRIBUTION",
+        "rate": "8.04"
+      }
+    ],
+    "termType": "3_YEAR",
+    "terms": "Free text description of the terms for the contract"
+  },
+  "holderId": "458975289"
+}
