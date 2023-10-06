@@ -28,7 +28,7 @@
   "dependencies": {
     "@cds-au/holder-sdk": "^1.1.0",
     "@types/body-parser": "^1.19.2",
-    "@types/consumer-data-standards": "^4.0.0",
+    "@types/consumer-data-standards": "7.0.0",
     "@types/express-serve-static-core": "^4.17.30",
     "@types/mongoose": "^5.11.97",
     "axios": "^1.4.0",
