@@ -38,22 +38,27 @@ dbService.connectDatabase()
                 var holderPath: string = '';
                 if (holder?.isDirectory()) {
                     holderPath = path.join(inputPath, holderId);
+                    console.log("Processing specified data holder id: " + holderId);
                     await processHolder(holderPath);
                     process.exit();
                 }
             }
             else {
                 let cnt = holderDirectories.length;
+                console.log("No data holder specified. Processing all...");
                 for(let i = 0; i < cnt; i++) {
                     if (holderDirectories[i].name.toLowerCase() == "all-data")
                        continue;
                     holderPath = path.join(inputPath, holderDirectories[i].name);
+                    console.log("Processing specified data holder id: " + holderPath);
                     await processHolder(holderPath);                  
                 }
                 process.exit();
             }
         } else {
+            
             var singleDataFilePath = path.join(inputPath, "all-data");
+            console.log("Processing sinle data file from: " + singleDataFilePath);
             await processSingleFiles(singleDataFilePath);
             process.exit();
         };
@@ -70,6 +75,7 @@ async function processSingleFiles(singleDataFilePath: string): Promise<boolean> 
     let singleDataFiles = fs.readdirSync(singleDataFilePath);
     let cnt = singleDataFiles.length;
     for (let i = 0; i < cnt; i++) {
+        console.log("Processing data file: " + singleDataFiles[i]);
         let file = singleDataFiles[i];
         var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
         if (defaultColName.toLowerCase() != collectionName)

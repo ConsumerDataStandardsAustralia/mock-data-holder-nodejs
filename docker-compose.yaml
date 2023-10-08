@@ -180,10 +180,10 @@ services:
       - "27017:27017"
 
   dsb-data-loader:
-    # build:
-      # context: .
-      # dockerfile: dockerfile.dsb-data-loader
-    image: cdradmin/dsb-data-loader:0.1
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-data-loader
+    #image: cdradmin/dsb-data-loader:0.1
     container_name: dsb-data-loader
     env_file: .env.docker
     depends_on:
