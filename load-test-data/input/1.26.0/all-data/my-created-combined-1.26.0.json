@@ -6923,8 +6923,8 @@
               "customer": {
                 "customerUType": "person",
                 "person": {
-                  "firstName": "Imogen",
-                  "lastName": "Dickens",
+                  "firstName": "John",
+                  "lastName": "Doe",
                   "middleNames": [
                     "Taylor"
                   ],
@@ -15181,8 +15181,8 @@
               "customer": {
                 "customerUType": "person",
                 "person": {
-                  "firstName": "Hannah",
-                  "lastName": "Armstrong",
+                  "firstName": "Jane",
+                  "lastName": "Doe",
                   "middleNames": [
                     "Bailey"
                   ],
