@@ -1,0 +1,68 @@
+{
+  "customerId": "ff6caef1-4c78-48ea-99c8-4bd6c734e9ab",
+  "customer": {
+    "customerUType": "organisation",
+    "organisation": {
+      "physicalAddresses": [
+        {
+          "purpose": "MAIL",
+          "addressUType": "paf",
+          "paf": {
+            "localityName": "Fadel, Douglas and Farrell",
+            "postcode": "5673",
+            "state": "Queensland",
+            "postalDeliveryType": "PO_BOX",
+            "postalDeliveryNumber": 26185244,
+            "postalDeliveryNumberSuffix": "STS",
+            "postalDeliveryNumberPrefix": "APT",
+            "flatUnitNumber": "31",
+            "streetName": "Charlotte Circle",
+            "streetType": "ROAD",
+            "streetSuffix": "E",
+            "lotNumber": "LOT 2",
+            "buildingName1": "Reception area"
+          }
+        },
+        {
+          "purpose": "WORK",
+          "addressUType": "paf",
+          "paf": {
+            "localityName": "Jerde - Owen",
+            "postcode": "4152",
+            "state": "Northern Territory",
+            "dpid": "28961858",
+            "flatUnitNumber": "12",
+            "floorLevelNumber": "31"
+          }
+        },
+        {
+          "purpose": "OTHER",
+          "addressUType": "paf",
+          "paf": {
+            "localityName": "Fadel, Weber and Cronin",
+            "postcode": "0522",
+            "state": "Northern Territory",
+            "postalDeliveryType": "LOCKED_BAG",
+            "postalDeliveryNumber": 27319193,
+            "postalDeliveryNumberPrefix": "APT",
+            "dpid": "28876070",
+            "thoroughfareNumber1": 5876,
+            "thoroughfareNumber1Suffix": "HWY",
+            "thoroughfareNumber2": 5879,
+            "thoroughfareNumber2Suffix": "HWY",
+            "flatUnitNumber": "41",
+            "buildingName1": "Treasury Building"
+          }
+        }
+      ],
+      "agentRole": "Unspecified",
+      "businessName": "O'connell - Gleason",
+      "organisationType": "PARTNERSHIP",
+      "agentLastName": "Schmidt",
+      "industryCode": "468778",
+      "industryCodeVersion": "ANZSIC_1292.0_2006_V1.0",
+      "registeredCountry": "GBR"
+    }
+  },
+  "holderId": "458975289"
+}

@@ -1,6 +1,6 @@
 import { LinksPaginated, MetaPaginated } from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponse, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
+import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { devNull } from "os";
@@ -383,7 +383,7 @@ export class SingleData implements IDatabase {
             totalPages: 0,
             totalRecords: 0
         }
-        let ret: EnergyBillingListResponse = {
+        let ret: EnergyBillingListResponseV2 = {
             data: {
                 transactions: []
             },
@@ -613,7 +613,7 @@ export class SingleData implements IDatabase {
             totalPages: 0,
             totalRecords: 0
         }
-        let ret: EnergyBillingListResponse = {
+        let ret: EnergyBillingListResponseV2 = {
             data: {
                 transactions: []
             },

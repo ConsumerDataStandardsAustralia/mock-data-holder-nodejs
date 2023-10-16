@@ -1,0 +1,209 @@
+{
+  "brand": "AURORO ENERGY",
+  "brandName": "AURORO ENERGY",
+  "fuelType": "GAS",
+  "lastUpdated": "2022-01-24T21:56:59.361Z",
+  "planId": "e167d982-16b6-4362-8ff5-b580177f6747",
+  "type": "REGULATED",
+  "effectiveFrom": "2025-05-01T14:12:31.578Z",
+  "effectiveTo": "2025-08-31T00:00:00.000Z",
+  "displayName": "Energy Plan 0",
+  "description": "Energy plan optional description",
+  "applicationUri": "http://lawful-squid.info",
+  "customerType": "RESIDENTIAL",
+  "geography": {
+    "excludedPostcodes": [
+      "6023",
+      "2000"
+    ],
+    "includedPostcodes": [
+      "3000-3999"
+    ],
+    "distributors": [
+      "Swaniawski Group",
+      "Tillman - Jacobi"
+    ]
+  },
+  "gasContract": {
+    "isFixed": false,
+    "paymentOption": [
+      "OTHER"
+    ],
+    "pricingModel": "SINGLE_RATE",
+    "tariffPeriod": [
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-05-22T19:55:55.185Z",
+        "rateBlockUType": "demandCharges",
+        "startDate": "2022-02-28T11:40:11.426Z",
+        "dailySupplyCharges": "2.06",
+        "demandCharges": [
+          {
+            "displayName": "Demand charge 1 display name",
+            "description": "Demand charge 1 detailed description",
+            "amount": "2.21",
+            "measureUnit": "MONTH",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "WED",
+              "MON",
+              "TUE"
+            ],
+            "maxDemand": "6.84",
+            "measurementPeriod": "TARIFF_PERIOD",
+            "chargePeriod": "TARIFF_PERIOD"
+          },
+          {
+            "displayName": "Demand charge 2 display name",
+            "description": "Demand charge 2 detailed description",
+            "amount": "0.71",
+            "measureUnit": "DAYS",
+            "startTime": "00:43:00.12345Z",
+            "endTime": "15:43:00.12345Z",
+            "days": [
+              "TUE",
+              "MON",
+              "SUN"
+            ],
+            "measurementPeriod": "DAY",
+            "chargePeriod": "TARIFF_PERIOD"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-10-29T22:48:29.925Z",
+        "rateBlockUType": "timeOfUseRates",
+        "startDate": "2021-12-14T10:05:34.849Z",
+        "timeOfUseRates": [
+          {
+            "displayName": "Time Of Use Display Name",
+            "description": "Time Of Use Display Description",
+            "rates": [
+              {
+                "unitPrice": "2.41",
+                "volume": 0.65
+              },
+              {
+                "unitPrice": "0.98",
+                "measureUnit": "KWH",
+                "volume": 0.67
+              }
+            ],
+            "timeOfUse": [
+              {
+                "days": [
+                  "WED",
+                  "THU",
+                  "FRI"
+                ],
+                "startTime": "2023-01-14T02:24:20.681Z",
+                "endTime": "2024-06-17T22:45:08.120Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "FRI",
+                  "THU"
+                ],
+                "startTime": "2022-10-03T03:11:46.181Z",
+                "endTime": "2023-11-03T22:08:55.518Z"
+              },
+              {
+                "days": [
+                  "FRI",
+                  "SUN",
+                  "THU"
+                ],
+                "startTime": "2023-08-13T08:45:49.120Z",
+                "endTime": "2025-07-06T13:42:46.559Z"
+              },
+              {
+                "days": [
+                  "WED",
+                  "THU",
+                  "FRI"
+                ],
+                "startTime": "2023-01-14T02:24:20.681Z",
+                "endTime": "2024-06-17T22:45:08.120Z"
+              },
+              {
+                "days": [
+                  "TUE",
+                  "FRI",
+                  "THU"
+                ],
+                "startTime": "2022-10-03T03:11:46.181Z",
+                "endTime": "2023-11-03T22:08:55.518Z"
+              },
+              {
+                "days": [
+                  "FRI",
+                  "SUN",
+                  "THU"
+                ],
+                "startTime": "2023-08-13T08:45:49.120Z",
+                "endTime": "2025-07-06T13:42:46.559Z"
+              }
+            ],
+            "type": "OFF_PEAK"
+          }
+        ]
+      },
+      {
+        "displayName": "Energy Tarrif Period Display Name",
+        "endDate": "2024-12-29T23:13:49.976Z",
+        "rateBlockUType": "singleRate",
+        "startDate": "2021-11-21T16:05:51.807Z",
+        "dailySupplyCharges": "1.17",
+        "singleRate": {
+          "displayName": "Single Rate Display Name",
+          "description": "Optional description for single rate",
+          "generalUnitPrice": "2.0378",
+          "rates": [
+            {
+              "unitPrice": "1.44",
+              "volume": 1.16
+            }
+          ],
+          "period": "P3Y6M4DT12H30M5S"
+        }
+      }
+    ],
+    "additionalFeeInformation": "Some additional fee information",
+    "variation": "Variation details for this contract",
+    "onExpiryDescription": "This is what happens when prior to expiry of contract",
+    "intrinsicGreenPower": {
+      "greenPercentage": "1.38"
+    },
+    "greenPowerCharges": [
+      {
+        "displayName": "Energy Green Power Charge 0",
+        "scheme": "GREENPOWER",
+        "tiers": [
+          {
+            "percentGreen": "0.41",
+            "amount": "0.92"
+          }
+        ],
+        "type": "FIXED_PER_UNIT"
+      }
+    ],
+    "fees": [
+      {
+        "term": "4_YEAR",
+        "type": "CC_PROCESSING",
+        "amount": "11.91"
+      },
+      {
+        "term": "DAILY",
+        "type": "LATE_PAYMENT",
+        "amount": "7.77"
+      }
+    ],
+    "termType": "ONGOING",
+    "benefitPeriod": "Description for the benefit period"
+  },
+  "holderId": "458975289"
+}

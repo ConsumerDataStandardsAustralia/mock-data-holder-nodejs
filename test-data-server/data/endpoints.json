@@ -99,8 +99,8 @@
     {
         "requestType": "GET",
         "requestPath": "/energy/accounts/{accountId}/billing",
-        "minSupportedVersion": 1,
-        "maxSupportedVersion": 1
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
     },
 
 
@@ -127,14 +127,14 @@
     {
         "requestType": "POST",
         "requestPath": "/energy/accounts/billing",
-        "minSupportedVersion": 1,
-        "maxSupportedVersion": 1
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
     },      
     {
         "requestType": "GET",
         "requestPath": "/energy/accounts/billing",
-        "minSupportedVersion": 1,
-        "maxSupportedVersion": 1
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
     }, 
     {
         "requestType": "GET",
