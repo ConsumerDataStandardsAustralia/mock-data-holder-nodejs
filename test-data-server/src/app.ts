@@ -8,11 +8,11 @@ import {
     DsbAuthConfig,
     cdrTokenValidator
 } from '@cds-au/holder-sdk'
-import { MongoData } from './services/database.service';
-import { IDatabase } from './services/database.interface';
+import { EnergyDataMongo } from './services/database-energy.service';
+import { IEnergyData } from './services/database-energy.interface';
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
-import { SingleData } from './services/single.service';
+import { EnergyDataSingle } from './services/single-energy.service';
 import cors from 'cors';
 import path from 'path';
 import { readFileSync } from 'fs';
@@ -21,6 +21,10 @@ import * as https from 'https'
 import { Issuer } from 'openid-client';
 import { AuthService } from './services/auth-service';
 import { cdrAuthorization } from './modules/auth';
+import { IBankingData } from './services/database-banking.interface';
+import { BankingDataSingle } from './services/single-banking.service';
+import { AuthDataService } from './services/database-auth.service';
+import { BankingDataMongo } from './services/database-banking.service';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -38,19 +42,34 @@ let standardsVersion = '/cds-au/v1';
 const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}`
 const corsAllowedOrigin = process.env.CORS_ALLOWED_ORIGINS?.split(",")
 
-const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
-var isSingle = isSingleStr?.toLowerCase() == 'true' ? true : false;
-var isSingle = isSingleStr?.toLowerCase() == 'false' ? false : true;
+const isEnergySingleStr = process.env.ENERGY_DATA_IS_SINGLE_DOCUMENT;
+var isEnergySingle = isEnergySingleStr?.toLowerCase() == 'true' ? true : false;
+var isEnergySingle = isEnergySingleStr?.toLowerCase() == 'false' ? false : true;
+
+const isBankingSingleStr = process.env.BANKING_DATA_IS_SINGLE_DOCUMENT;
+var isBankingSingle = isBankingSingleStr?.toLowerCase() == 'true' ? true : false;
+var isBankingSingle = isBankingSingleStr?.toLowerCase() == 'false' ? false : true;
 
 console.log(`Connection string is ${connString}`);
 
-var dbService: IDatabase;
-if (isSingle == true)
-    dbService = new SingleData(connString, process.env.MONGO_DB as string);
+var dbEnergyService: IEnergyData;
+if (isEnergySingle == true)
+    dbEnergyService = new EnergyDataSingle(connString, process.env.MONGO_DB as string);
 else
-    dbService = new MongoData(connString, process.env.MONGO_DB as string);
+    dbEnergyService = new EnergyDataMongo(connString, process.env.MONGO_DB as string);
 
-let authService = new AuthService(dbService);
+
+var dbBankingService: IBankingData;
+if (isBankingSingle == true)
+    dbBankingService = new BankingDataSingle(connString, process.env.MONGO_DB as string);
+else
+    dbBankingService = new BankingDataMongo(connString, process.env.MONGO_DB as string);
+
+
+var dbAuthService = new AuthDataService(connString, process.env.MONGO_DB as string)
+
+let authService = new AuthService(dbAuthService);
+
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
@@ -98,7 +117,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/', router);
 
-dbService.connectDatabase()
+dbEnergyService.connectDatabase()
     .then(() => {
         initAuthService();     
     })
@@ -147,7 +166,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
                 res.status(404).json('Not Found');
                 return;      
             }
-            let result = await dbService.getEnergyAccountDetails(userId, req.params?.accountId)
+            let result = await dbEnergyService.getEnergyAccountDetails(userId, req.params?.accountId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -156,7 +175,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
             }
         }
         if (req.params?.accountId == "invoices") {
-            let result = await dbService.getBulkInvoicesForUser(userId)
+            let result = await dbEnergyService.getBulkInvoicesForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -165,7 +184,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
         }
     
         if (req.params?.accountId == "billing") {
-            let result = await dbService.getBulkBilllingForUser(userId)
+            let result = await dbEnergyService.getBulkBilllingForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -174,7 +193,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
         }
     
         if (req.params?.accountId == "balances") {
-            let result = await dbService.getBulkBalancesForUser(userId)
+            let result = await dbEnergyService.getBulkBalancesForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -185,8 +204,6 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
         console.log('Error:', e);
         res.sendStatus(500);
     }
-
-
 })
 
 // anything /energy/electricity/servicepoints/<something-else> needs  to be routed like this 
@@ -206,7 +223,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
         }
         var excludes = ["usage", "der"];
         if (excludes.indexOf(req.params?.servicePointId) == -1) {
-            let result = await dbService.getServicePointDetails(userId, req.params?.servicePointId)
+            let result = await dbEnergyService.getServicePointDetails(userId, req.params?.servicePointId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -216,7 +233,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
         }
         if (req.params?.servicePointId == "usage") {
             console.log(`Received request on ${port} for ${req.url}`);
-            let result = await dbService.getBulkUsageForUser(userId)
+            let result = await dbEnergyService.getBulkUsageForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -226,7 +243,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
         }
     
         if (req.params?.servicePointId == "der") {
-            let result = await dbService.getBulkDerForUser(userId)
+            let result = await dbEnergyService.getBulkDerForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -254,7 +271,7 @@ app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Respons
             res.status(401).json('Not authorized');
             return;
         }
-        let ret = await dbService.getEnergyAccounts(userId, authService.authUser?.accounts as string[]);
+        let ret = await dbEnergyService.getEnergyAccounts(userId, authService.authUser?.accounts as string[]);
         ret.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
         res.send(ret);
     } catch(e) {
@@ -278,7 +295,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getServicePoints(userId);
+        let result = await dbEnergyService.getServicePoints(userId);
         //let result: any = null;
         if (result == null) {
             res.sendStatus(404);
@@ -307,7 +324,7 @@ app.get(`${standardsVersion}/common/customer/detail`, async (req: Request, res: 
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getCustomerDetails(userId);
+        let result = await dbEnergyService.getCustomerDetails(userId);
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -334,7 +351,7 @@ app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Respons
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getCustomerDetails(userId);
+        let result = await dbEnergyService.getCustomerDetails(userId);
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -350,7 +367,7 @@ app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Respons
 app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getEnergyPlanDetails(req.params.planId)
+        let result = await dbEnergyService.getEnergyPlanDetails(req.params.planId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -368,7 +385,7 @@ app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Re
 app.get(`${standardsVersion}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-        let result = await dbService.getEnergyAllPlans()
+        let result = await dbEnergyService.getEnergyAllPlans()
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -397,7 +414,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/us
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getUsageForServicePoint(userId, req.params.servicePointId)
+        let result = await dbEnergyService.getUsageForServicePoint(userId, req.params.servicePointId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -425,7 +442,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/de
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getDerForServicePoint(userId, req.params.servicePointId);
+        let result = await dbEnergyService.getDerForServicePoint(userId, req.params.servicePointId);
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -453,7 +470,7 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/der`, async (req:
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getDerForMultipleServicePoints(userId, req.body?.accountIds)
+        let result = await dbEnergyService.getDerForMultipleServicePoints(userId, req.body?.accountIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -487,7 +504,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, r
         }
         var excludes = ["invoices"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let result = await dbService.getEnergyAccountDetails(userId, req.params?.accountId)
+            let result = await dbEnergyService.getEnergyAccountDetails(userId, req.params?.accountId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -523,7 +540,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
             res.status(401).json('Not authorized');
             return;      
         }
-        let result = await dbService.getInvoicesForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyService.getInvoicesForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -555,7 +572,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
             res.status(401).json('Not authorized');
             return;      
         }
-        let result = await dbService.getInvoicesForAccount(userId, req.params.accountId)
+        let result = await dbEnergyService.getInvoicesForAccount(userId, req.params.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -582,7 +599,7 @@ app.post(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, re
         res.status(401).json('Not authorized');
         return;
     }
-    let result = await dbService.getInvoicesForMultipleAccounts(userId, req.body?.data?.accountIds)
+    let result = await dbEnergyService.getInvoicesForMultipleAccounts(userId, req.body?.data?.accountIds)
     if (result == null) {
         res.sendStatus(404);
     } else {
@@ -606,7 +623,7 @@ app.post(`${standardsVersion}/energy/accounts/balances`, async (req: Request, re
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbService.getBalancesForMultipleAccount(userId, req.body?.data?.accountIds)
+        let result = await dbEnergyService.getBalancesForMultipleAccount(userId, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -634,7 +651,7 @@ app.get(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res
             return;
         }
     
-        let result = await dbService.getBulkInvoicesForUser(userId)
+        let result = await dbEnergyService.getBulkInvoicesForUser(userId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -662,7 +679,7 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/usage`, async (re
             return;
         }
     
-        let result = await dbService.getUsageForMultipleServicePoints(userId, req.body?.data?.servicePointIds)
+        let result = await dbEnergyService.getUsageForMultipleServicePoints(userId, req.body?.data?.servicePointIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -694,7 +711,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/concessions`, async (req
             res.status(401).json('Not authorized');
             return;      
         }
-        let result = await dbService.getConcessionsForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyService.getConcessionsForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -727,7 +744,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/balance`, async (req: Re
             return;      
         }
         let st = `Received request on ${port} for ${req.url}`;
-        let result = await dbService.getBalanceForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyService.getBalanceForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -759,7 +776,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
             res.status(401).json('Not authorized');
             return;      
         }
-        let result = await dbService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -791,7 +808,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/billing`, async (req: Re
             res.status(401).json('Not authorized');
             return;      
         }
-        let result = await dbService.getTransactionsForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyService.getTransactionsForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -819,7 +836,7 @@ app.post(`${standardsVersion}/energy/accounts/billing`, async (req: Request, res
             return;
         }
     
-        let result = await dbService.getBillingForMultipleAccounts(userId, req.body?.data?.accountIds)
+        let result = await dbEnergyService.getBillingForMultipleAccounts(userId, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -851,7 +868,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
             res.status(401).json('Not authorized');
             return;      
         }
-        let result = await dbService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -864,6 +881,43 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
     }
 });
 
+/******************* BANKING DATA  *********************************/
+// this endpoint does NOT require authentication
+app.get(`${standardsVersion}/banking/products/`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        let result = await dbBankingService.getAllBankingProducts()
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        }
+    } catch(e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+app.get(`${standardsVersion}/banking/products/:productId`, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let result = await dbBankingService.getBankingProductDetails(req.params.productId)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        }
+    } catch(e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }    
+
+});
+
+
 // Get the information required by the Auth server to displaythe login screen
 app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -872,7 +926,7 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
             res.status(404).json('Not Found');
             return;      
         }
-        let customers = await dbService.getLoginInformation(req.params?.sector)
+        let customers = await dbAuthService.getLoginInformation(req.params?.sector)
         let result = { Customers: customers};
         res.send(result);
     } catch(e) {

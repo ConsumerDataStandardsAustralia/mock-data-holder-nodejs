@@ -4,16 +4,11 @@ import * as https from 'https'
 import { readFileSync } from "fs";
 import { Introspection } from "../models/introspection";
 import { JwkKey } from "../models/jwt-key";
-import axios, { Axios, AxiosRequestConfig, HttpStatusCode } from "axios";
-import {CipherKey, Hash, KeyExportOptions, KeyObject, createHash} from 'crypto'; 
-import * as CryptoJS from 'crypto-js';
+import axios, { Axios, AxiosRequestConfig } from "axios";
+import {createHash} from 'crypto'; 
 import jwtDecode from "jwt-decode";
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
-import { Inject, Service } from "typedi";
-import { MongoData } from "./database.service";
-import { IDatabase } from "./database.interface";
-import { enc, lib } from "crypto-js";
 import { CryptoUtils } from "../utils/crypto-utils";
+import { IAuthData } from "./database-auth.interface";
 
 
 export class AuthService {
@@ -33,9 +28,9 @@ export class AuthService {
     // This key must be the same on the authorisation server
     idPermanenceKey = process.env.IDPERMANENCEKEY;
     iv = Buffer.alloc(16);
-    dbService: IDatabase;
+    dbService: IAuthData;
 
-    constructor(dbService: IDatabase) {
+    constructor(dbService: IAuthData) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
         this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;

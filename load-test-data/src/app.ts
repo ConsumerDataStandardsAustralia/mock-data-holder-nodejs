@@ -76,10 +76,16 @@ async function processSingleFiles(singleDataFilePath: string): Promise<boolean> 
     let cnt = singleDataFiles.length;
     for (let i = 0; i < cnt; i++) {
         console.log("Processing data file: " + singleDataFiles[i]);
+        
         let file = singleDataFiles[i];
         var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
-        if (defaultColName.toLowerCase() != collectionName)
+        if (process.env.SINGLE_DATA_DOCUMENT != null && process.env.SINGLE_DATA_DOCUMENT.toLowerCase() != collectionName && defaultColName.toLowerCase() != collectionName) {
+            console.log("Abandoning load of: " + collectionName);
             continue;
+        }
+            
+        // if (defaultColName.toLowerCase() != collectionName)
+        //     continue;
         var filePath = path.join(singleDataFilePath, file);
         let fileString = fs.readFileSync(filePath).toString();
         var data = JSON.parse(fileString);

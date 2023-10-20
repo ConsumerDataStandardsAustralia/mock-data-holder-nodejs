@@ -1,6 +1,6 @@
 import { CustomerModel } from "../models/login";
 
-export interface IDatabase {
+export interface IEnergyData {
     connectDatabase() : Promise<void>;
     disconnectDatabase() : Promise<void>;
     getCollections(): Promise<string[]>;
@@ -54,8 +54,4 @@ export interface IDatabase {
     getBulkUsageForUser(customerId: string): Promise<any>;
 
     getBulkDerForUser(customerId: string): Promise<any>;
-
-    getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
-
-    getLoginInformation(sector: string): Promise<CustomerModel[] | undefined>;
 }
