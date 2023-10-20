@@ -19,7 +19,7 @@ export class BankingDataSingle implements IBankingData {
     }
 
     async getProducts(allDataCollection: mongoDB.Collection, productId: string | undefined): Promise<any> {
-        let allData = await allDataCollection.findOne({});
+        let allData = await allDataCollection.findOne();
         let allProducts = null;
         if (allData?.holders != null)
             allProducts = allData?.holders[0]?.holder?.unauthenticated?.banking?.products;
@@ -34,7 +34,7 @@ export class BankingDataSingle implements IBankingData {
 
     async getAllBankingProducts(): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_BANKING as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getProducts(allData, undefined);
         let retArray: any[] = [];
         if (allPlans == null) {
@@ -75,7 +75,7 @@ export class BankingDataSingle implements IBankingData {
 
     async loadCustomer(customer: any): Promise<boolean> {
         if (customer == null) return false;
-        let customers: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_BANKING as string);
+        let customers: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let ret = await customers.insertOne(customer);
         return ret.insertedId != null
 
@@ -114,12 +114,13 @@ export class BankingDataSingle implements IBankingData {
 
     async getBankingProductDetails(productId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_BANKING as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         // const query = { productId: productId };
         let product: any = await this.getProducts(allData, productId);
 
-        if (product == null)
+        if (product == null || product.length == 0)
             return null;
+
         ret.data = product[0];
         let l: Links = {
             self: ""

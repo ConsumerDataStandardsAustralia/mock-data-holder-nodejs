@@ -43,7 +43,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
 
     async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -79,7 +79,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
     async getBulkUsageForUser(customerId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
 
         let retArray: any[] = [];
@@ -106,7 +106,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
     async getBulkDerForUser(customerId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
 
         let retArray: any[] = [];
@@ -133,7 +133,7 @@ export class EnergyDataSingle implements IEnergyData {
 
     async getBulkBilllingForUser(customerId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
         if (cust != null) {
@@ -155,7 +155,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getBulkBalancesForUser(customerId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -188,7 +188,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
     async getBulkInvoicesForUser(customerId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
         if (cust != null) {
@@ -210,7 +210,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
     async getEnergyAllPlans(): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getPlans(allData, undefined);
         let retArray: any[] = [];
         if (allPlans == null) {
@@ -234,7 +234,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
     async getEnergyPlanDetails(planId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         const query = { planId: planId };
         let plan: any = await this.getPlans(allData, query);
 
@@ -252,7 +252,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getConcessionsForAccount(customerId: string, accountId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -280,7 +280,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -308,7 +308,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getServicePoints(customerId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -349,7 +349,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
 
     async getBillingForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -378,7 +378,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getInvoicesForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -407,7 +407,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -436,7 +436,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getUsageForMultipleServicePoints(customerId: string, servicePointIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -466,7 +466,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getCustomerDetails(customerId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         if (cust == null) return null;
         let response: ResponseCommonCustomerDetailV2 = {
@@ -487,7 +487,7 @@ export class EnergyDataSingle implements IEnergyData {
 
     }
     async getInvoicesForAccount(customerId: string, accountId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -516,7 +516,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
 
     async getInvoicesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -548,7 +548,7 @@ export class EnergyDataSingle implements IEnergyData {
         throw new Error("Method not implemented.");
     }
     async getBalanceForAccount(customerId: string, accountId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -579,7 +579,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
 
     async getTransactionsForAccount(customerId: string, accountId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
             self: ""
@@ -608,7 +608,7 @@ export class EnergyDataSingle implements IEnergyData {
     }
 
     async getUsageForServicePoint(customerId: string, servicePointId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let sp: any = cust?.energy?.servicePoints?.find((x: any) => x.servicePoint.servicePointId == servicePointId);
 
@@ -633,7 +633,7 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
     async getDerForServicePoint(customerId: string, servicePointId: string): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let sp: any = cust?.energy.servicePoints.find((x: any) => x.der.servicePointId == servicePointId);
         let data = sp?.der as EnergyDerRecord;
@@ -652,7 +652,7 @@ export class EnergyDataSingle implements IEnergyData {
 
     async getEnergyAccountDetails(customerId: string, accountId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.accounts.find((x: any) => x.account.accountId == accountId);
         ret.data = acc?.account;
@@ -669,7 +669,7 @@ export class EnergyDataSingle implements IEnergyData {
 
     async getServicePointDetails(customerId: string, servicePointId: string): Promise<any> {
         let ret: any = {};
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.servicePoints.find((x: any) => x.servicePoint.servicePointId == servicePointId);
         ret.data = acc?.servicePoint ? acc?.servicePoint : [];
@@ -685,13 +685,13 @@ export class EnergyDataSingle implements IEnergyData {
     }
     async loadCustomer(customer: any): Promise<boolean> {
         if (customer == null) return false;
-        let customers: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let customers: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let ret = await customers.insertOne(customer);
         return ret.insertedId != null
 
     }
     async getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let accList: any[] = [];
         let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV2[];
@@ -780,7 +780,7 @@ export class EnergyDataSingle implements IEnergyData {
     // get all the logins for the ACCC cdr-auth-server UI
     async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
           var loginModel : CustomerModel[] = [];
-          let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+          let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
           let allData = await allDataCollection.findOne();
           if (allData?.holders != undefined) {
               let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;

@@ -17,7 +17,7 @@ export class AuthDataService implements IAuthData {
     constructor(connString: string, dbName: string) {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
         this.dsbData = this.client.db(dbName);
-        const isSingleString = process.env.AUTH_DATA_IS_SINGLE_DOCUMENT;
+        const isSingleString = process.env.DATA_IS_SINGLE_DOCUMENT;
         this.isSingleDoc = isSingleString?.toLowerCase() == 'true' ? true : false;
         this.isSingleDoc = isSingleString?.toLowerCase() == 'false' ? false : true;
     }
@@ -45,7 +45,7 @@ export class AuthDataService implements IAuthData {
             return undefined;
         let firstName = arr[1];
         let lastName = arr[0];
-        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_AUTH as string);
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allData = await allDataCollection.findOne();
         if (allData?.holders != undefined) {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
@@ -123,7 +123,7 @@ export class AuthDataService implements IAuthData {
     // get all the logins for the ACCC cdr-auth-server UI
     async getLoginInformationSingle(sector: string): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
-        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME_ENERGY as string);
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allData = await allDataCollection.findOne();
         if (allData?.holders != undefined) {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;

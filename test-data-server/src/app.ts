@@ -25,6 +25,7 @@ import { IBankingData } from './services/database-banking.interface';
 import { BankingDataSingle } from './services/single-banking.service';
 import { AuthDataService } from './services/database-auth.service';
 import { BankingDataMongo } from './services/database-banking.service';
+import { IAuthData } from './services/database-auth.interface';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -42,33 +43,28 @@ let standardsVersion = '/cds-au/v1';
 const connString = `mongodb://${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}`
 const corsAllowedOrigin = process.env.CORS_ALLOWED_ORIGINS?.split(",")
 
-const isEnergySingleStr = process.env.ENERGY_DATA_IS_SINGLE_DOCUMENT;
-var isEnergySingle = isEnergySingleStr?.toLowerCase() == 'true' ? true : false;
-var isEnergySingle = isEnergySingleStr?.toLowerCase() == 'false' ? false : true;
-
-const isBankingSingleStr = process.env.BANKING_DATA_IS_SINGLE_DOCUMENT;
-var isBankingSingle = isBankingSingleStr?.toLowerCase() == 'true' ? true : false;
-var isBankingSingle = isBankingSingleStr?.toLowerCase() == 'false' ? false : true;
-
+const isSingleStr = process.env.DATA_IS_SINGLE_DOCUMENT;
+var isDataSingleDocument = isSingleStr?.toLowerCase() == 'true' ? true : false;
+var isDataSingleDocument = isSingleStr?.toLowerCase() == 'false' ? false : true;
 console.log(`Connection string is ${connString}`);
 
-var dbEnergyService: IEnergyData;
-if (isEnergySingle == true)
-    dbEnergyService = new EnergyDataSingle(connString, process.env.MONGO_DB as string);
-else
-    dbEnergyService = new EnergyDataMongo(connString, process.env.MONGO_DB as string);
+var dbEnergyDataService: IEnergyData;
+var dbBankingDataService: IBankingData;
+var dbAuthDataService: IAuthData;
+if (isDataSingleDocument == true) {
+    dbEnergyDataService = new EnergyDataSingle(connString, process.env.MONGO_DB as string);
+    dbBankingDataService = new BankingDataSingle(connString, process.env.MONGO_DB as string);
+    dbAuthDataService = new AuthDataService(connString, process.env.MONGO_DB as string)
+}
+
+else {
+    dbEnergyDataService = new EnergyDataMongo(connString, process.env.MONGO_DB as string);
+    dbBankingDataService = new BankingDataMongo(connString, process.env.MONGO_DB as string);
+    dbAuthDataService = new AuthDataService(connString, process.env.MONGO_DB as string)
+}
 
 
-var dbBankingService: IBankingData;
-if (isBankingSingle == true)
-    dbBankingService = new BankingDataSingle(connString, process.env.MONGO_DB as string);
-else
-    dbBankingService = new BankingDataMongo(connString, process.env.MONGO_DB as string);
-
-
-var dbAuthService = new AuthDataService(connString, process.env.MONGO_DB as string)
-
-let authService = new AuthService(dbAuthService);
+let authService = new AuthService(dbAuthDataService);
 
 
 // Add a list of allowed origins.
@@ -84,7 +80,7 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
-const certFile =path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
+const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
@@ -102,13 +98,13 @@ let tokenValidatorOptions: CdrConfig = {
 }
 
 // function used to determine if the middleware is to be bypassed for the given 'paths'
-function unless(middleware:any, ...paths: any) {
-    return function(req: Request, res: Response, next: NextFunction) {
-      const pathCheck = paths.some((path:string) => path === req.path);
-      pathCheck ? next() : middleware(req, res, next);
+function unless(middleware: any, ...paths: any) {
+    return function (req: Request, res: Response, next: NextFunction) {
+        const pathCheck = paths.some((path: string) => path === req.path);
+        pathCheck ? next() : middleware(req, res, next);
     };
-  };
-  
+};
+
 app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
 app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 app.use(unless(cdrHeaderValidator(dsbOptions), "/login-data/energy", "/jwks"));
@@ -117,9 +113,9 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/', router);
 
-dbEnergyService.connectDatabase()
+dbEnergyDataService.connectDatabase()
     .then(() => {
-        initAuthService();     
+        initAuthService();
     })
     .catch((error: Error) => {
         console.error("Database connection failed", error);
@@ -131,15 +127,15 @@ async function initAuthService() {
         key: rKey,
         cert: rCert
     }
-    console.log(`Interrogating discovery endpoint : ${authServerUrl}`);  
+    console.log(`Interrogating discovery endpoint : ${authServerUrl}`);
     let init = await authService.initAuthService();
     if (init == false) {
         console.log('WARNING: Authentication service could not be initalised');
     }
     https.createServer(otions, app)
-    .listen(port, () => {
-        console.log('Server started');
-    })
+        .listen(port, () => {
+            console.log('Server started');
+        })
 }
 
 
@@ -148,7 +144,7 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
 
     try {
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -158,15 +154,15 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
             res.status(401).json('Not authorized');
             return;
         }
-    
+
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["invoices", "billing", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            if (accountIsValid(req.params?.accountId) == false){
+            if (accountIsValid(req.params?.accountId) == false) {
                 res.status(404).json('Not Found');
-                return;      
+                return;
             }
-            let result = await dbEnergyService.getEnergyAccountDetails(userId, req.params?.accountId)
+            let result = await dbEnergyDataService.getEnergyAccountDetails(userId, req.params?.accountId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -175,32 +171,32 @@ router.get(`${standardsVersion}/energy/accounts/:accountId`, async (req, res) =>
             }
         }
         if (req.params?.accountId == "invoices") {
-            let result = await dbEnergyService.getBulkInvoicesForUser(userId)
+            let result = await dbEnergyDataService.getBulkInvoicesForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
                 res.send(result);
             }
         }
-    
+
         if (req.params?.accountId == "billing") {
-            let result = await dbEnergyService.getBulkBilllingForUser(userId)
+            let result = await dbEnergyDataService.getBulkBilllingForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
                 res.send(result);
             }
         }
-    
+
         if (req.params?.accountId == "balances") {
-            let result = await dbEnergyService.getBulkBalancesForUser(userId)
+            let result = await dbEnergyDataService.getBulkBalancesForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
                 res.send(result);
             }
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -211,7 +207,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -223,7 +219,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
         }
         var excludes = ["usage", "der"];
         if (excludes.indexOf(req.params?.servicePointId) == -1) {
-            let result = await dbEnergyService.getServicePointDetails(userId, req.params?.servicePointId)
+            let result = await dbEnergyDataService.getServicePointDetails(userId, req.params?.servicePointId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -233,7 +229,7 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
         }
         if (req.params?.servicePointId == "usage") {
             console.log(`Received request on ${port} for ${req.url}`);
-            let result = await dbEnergyService.getBulkUsageForUser(userId)
+            let result = await dbEnergyDataService.getBulkUsageForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -241,16 +237,16 @@ router.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId
                 res.send(result);
             }
         }
-    
+
         if (req.params?.servicePointId == "der") {
-            let result = await dbEnergyService.getBulkDerForUser(userId)
+            let result = await dbEnergyDataService.getBulkDerForUser(userId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
                 res.send(result);
             }
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -261,7 +257,7 @@ app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Respons
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -271,10 +267,10 @@ app.get(`${standardsVersion}/energy/accounts`, async (req: Request, res: Respons
             res.status(401).json('Not authorized');
             return;
         }
-        let ret = await dbEnergyService.getEnergyAccounts(userId, authService.authUser?.accounts as string[]);
+        let ret = await dbEnergyDataService.getEnergyAccounts(userId, authService.authUser?.accounts as string[]);
         ret.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
         res.send(ret);
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -285,7 +281,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -295,7 +291,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getServicePoints(userId);
+        let result = await dbEnergyDataService.getServicePoints(userId);
         //let result: any = null;
         if (result == null) {
             res.sendStatus(404);
@@ -304,7 +300,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints`, async (req: Requ
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -314,7 +310,7 @@ app.get(`${standardsVersion}/common/customer/detail`, async (req: Request, res: 
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -324,24 +320,24 @@ app.get(`${standardsVersion}/common/customer/detail`, async (req: Request, res: 
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getCustomerDetails(userId);
+        let result = await dbEnergyDataService.getCustomerDetails(userId);
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -351,33 +347,33 @@ app.get(`${standardsVersion}/common/customer`, async (req: Request, res: Respons
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getCustomerDetails(userId);
+        let result = await dbEnergyDataService.getCustomerDetails(userId);
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbEnergyService.getEnergyPlanDetails(req.params.planId)
+        let result = await dbEnergyDataService.getEnergyPlanDetails(req.params.planId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 
 });
 
@@ -385,14 +381,14 @@ app.get(`${standardsVersion}/energy/plans/:planId`, async (req: Request, res: Re
 app.get(`${standardsVersion}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-        let result = await dbEnergyService.getEnergyAllPlans()
+        let result = await dbEnergyDataService.getEnergyAllPlans()
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -404,7 +400,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/us
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -414,17 +410,17 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/us
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getUsageForServicePoint(userId, req.params.servicePointId)
+        let result = await dbEnergyDataService.getUsageForServicePoint(userId, req.params.servicePointId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get der for a service point, returns EnergyDerDetailResponse
@@ -432,7 +428,7 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/de
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -442,17 +438,17 @@ app.get(`${standardsVersion}/energy/electricity/servicepoints/:servicePointId/de
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getDerForServicePoint(userId, req.params.servicePointId);
+        let result = await dbEnergyDataService.getDerForServicePoint(userId, req.params.servicePointId);
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get der for a service point, returns EnergyDerDetailResponse
@@ -460,7 +456,7 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/der`, async (req:
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -470,17 +466,17 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/der`, async (req:
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getDerForMultipleServicePoints(userId, req.body?.accountIds)
+        let result = await dbEnergyDataService.getDerForMultipleServicePoints(userId, req.body?.accountIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get account details for an accountID, returns EnergyAccountDetailResponseV2
@@ -488,7 +484,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, r
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -498,13 +494,13 @@ app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, r
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
         var excludes = ["invoices"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let result = await dbEnergyService.getEnergyAccountDetails(userId, req.params?.accountId)
+            let result = await dbEnergyDataService.getEnergyAccountDetails(userId, req.params?.accountId)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -515,7 +511,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId`, async (req: Request, r
         else {
             app.get(`${standardsVersion}/energy/accounts/`);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -526,7 +522,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -536,21 +532,21 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
-        let result = await dbEnergyService.getInvoicesForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyDataService.getInvoicesForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get invoices for account, returns EnergyInvoiceListResponse
@@ -558,7 +554,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -568,18 +564,18 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
-        let result = await dbEnergyService.getInvoicesForAccount(userId, req.params.accountId)
+        let result = await dbEnergyDataService.getInvoicesForAccount(userId, req.params.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -589,7 +585,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/invoices`, async (req: R
 app.post(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received POST request on ${port} for ${req.url}`);
     let temp = req.headers?.authorization as string;
-    let tokenIsValid = await authService.verifyAccessToken(temp) 
+    let tokenIsValid = await authService.verifyAccessToken(temp)
     if (tokenIsValid == false) {
         res.status(401).json('Not authorized');
         return;
@@ -599,7 +595,7 @@ app.post(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, re
         res.status(401).json('Not authorized');
         return;
     }
-    let result = await dbEnergyService.getInvoicesForMultipleAccounts(userId, req.body?.data?.accountIds)
+    let result = await dbEnergyDataService.getInvoicesForMultipleAccounts(userId, req.body?.data?.accountIds)
     if (result == null) {
         res.sendStatus(404);
     } else {
@@ -613,7 +609,7 @@ app.post(`${standardsVersion}/energy/accounts/balances`, async (req: Request, re
     try {
         console.log(`Received POST request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -623,16 +619,16 @@ app.post(`${standardsVersion}/energy/accounts/balances`, async (req: Request, re
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbEnergyService.getBalancesForMultipleAccount(userId, req.body?.data?.accountIds)
+        let result = await dbEnergyDataService.getBalancesForMultipleAccount(userId, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get invoices for account, returns EnergyInvoiceListResponse
@@ -640,7 +636,7 @@ app.get(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res
     try {
         console.log(`Received GET request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -650,17 +646,17 @@ app.get(`${standardsVersion}/energy/accounts/invoices`, async (req: Request, res
             res.status(401).json('Not authorized');
             return;
         }
-    
-        let result = await dbEnergyService.getBulkInvoicesForUser(userId)
+
+        let result = await dbEnergyDataService.getBulkInvoicesForUser(userId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get invoices for account, returns EnergyInvoiceListResponse
@@ -668,7 +664,7 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/usage`, async (re
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -678,18 +674,18 @@ app.post(`${standardsVersion}/energy/electricity/servicepoints/usage`, async (re
             res.status(401).json('Not authorized');
             return;
         }
-    
-        let result = await dbEnergyService.getUsageForMultipleServicePoints(userId, req.body?.data?.servicePointIds)
+
+        let result = await dbEnergyDataService.getUsageForMultipleServicePoints(userId, req.body?.data?.servicePointIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get concessions for account, returns EnergyConcessionsResponse
@@ -697,7 +693,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/concessions`, async (req
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -707,21 +703,21 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/concessions`, async (req
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
-        let result = await dbEnergyService.getConcessionsForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyDataService.getConcessionsForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get balance for account, returns EnergyBalanceResponse
@@ -729,7 +725,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/balance`, async (req: Re
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -739,19 +735,19 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/balance`, async (req: Re
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
         let st = `Received request on ${port} for ${req.url}`;
-        let result = await dbEnergyService.getBalanceForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyDataService.getBalanceForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -762,7 +758,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -772,21 +768,21 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
-        let result = await dbEnergyService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyDataService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 // get payment schedule for account, returns EnergyPaymentScheduleResponse
@@ -794,7 +790,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/billing`, async (req: Re
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -804,17 +800,17 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/billing`, async (req: Re
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
-        let result = await dbEnergyService.getTransactionsForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyDataService.getTransactionsForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -825,7 +821,7 @@ app.post(`${standardsVersion}/energy/accounts/billing`, async (req: Request, res
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -835,18 +831,18 @@ app.post(`${standardsVersion}/energy/accounts/billing`, async (req: Request, res
             res.status(401).json('Not authorized');
             return;
         }
-    
-        let result = await dbEnergyService.getBillingForMultipleAccounts(userId, req.body?.data?.accountIds)
+
+        let result = await dbEnergyDataService.getBillingForMultipleAccounts(userId, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 });
 
 
@@ -854,7 +850,7 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let temp = req.headers?.authorization as string;
-        let tokenIsValid = await authService.verifyAccessToken(temp) 
+        let tokenIsValid = await authService.verifyAccessToken(temp)
         if (tokenIsValid == false) {
             res.status(401).json('Not authorized');
             return;
@@ -864,18 +860,18 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
             res.status(401).json('Not authorized');
             return;
         }
-        if (accountIsValid(req.params?.accountId) == false){
+        if (accountIsValid(req.params?.accountId) == false) {
             res.status(401).json('Not authorized');
-            return;      
+            return;
         }
-        let result = await dbEnergyService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
+        let result = await dbEnergyDataService.getPaymentSchedulesForAccount(userId, req.params?.accountId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -886,14 +882,14 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 app.get(`${standardsVersion}/banking/products/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-        let result = await dbBankingService.getAllBankingProducts()
+        let result = await dbBankingDataService.getAllBankingProducts()
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -903,17 +899,17 @@ app.get(`${standardsVersion}/banking/products/`, async (req: Request, res: Respo
 app.get(`${standardsVersion}/banking/products/:productId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbBankingService.getBankingProductDetails(req.params.productId)
+        let result = await dbBankingDataService.getBankingProductDetails(req.params.productId)
         if (result == null) {
             res.sendStatus(404);
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
         }
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
-    }    
+    }
 
 });
 
@@ -922,14 +918,14 @@ app.get(`${standardsVersion}/banking/products/:productId`, async (req: Request, 
 app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        if (sectorIsValid(req.params?.sector) == false){
+        if (sectorIsValid(req.params?.sector) == false) {
             res.status(404).json('Not Found');
-            return;      
+            return;
         }
-        let customers = await dbAuthService.getLoginInformation(req.params?.sector)
-        let result = { Customers: customers};
+        let customers = await dbAuthDataService.getLoginInformation(req.params?.sector)
+        let result = { Customers: customers };
         res.send(result);
-    } catch(e) {
+    } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
@@ -940,15 +936,15 @@ function getUserId(req: any): string | undefined {
     return authService?.authUser?.customerId;
 }
 
-function accountIsValid(accountId: string): boolean{
+function accountIsValid(accountId: string): boolean {
     let idx = authService?.authUser?.accounts?.findIndex(x => x == accountId)
     return (idx != undefined && idx > -1);
 }
 
-function sectorIsValid(sector: string) : boolean {
+function sectorIsValid(sector: string): boolean {
     let validSectors = ['energy', 'banking']
     let st = sector.toLowerCase();
-    return validSectors.indexOf(st)>-1
+    return validSectors.indexOf(st) > -1
 }
 
 
