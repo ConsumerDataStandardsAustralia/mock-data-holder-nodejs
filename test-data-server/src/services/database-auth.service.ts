@@ -127,7 +127,7 @@ export class AuthDataService implements IAuthData {
         let allData = await allDataCollection.findOne();
         if (allData?.holders != undefined) {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
-            if (allCustomers.length < 1)
+            if (allCustomers == undefined || allCustomers.length < 1)
                 return undefined;
             allCustomers.forEach((c: any) => {
                 let aModel: CustomerModel = {
@@ -167,6 +167,9 @@ export class AuthDataService implements IAuthData {
                 }
 
             })
+        }
+        else {
+            return undefined;
         }
         return loginModel;
     }

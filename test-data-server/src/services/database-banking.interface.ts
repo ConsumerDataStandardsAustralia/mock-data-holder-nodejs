@@ -9,6 +9,6 @@ export interface IBankingData {
 
     getBankingProductDetails(productId: string): Promise<any>;
 
-    getAllBankingProducts(): Promise<any>;
+    getAllBankingProducts(queryParameters: any): Promise<any>;
 
 }

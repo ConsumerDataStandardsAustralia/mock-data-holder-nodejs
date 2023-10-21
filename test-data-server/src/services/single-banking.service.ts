@@ -28,14 +28,15 @@ export class BankingDataSingle implements IBankingData {
                 if (x.productId == productId)
                     return x;
             })
-        }
+        } 
         return allProducts;
     }
 
-    async getAllBankingProducts(): Promise<any> {
+    async getAllBankingProducts(queryParameters: any): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getProducts(allData, undefined);
+
         let retArray: any[] = [];
         if (allPlans == null) {
             ret.data = { products: retArray };

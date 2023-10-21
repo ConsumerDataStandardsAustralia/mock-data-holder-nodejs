@@ -57,6 +57,7 @@ export class MongoData implements IDatabaseLoader {
         if (doc == null) return null;
         let collectionName = datasetName == null ? process.env.SINGLE_COLLECTION_NAME as string: datasetName;
         let allData: mongoDB.Collection = this.dsbData.collection(collectionName);
+        await allData.deleteMany({});
         let ret = await allData.insertOne(doc);
         return ret.insertedId;
     }

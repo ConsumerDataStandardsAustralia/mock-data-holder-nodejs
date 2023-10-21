@@ -882,7 +882,8 @@ app.get(`${standardsVersion}/energy/accounts/:accountId/payment-schedule`, async
 app.get(`${standardsVersion}/banking/products/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-        let result = await dbBankingDataService.getAllBankingProducts()
+        let q = req.query as object;
+        let result = await dbBankingDataService.getAllBankingProducts(q);
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -922,7 +923,8 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
             res.status(404).json('Not Found');
             return;
         }
-        let customers = await dbAuthDataService.getLoginInformation(req.params?.sector)
+        let customers = await dbAuthDataService.getLoginInformation(req.params?.sector);
+        if (customers == undefined) customers = [];
         let result = { Customers: customers };
         res.send(result);
     } catch (e) {
