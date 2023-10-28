@@ -30,11 +30,11 @@ export class AuthDataService implements IAuthData {
             return this.getUserForLoginIdMongo(loginId, userType)
     }
 
-    async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformation(sectors: string[]): Promise<CustomerModel[] | undefined> {
         if (this.isSingleDoc == true)
-            return this.getLoginInformationSingle(sector)
+            return this.getLoginInformationSingle(sectors)
         else
-            return this.getLoginInformationMongo(sector)
+            return this.getLoginInformationMongo(sectors)
     }
 
     async getUserForLoginIdSingle(loginId: string, userType: string): Promise<string | undefined> {
@@ -74,7 +74,7 @@ export class AuthDataService implements IAuthData {
         return cust?.customerId;
     }
 
-    async getLoginInformationMongo(sector: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformationMongo(sectors: string[]): Promise<CustomerModel[] | undefined> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         var loginModel: CustomerModel[] = [];
         let cursor = await customers.find().toArray();
@@ -86,7 +86,7 @@ export class AuthDataService implements IAuthData {
             };
             aModel.LoginId = `${cursor[cnt].customer?.person?.lastName}.${cursor[cnt].customer?.person?.firstName}`;
             let accounts: AccountModel[] = [];
-            if (sector.toLowerCase() == 'energy') {
+            if (sectors.indexOf('energy') > 0) {
                 // get the energy login data
                 cursor[cnt]?.energy?.accounts.forEach((acc: any) => {
                     let loginAccount: AccountModel = {
@@ -101,7 +101,7 @@ export class AuthDataService implements IAuthData {
                 loginModel.push(aModel);
 
             }
-            if (sector.toLowerCase() == 'banking') {
+            if (sectors.indexOf('banking') > 0) {
                 // get the banking login data
                 cursor[cnt]?.banking?.accounts.forEach((acc: any) => {
                     let loginAccount: AccountModel = {
@@ -121,7 +121,7 @@ export class AuthDataService implements IAuthData {
     }
 
     // get all the logins for the ACCC cdr-auth-server UI
-    async getLoginInformationSingle(sector: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformationSingle(sectors: string[]): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allData = await allDataCollection.findOne();
@@ -136,7 +136,7 @@ export class AuthDataService implements IAuthData {
                 };
                 aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
                 let accounts: AccountModel[] = [];
-                if (sector.toLowerCase() == 'energy') {
+                if (sectors.indexOf('energy') > 0) {
                     // get the energy login data
                     c?.energy?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {
@@ -151,7 +151,7 @@ export class AuthDataService implements IAuthData {
                     loginModel.push(aModel);
 
                 }
-                if (sector.toLowerCase() == 'banking') {
+                if (sectors.indexOf('banking') > 0) {
                     // get the banking login data
                     c?.banking?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {

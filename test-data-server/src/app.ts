@@ -914,6 +914,64 @@ app.get(`${standardsVersion}/banking/products/:productId`, async (req: Request, 
 
 });
 
+app.get(`${standardsVersion}/banking/accounts/`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let temp = req.headers?.authorization as string;
+        let tokenIsValid = await authService.verifyAccessToken(temp)
+        if (tokenIsValid == false) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let userId = getUserId(req);
+        if (userId == undefined) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let result = await dbBankingDataService.getAccounts(userId, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+app.get(`${standardsVersion}/banking/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let temp = req.headers?.authorization as string;
+        let tokenIsValid = await authService.verifyAccessToken(temp)
+        if (tokenIsValid == false) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let userId = getUserId(req);
+        if (userId == undefined) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let result = await dbBankingDataService.getAccountDetail(userId, req.params.accountId)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
 
 // Get the information required by the Auth server to displaythe login screen
 app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
@@ -923,7 +981,14 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
             res.status(404).json('Not Found');
             return;
         }
-        let customers = await dbAuthDataService.getLoginInformation(req.params?.sector);
+        let sectors: string[] = [];
+        // TODO temp fix, need to rething this
+        // if (req.params?.sector == null) {
+        if (true) {
+            sectors.push('banking');
+            sectors.push('energy');
+        }
+        let customers = await dbAuthDataService.getLoginInformation(sectors);
         if (customers == undefined) customers = [];
         let result = { Customers: customers };
         res.send(result);
