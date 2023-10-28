@@ -41,7 +41,7 @@ VALUES
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
-      (@ClientId, 'scope', 'profile openid cdr:registration common:customer.basic:read common:customer.detail:read bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:payees:read bank:regular_payments:read energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:electricity.der:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read');
+      (@ClientId, 'scope', 'openid profile common:customer.basic:read common:customer.detail:read cdr:registration energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read energy:electricity.der:read bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read');
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
