@@ -82,11 +82,59 @@ export class BankingDataSingle implements IBankingData {
         ret.meta = m;
         return ret;
     }
-    getTransationsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getTransationsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        //let retArray: BankingAccountV2[] = [];
+        if (customer?.banking?.accounts == null) {
+            ret.data = {};
+        } else {
+            let accounts = customer?.banking?.accounts.filter((x: any) => {
+                if (x.account.accountId == accountId)
+                    return x;
+            })
+            let data = { };
+            ret.data = data;
+            ret.data.transactions = accounts[0]?.transactions;
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getTransactionDetail(customerId: string, transactionId: string): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getTransactionDetail(customerId: string, transactionId: string): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        //let retArray: BankingAccountV2[] = [];
+        if (customer?.banking?.accounts == null) {
+            ret.data = {};
+        } else {
+            let accounts = customer?.banking?.accounts.filter((x: any) => {
+                if (x.account.accountId == transactionId)
+                    return x;
+            })
+  
+            ret.data = accounts[0]?.account;
+        }
+
+        let l: Links = {
+            self: ""
+        }
+        let m: Meta= {}
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
     getBulkBalances(customerId: string, queryParameters: any): Promise<any> {
         throw new Error("Method not implemented.");
