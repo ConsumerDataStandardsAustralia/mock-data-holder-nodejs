@@ -189,5 +189,17 @@
         "requestPath": "/banking/accounts/{accountId}/transactions/{transactionId}",
         "minSupportedVersion": 1,
         "maxSupportedVersion": 1
-    }       
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/banking/payees",
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/banking/payees/{payeeId}",
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
+    }    
 ]

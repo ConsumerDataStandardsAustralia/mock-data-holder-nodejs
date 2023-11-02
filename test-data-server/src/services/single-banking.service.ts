@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { IBankingData } from "./database-banking.interface";
 import { AccountModel, CustomerModel } from "../models/login";
 import * as mongoDB from "mongodb";
-import { BankingAccountDetailV3, BankingAccountV2, BankingProductDetailV4, BankingProductV4, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
+import { BankingAccountDetailV3, BankingAccountV2, BankingPayeeDetailV2, BankingPayeeV2, BankingProductDetailV4, BankingProductV4, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
 
 @Service()
 export class BankingDataSingle implements IBankingData {
@@ -111,7 +111,7 @@ export class BankingDataSingle implements IBankingData {
         ret.meta = m;
         return ret;
     }
-    async getTransactionDetail(customerId: string, transactionId: string): Promise<any> {
+    async getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<any> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
@@ -121,11 +121,14 @@ export class BankingDataSingle implements IBankingData {
             ret.data = {};
         } else {
             let accounts = customer?.banking?.accounts.filter((x: any) => {
-                if (x.account.accountId == transactionId)
+                if (x.account.accountId == accountId)
                     return x;
             })
   
-            ret.data = accounts[0]?.account;
+            ret.data = accounts[0]?.transactions?.filter((x: any) => {
+                if (x.transactionId == transactionId)
+                    return x;
+            });
         }
 
         let l: Links = {
@@ -163,11 +166,66 @@ export class BankingDataSingle implements IBankingData {
     getBulkScheduledPayments(customerId: string, queryParameters: any): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    getPayees(customerId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getPayees(customerId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingPayeeV2[] = [];
+        if (customer?.banking?.payees == null) {
+            ret.data = { payees: retArray };
+        } else {
+            customer?.banking?.payees.forEach((p: BankingPayeeDetailV2) => {
+                let payee: BankingPayeeV2 = {
+                    nickname: p.nickname,
+                    payeeId: p.payeeId,
+                    type: p.type
+                } ;
+                if (p.creationDate != null ) payee.creationDate = p.creationDate;
+                if (p.description != null ) payee.description = p.description;
+
+                retArray.push(payee);      
+            });       
+            ret.data = { payees: retArray };
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getPayeeDetail(customerId: string, payeeId: string): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getPayeeDetail(customerId: string, payeeId: string): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        //let retArray: BankingAccountV2[] = [];
+        if (customer?.banking?.payees == null) {
+            return null;
+        } else {
+            let payees = customer?.banking?.payees.filter((x: BankingPayeeDetailV2) => {
+                if (x.payeeId == payeeId)
+                    return x;
+            })
+            if (payees?.length > 0)
+                ret.data = payees[0];
+            else
+                return null;
+        }
+
+        let l: Links = {
+            self: ""
+        }
+        let m: Meta= {}
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
 
     async getAllBankingProducts(queryParameters: any): Promise<any> {
@@ -247,19 +305,19 @@ export class BankingDataSingle implements IBankingData {
         return allProducts;
     }
 
-    // async getCustomerAccounts(allDataCollection: mongoDB.Collection, account: string | undefined): Promise<any> {
-    //     let allData = await allDataCollection.findOne();
-    //     let allCoounts = null;
-    //     if (allData?.holders != null)
-    //     allCoounts = allData?.holders[0]?.holder?.unauthenticated?.banking?.products;
-    //     if (productId != null) {
-    //         allProducts = allData?.holders[0]?.holder?.unauthenticated?.banking?.products.filter((x: any) => {
-    //             if (x.productId == productId)
-    //                 return x;
-    //         })
-    //     } 
-    //     return allProducts;
-    // }
+    async getPayeeList(allDataCollection: mongoDB.Collection, productId: string | undefined): Promise<any> {
+        let allData = await allDataCollection.findOne();
+        let allProducts = null;
+        if (allData?.holders != null)
+            allProducts = allData?.holders[0]?.holder?.unauthenticated?.banking?.products;
+        if (productId != null) {
+            allProducts = allData?.holders[0]?.holder?.unauthenticated?.banking?.products.filter((x: any) => {
+                if (x.productId == productId)
+                    return x;
+            })
+        } 
+        return allProducts;
+    }    
 
     async loadCustomer(customer: any): Promise<boolean> {
         if (customer == null) return false;

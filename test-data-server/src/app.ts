@@ -1017,7 +1017,7 @@ app.get(`${standardsVersion}/banking/accounts/:accountId/transactions/:transacti
             res.status(401).json('Not authorized');
             return;
         }
-        let result = await dbBankingDataService.getTransactionDetail(userId, req.params.accountId)
+        let result = await dbBankingDataService.getTransactionDetail(userId, req.params.accountId, req.params.transactionId)
         if (result == null) {
             res.sendStatus(404);
         } else {
@@ -1031,6 +1031,63 @@ app.get(`${standardsVersion}/banking/accounts/:accountId/transactions/:transacti
 
 });
 
+app.get(`${standardsVersion}/banking/payees/`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let temp = req.headers?.authorization as string;
+        let tokenIsValid = await authService.verifyAccessToken(temp)
+        if (tokenIsValid == false) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let userId = getUserId(req);
+        if (userId == undefined) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let result = await dbBankingDataService.getPayees(userId, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+app.get(`${standardsVersion}/banking/payees/:payeeId`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let temp = req.headers?.authorization as string;
+        let tokenIsValid = await authService.verifyAccessToken(temp)
+        if (tokenIsValid == false) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let userId = getUserId(req);
+        if (userId == undefined) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let result = await dbBankingDataService.getPayeeDetail(userId, req.params.payeeId)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
 
 // Get the information required by the Auth server to displaythe login screen
 app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {

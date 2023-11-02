@@ -17,7 +17,7 @@ export interface IBankingData {
 
     getTransationsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any>;
 
-    getTransactionDetail(customerId: string, transactionId: string): Promise<any>;
+    getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<any>;
 
     getBulkBalances(customerId: string, queryParameters: any): Promise<any>;
 
