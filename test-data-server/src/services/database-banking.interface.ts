@@ -23,7 +23,7 @@ export interface IBankingData {
 
     getAccountBalance(customerId: string, accountId: string): Promise<any>;
 
-    getBalancesForSpecificAccounts(customerId: string, accountId: string, queryParameters: any): Promise<any>;
+    getBalancesForSpecificAccounts(customerId: string, accountIds: string[], queryParameters: any): Promise<any>;
 
     getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any>;
 

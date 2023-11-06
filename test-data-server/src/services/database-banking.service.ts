@@ -32,7 +32,7 @@ export class BankingDataMongo implements IBankingData {
     getAccountBalance(customerId: string, accountId: string): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    getBalancesForSpecificAccounts(customerId: string, accountId: string, queryParameters: any): Promise<any> {
+    getBalancesForSpecificAccounts(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
         throw new Error("Method not implemented.");
     }
     getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {

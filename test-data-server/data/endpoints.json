@@ -201,5 +201,29 @@
         "requestPath": "/banking/payees/{payeeId}",
         "minSupportedVersion": 2,
         "maxSupportedVersion": 2
-    }    
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/banking/payments/scheduled",
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
+    },
+    {
+        "requestType": "GET",
+        "requestPath": " /banking/accounts/{accountId}/payments/scheduled",
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
+    },
+    {
+        "requestType": "POST",
+        "requestPath": "/banking/payments/scheduled",
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/banking/accounts/balances",
+        "minSupportedVersion": 1,
+        "maxSupportedVersion": 1
+    }          
 ]

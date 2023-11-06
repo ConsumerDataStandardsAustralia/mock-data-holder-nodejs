@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { IBankingData } from "./database-banking.interface";
 import { AccountModel, CustomerModel } from "../models/login";
 import * as mongoDB from "mongodb";
-import { BankingAccountDetailV3, BankingAccountV2, BankingPayeeDetailV2, BankingPayeeV2, BankingProductDetailV4, BankingProductV4, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
+import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingPayeeDetailV2, BankingPayeeV2, BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
 
 @Service()
 export class BankingDataSingle implements IBankingData {
@@ -139,14 +139,87 @@ export class BankingDataSingle implements IBankingData {
         ret.meta = m;
         return ret;
     }
-    getBulkBalances(customerId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getBulkBalances(customerId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+ 
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingBalance[] = [];
+        if (customer?.banking?.accounts == null) {
+            ret.data = { balances: retArray };
+        } else { 
+            customer.banking.accounts.forEach((acc:any) => {
+                if (acc?.balance != null)
+                    retArray.push(acc.balance)
+            });  
+            ret.data = { balances: retArray };
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getAccountBalance(customerId: string, accountId: string): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getAccountBalance(customerId: string, accountId: string): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+ 
+        let customer = await this.getCustomer(allDataCollection, customerId);
+
+        if (customer?.banking?.accounts == null) {
+            ret.data = { };
+        } else { 
+
+            let account =  customer?.banking?.accounts.find((x:any) => x.accountId == accountId)
+            ret.data = account;
+        }
+        let l: Links = {
+            self: ""
+        }
+        let m: Meta= {}
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getBalancesForSpecificAccounts(customerId: string, accountId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getBalancesForSpecificAccounts(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+ 
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingBalance[] = [];
+        if (customer?.banking?.accounts == null) {
+            ret.data = { balances: retArray };
+        } else { 
+            let accounts: any[] = [];
+            accountIds.forEach((id: string) => {
+                accounts = customer?.banking?.accounts.filter((x: any) => {
+                    if (x.faccountId == id)
+                    retArray.push(x);
+                })
+            })
+            accounts.forEach((acc:any) => {
+                if (acc?.balance != null)
+                    retArray.push(acc.balance)
+            });  
+            ret.data = { balances: retArray };
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
     getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
         throw new Error("Method not implemented.");
@@ -157,15 +230,89 @@ export class BankingDataSingle implements IBankingData {
     getBulkDirectDebits(customerId: string, queryParameters: any): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    getScheduledPaymentsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+
+    async getScheduledPaymentsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingScheduledPaymentV2[] = [];
+        if (customer?.banking?.payments == null) {
+            ret.data = { scheduledPayments: retArray };
+        } else {
+            let payments = customer?.banking?.payments.filter((x: any) => {
+                if (x.from.accountId == accountId)
+                    return x;
+            })
+  
+            ret.data = { scheduledPayments: payments };
+        }
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+
+    async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingScheduledPaymentV2[] = [];
+        if (customer?.banking?.payments == null) {
+            ret.data = { scheduledPayments: retArray };
+        } else {
+
+            accountIds.forEach((id: string) => {
+                let payments = customer?.banking?.payments.filter((x: any) => {
+                    if (x.from.accountId == id)
+                    retArray.push(x);
+                })
+            })
+            ret.data = { scheduledPayments: retArray };
+        }
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getBulkScheduledPayments(customerId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+
+    async getBulkScheduledPayments(customerId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+ 
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingScheduledPaymentV2[] = [];
+        if (customer?.banking?.payments == null) {
+            ret.data = { scheduledPayments: retArray };
+        } else {     
+            ret.data = { scheduledPayments: customer?.banking?.payments };
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
+
     async getPayees(customerId: string, queryParameters: any): Promise<any> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
@@ -200,6 +347,7 @@ export class BankingDataSingle implements IBankingData {
         ret.meta = m;
         return ret;
     }
+
     async getPayeeDetail(customerId: string, payeeId: string): Promise<any> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
@@ -337,7 +485,6 @@ export class BankingDataSingle implements IBankingData {
             return null;
         }
     }
-
     async connectDatabase() {
         try {
             await this.client.connect();
