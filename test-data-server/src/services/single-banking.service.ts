@@ -176,8 +176,8 @@ export class BankingDataSingle implements IBankingData {
             ret.data = { };
         } else { 
 
-            let account =  customer?.banking?.accounts.find((x:any) => x.accountId == accountId)
-            ret.data = account;
+            let accounts =  customer?.banking?.accounts.find((x:any) => x.account?.accountId == accountId)
+            ret.data = accounts?.balance;
         }
         let l: Links = {
             self: ""
@@ -199,14 +199,12 @@ export class BankingDataSingle implements IBankingData {
             let accounts: any[] = [];
             accountIds.forEach((id: string) => {
                 accounts = customer?.banking?.accounts.filter((x: any) => {
-                    if (x.faccountId == id)
-                    retArray.push(x);
+                    if (x.account?.accountId == id && x?.balance != null) {
+                        retArray.push(x.balance);
+                    }
+                        
                 })
             })
-            accounts.forEach((acc:any) => {
-                if (acc?.balance != null)
-                    retArray.push(acc.balance)
-            });  
             ret.data = { balances: retArray };
         }
 
@@ -262,21 +260,24 @@ export class BankingDataSingle implements IBankingData {
     async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-
+ 
         let customer = await this.getCustomer(allDataCollection, customerId);
         let retArray: BankingScheduledPaymentV2[] = [];
         if (customer?.banking?.payments == null) {
-            ret.data = { scheduledPayments: retArray };
-        } else {
-
+            ret.data = { scheduledPayments: retArray};
+        } else { 
+            let payments: any[] = [];
             accountIds.forEach((id: string) => {
-                let payments = customer?.banking?.payments.filter((x: any) => {
-                    if (x.from.accountId == id)
-                    retArray.push(x);
+                payments = customer?.banking?.payments.filter((x: any) => {
+                    if (x.from?.accountId == id) {
+                        retArray.push(x);
+                    }
+                        
                 })
             })
             ret.data = { scheduledPayments: retArray };
         }
+
         let l: LinksPaginated = {
             self: ""
         }
