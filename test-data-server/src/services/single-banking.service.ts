@@ -219,6 +219,7 @@ export class BankingDataSingle implements IBankingData {
         ret.meta = m;
         return ret;
     }
+    
     getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
         throw new Error("Method not implemented.");
     }

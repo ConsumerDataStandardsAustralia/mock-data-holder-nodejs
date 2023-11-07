@@ -1064,6 +1064,34 @@ app.get(`${standardsVersion}/banking/accounts/`, async (req: Request, res: Respo
     }
 
 });
+app.get(`${standardsVersion}/banking/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let temp = req.headers?.authorization as string;
+        let tokenIsValid = await authService.verifyAccessToken(temp)
+        if (tokenIsValid == false) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let userId = getUserId(req);
+        if (userId == undefined) {
+            res.status(401).json('Not authorized');
+            return;
+        }
+        let result = await dbBankingDataService.getAccountDetail(userId, req.params.accountId);
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
 
 app.get(`${standardsVersion}/banking/accounts/:accountId/balance`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
