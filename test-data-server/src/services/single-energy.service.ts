@@ -31,13 +31,14 @@ export class EnergyDataSingle implements IEnergyData {
         }
     }
 
-    async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> {
+    async getPlans(allDataCollection: mongoDB.Collection, planId : string | undefined): Promise<any> {
         let allData = await allDataCollection.findOne();
         let allPlans = null;
         if (allData?.holders != null)
             allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
-        if (query != null) {
-            allPlans = await allPlans?.findOne(query, { projection: { _id: 0 } });
+        if (planId != null) {
+            let plan = allPlans?.find(((x: any) => x.planId == planId));
+            return plan;
         }
         return allPlans;
     }
@@ -235,8 +236,7 @@ export class EnergyDataSingle implements IEnergyData {
     async getEnergyPlanDetails(planId: string): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        const query = { planId: planId };
-        let plan: any = await this.getPlans(allData, query);
+        let plan: any = await this.getPlans(allData, planId);
 
         if (plan == null)
             return null;

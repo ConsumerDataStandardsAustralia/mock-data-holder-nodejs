@@ -136,7 +136,7 @@ export class AuthDataService implements IAuthData {
                 };
                 aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
                 let accounts: AccountModel[] = [];
-                if (sectors.indexOf('energy') > 0) {
+                if (sectors.indexOf('energy') > -1) {
                     // get the energy login data
                     c?.energy?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {
@@ -148,10 +148,9 @@ export class AuthDataService implements IAuthData {
                         accounts.push(loginAccount)
                     })
                     aModel.Accounts = accounts;
-                    loginModel.push(aModel);
-
+                    
                 }
-                if (sectors.indexOf('banking') > 0) {
+                if (sectors.indexOf('banking') > -1) {
                     // get the banking login data
                     c?.banking?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {
@@ -163,8 +162,8 @@ export class AuthDataService implements IAuthData {
                         accounts.push(loginAccount)
                     })
                     aModel.Accounts = accounts;
-                    loginModel.push(aModel);
                 }
+                loginModel.push(aModel);
 
             })
         }

@@ -237,5 +237,23 @@
         "requestPath": "/banking/accounts/{accountId}/balance",
         "minSupportedVersion": 1,
         "maxSupportedVersion": 1
-    }       
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/banking/accounts/direct-debits",
+        "minSupportedVersion": 1,
+        "maxSupportedVersion": 1
+    },
+    {
+        "requestType": "POST",
+        "requestPath": "/banking/accounts/direct-debits",
+        "minSupportedVersion": 1,
+        "maxSupportedVersion": 1
+    } ,
+    {
+        "requestType": "GET",
+        "requestPath": "/banking/accounts/{accountId}/direct-debits",
+        "minSupportedVersion": 1,
+        "maxSupportedVersion": 1
+    }     
 ]

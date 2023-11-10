@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { IBankingData } from "./database-banking.interface";
 import { AccountModel, CustomerModel } from "../models/login";
 import * as mongoDB from "mongodb";
-import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingPayeeDetailV2, BankingPayeeV2, BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
+import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2, BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
 
 @Service()
 export class BankingDataSingle implements IBankingData {
@@ -220,14 +220,87 @@ export class BankingDataSingle implements IBankingData {
         return ret;
     }
     
-    getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingDirectDebit[] = [];
+        if (customer?.banking?.directDebits == null) {
+            ret.data = { directDebitAuthorisations: retArray };
+        } else {
+            let debits = customer?.banking?.directDebits.filter((x: any) => {
+                if (x.accountId == accountId)
+                    return x;
+            })
+  
+            ret.data = { directDebitAuthorisations: debits };
+        }
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getDirectDebitsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getDirectDebitsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+ 
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingDirectDebit[] = [];
+        if (customer?.banking?.directDebits == null) {
+            ret.data = { directDebitAuthorisations: retArray};
+        } else { 
+            let debits: any[] = [];
+            accountIds.forEach((id: string) => {
+                debits = customer?.banking?.directDebits.filter((x: any) => {
+                    if (x?.accountId == id) {
+                        retArray.push(x);
+                    }
+                        
+                })
+            })
+            ret.data = { directDebitAuthorisations: retArray };
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
-    getBulkDirectDebits(customerId: string, queryParameters: any): Promise<any> {
-        throw new Error("Method not implemented.");
+    async getBulkDirectDebits(customerId: string, queryParameters: any): Promise<any> {
+        let ret: any = {};
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+ 
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let retArray: BankingDirectDebit[] = [];
+        if (customer?.banking?.directDebits == null) {
+            ret.data = { directDebitAuthorisations: retArray };
+        } else { 
+            ret.data = { directDebitAuthorisations: customer?.banking?.directDebits };
+        }
+
+        let l: LinksPaginated = {
+            self: ""
+        }
+        let m: MetaPaginated = {
+            totalPages: 0,
+            totalRecords: 0
+        }
+        ret.links = l;
+        ret.meta = m;
+        return ret;
     }
 
     async getScheduledPaymentsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<any> {
