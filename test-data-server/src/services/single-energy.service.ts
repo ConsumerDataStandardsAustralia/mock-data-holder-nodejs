@@ -544,9 +544,6 @@ export class EnergyDataSingle implements IEnergyData {
         return ret;
     }
 
-    getConcesssionsForAccount(customerId: string, accountId: string): Promise<any> {
-        throw new Error("Method not implemented.");
-    }
     async getBalanceForAccount(customerId: string, accountId: string): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
@@ -635,7 +632,7 @@ export class EnergyDataSingle implements IEnergyData {
     async getDerForServicePoint(customerId: string, servicePointId: string): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let sp: any = cust?.energy.servicePoints.find((x: any) => x.der.servicePointId == servicePointId);
+        let sp: any = cust?.energy?.servicePoints.find((x: any) => x?.der?.servicePointId == servicePointId);
         let data = sp?.der as EnergyDerRecord;
         let lk: Links = {
             self: ""

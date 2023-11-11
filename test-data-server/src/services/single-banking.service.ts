@@ -120,15 +120,17 @@ export class BankingDataSingle implements IBankingData {
         if (customer?.banking?.accounts == null) {
             ret.data = {};
         } else {
-            let accounts = customer?.banking?.accounts.filter((x: any) => {
-                if (x.account.accountId == accountId)
-                    return x;
-            })
-  
-            ret.data = accounts[0]?.transactions?.filter((x: any) => {
-                if (x.transactionId == transactionId)
+            let account = customer?.banking?.accounts.find((x: any) => {
+                if (x?.account?.accountId == accountId)
                     return x;
             });
+
+            let transaction = account?.transactions.find((x: any) => {
+                if (x?.transactionId == transactionId)
+                    return x;
+            });
+  
+            ret.data = transaction;
         }
 
         let l: Links = {
