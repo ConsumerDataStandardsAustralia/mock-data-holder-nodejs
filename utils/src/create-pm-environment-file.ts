@@ -17,14 +17,13 @@ const sourceData: any = JSON.parse(readFileSync(dataInput, 'utf8'));
 let holders = sourceData?.holders;
 let prodIds: any[] = [];
 let planIds: any[] = [];
-let servicePointsIds: any[] = [];
+let servicePointIds: any[] = [];
 let energyAccountIds: any[] = [];
 let bankingPayeeIds: any[] = [];
-let energyTransdactionIds: any[] = [];
 let bankingAccountIds: any[] = [];
 let bankingTransactionIds: any[] = [];
 let bankingPaymentIds: any[] = [];
-let directDebitAccountIds: any[] = [];
+
 
 
 holders?.forEach((h: any) => {
@@ -40,6 +39,20 @@ holders?.forEach((h: any) => {
 
             }
             prodIds.push(obj);
+        }        
+    });
+    cnt = 0;
+    let plans = h.holder?.unauthenticated?.energy?.plans;
+    plans?.forEach((p: any) => {
+        cnt++;
+        let id = p?.planId;
+        if (id != null) {
+            let obj = {
+                key: `planId${cnt}`,
+                value: `${id}`
+
+            }
+            planIds.push(obj);
         }        
     });
     
@@ -95,86 +108,89 @@ holders?.forEach((h: any) => {
             }
             bankingPaymentIds.push(obj);       
         })
+        cnt = 0;
+        let energyAccounts = cust?.energy?.accounts;
+        energyAccounts?.forEach((ac:any)=> {
+            cnt++;
+            let id = ac?.account.accountId
+            let obj = {
+                key: `energyAccountID${cnt}`,
+                value: `${id}`
+
+            }
+            energyAccountIds.push(obj);  
+        })
+        cnt = 0;
+        let servicePoints = cust?.energy?.servicePoints;
+        servicePoints?.forEach((ac:any)=> {
+            cnt++;
+            let id = ac?.servicePoint.servicePointId
+            let obj = {
+                key: `servicePointId${cnt}`,
+                value: `${id}`
+
+            }
+            servicePointIds.push(obj);  
+        })
     });
 
 });
 
-let writeString = `{ "name": "${envName}", "values": [`;
 
-if (prodIds?.length > 0) {
-    /* write the product id */
-    let prdCnt = prodIds?.length;
-    let prodID = 0;
-    prodIds?.forEach((p: any) => {
-        prodID++;
-        const json = JSON.stringify(p, null, 2);
-        if (prodID < prdCnt)
-            writeString = writeString + json + ","; 
-        else 
-            writeString = writeString + json;
-    });
-    writeString = writeString + ",";
+let retObj: any = {
+    "name": `${envName}`,
+   
+    // "accessToken": "",
+    // "primaryDataHolderUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
+    // "secondaryDataHolderUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
+    // "authenticatedResourceUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
+    // "unauthenticatedResourceUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
+    // "x-fapi-interaction-id": "2a5a065b-d991-41de-b303-2aad52caea79",
+    // "x-fapi-customer-ip-address": "127.0.0.1",
+    // "x-cds-client-headers": "Q29uc3VtZXIgRGF0YSBSaWdodA=="
 }
 
-if (bankingAccountIds?.length > 0) {
-    /* write the product id */
-    let cnt = bankingAccountIds?.length;
-    let idx = 0;
-    bankingAccountIds?.forEach((p: any) => {
-        idx++;
-        const json = JSON.stringify(p, null, 2);
-        if (idx < cnt)
-            writeString = writeString + json + ","; 
-        else 
-            writeString = writeString + json;
-    });
-    writeString = writeString + ",";
-}
+let commonValues = [];
+commonValues.push({
+    key: "version",
+    value: "1.26.0"
+})
+commonValues.push({
+    key: "accessToken",
+    value: ""
+})
+commonValues.push({
+    key: "primaryDataHolderUrl",
+    value: "https://mtls-gateway:8082/resource/cds-au/v1"
+})
+commonValues.push({
+    key: "secondaryDataHolderUrl",
+    value: "https://mtls-gateway:8082/resource/cds-au/v1"
+})
+commonValues.push({
+    key: "authenticatedResourceUrl",
+    value: "https://mtls-gateway:8082/resource/cds-au/v1"
+})
+commonValues.push({
+    key: "unauthenticatedResourceUrl",
+    value: "https://mtls-gateway:8082/resource/cds-au/v1"
+})
+commonValues.push({
+    key: "x-fapi-interaction-id",
+    value: "2a5a065b-d991-41de-b303-2aad52caea79"
+})
+commonValues.push({
+    key: "x-fapi-customer-ip-address",
+    value: "127.0.0.1"
+})
+commonValues.push({
+    key: "x-cds-client-headers",
+    value: "Q29uc3VtZXIgRGF0YSBSaWdodA=="
+})
 
-if (bankingPayeeIds?.length > 0) {
-    /* write the product id */
-    let cnt = bankingPayeeIds?.length;
-    let idx = 0;
-    bankingPayeeIds?.forEach((p: any) => {
-        idx++;
-        const json = JSON.stringify(p, null, 2);
-        if (idx < cnt)
-            writeString = writeString + json + ","; 
-        else 
-            writeString = writeString + json;
-    });
-    writeString = writeString + ",";
-}
+let allValues = commonValues.concat(prodIds, planIds, bankingAccountIds, bankingPayeeIds, bankingPaymentIds, bankingTransactionIds, energyAccountIds, servicePointIds);
+retObj.values = allValues;
 
-if (bankingPaymentIds?.length > 0) {
-    /* write the product id */
-    let cnt = bankingPaymentIds?.length;
-    let idx = 0;
-    bankingPaymentIds?.forEach((p: any) => {
-        idx++;
-        const json = JSON.stringify(p, null, 2);
-        if (idx < cnt)
-            writeString = writeString + json + ","; 
-        else 
-            writeString = writeString + json;
-    });
-    writeString = writeString + ",";
-}
+writeFileSync(postmanEnvironmentFile, JSON.stringify(retObj, null, 2))
 
-if (bankingTransactionIds?.length > 0) {
-    /* write the product id */
-    let cnt = bankingTransactionIds?.length;
-    let idx = 0;
-    bankingTransactionIds?.forEach((p: any) => {
-        idx++;
-        const json = JSON.stringify(p, null, 2);
-        if (idx < cnt)
-            writeString = writeString + json + ","; 
-        else 
-            writeString = writeString + json;
-    });
-}
-
-writeString = writeString + "]}";
-writeFileSync(postmanEnvironmentFile,writeString);
 
