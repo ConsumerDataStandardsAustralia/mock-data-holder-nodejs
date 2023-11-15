@@ -61,7 +61,7 @@ export class EnergyDataSingle implements IEnergyData {
                 if (idx > -1) {
                     if (acc?.balance != null) {
                         let balance: any = {
-                            balance: acc.balance.balance,
+                            balance: acc.balance,
                             accountId: acc.account.accountId
                         }
                         balances.push(balance);
