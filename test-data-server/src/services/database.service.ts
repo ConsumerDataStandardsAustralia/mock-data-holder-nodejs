@@ -21,7 +21,6 @@ export class MongoData implements IDatabase {
         this.client = new mongoDB.MongoClient(connString, { monitorCommands: true });
         this.dsbData = this.client.db(dbName);
     }
-
     async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         const query = { customerId: customerId };
@@ -804,6 +803,9 @@ export class MongoData implements IDatabase {
         return cust?.customerId;
     }
 
+    async getServicePointsForCustomer(customerId: string): Promise<string[] | undefined> {
+        throw new Error("Method not implemented.");
+    }
 }
 
 

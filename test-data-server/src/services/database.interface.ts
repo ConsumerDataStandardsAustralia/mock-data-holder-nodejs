@@ -58,4 +58,6 @@ export interface IDatabase {
     getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
 
     getLoginInformation(sector: string): Promise<CustomerModel[] | undefined>;
+
+    getServicePointsForCustomer(customerId: string): Promise<string[] | undefined>
 }

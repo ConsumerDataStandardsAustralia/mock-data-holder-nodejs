@@ -771,6 +771,17 @@ export class SingleData implements IDatabase {
 
     }
 
+    async getServicePointsForCustomer(customerId: string): Promise<string[] | undefined> {
+        let ret: string[] = [];
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let allPoints: any = cust?.energy.servicePoints;
+        allPoints.forEach((sp:any) => {
+            ret.push(sp.servicePointId)
+        })
+        return ret;
+    }
+
     async connectDatabase() {
         try {
             await this.client.connect();
