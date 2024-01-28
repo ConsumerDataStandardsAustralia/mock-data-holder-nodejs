@@ -1,6 +1,5 @@
 
 import { AuthService } from "./auth-service";
-import { IDatabase } from "../services/database.interface";
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
 import { CdrConfig, DefaultBankingEndpoints, DefaultCommonEndpoints, DefaultEnergyEndpoints, EndpointConfig } from "@cds-au/holder-sdk";
@@ -11,6 +10,7 @@ import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
 
+// TODO need to be incorporated in holder-sdk middleware
 export function cdrAuthorization(authService: AuthService,  options: CdrConfig | undefined): any {
     return async function authorize(req: Request, res: Response, next: NextFunction) {
         let allEP: EndpointConfig[] = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...DefaultCommonEndpoints];
