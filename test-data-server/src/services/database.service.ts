@@ -59,7 +59,6 @@ export class MongoData implements IDatabase {
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.CUSTOMER_COLLECTION_NAME as string);
         const query = { customerId: customerId };
 
-
         let cust: any = await customers.findOne(query);
         let retArray: any[] = [];
         //let allAccounts: any[] = await cust.energy?.accounts?.length;

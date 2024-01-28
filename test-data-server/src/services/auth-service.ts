@@ -1,5 +1,5 @@
 import path from "path";
-import { CdrUser } from "../models/user";
+import { DsbCdrUser } from "../models/user";
 import * as https from 'https'
 import { readFileSync } from "fs";
 import { Introspection } from "../models/introspection";
@@ -25,7 +25,7 @@ export class AuthService {
     issuer: string | undefined;
 
 
-    authUser: CdrUser| undefined;
+    authUser: DsbCdrUser| undefined;
     jwkKeys: JwkKey[] | undefined;
     tlsThumPrint: string | undefined;
     jwtEncodingAlgorithm: string | undefined;
@@ -68,7 +68,7 @@ export class AuthService {
             accountIds.push(CryptoUtils.decode(decoded?.account_id));
 
         let accounts: string[] = [];
-        const userNameLength = this.authUser?.loginId.length as number;
+        const userNameLength = this.authUser?.loginId?.length as number;
         for(let i = 0; i < accountIds.length; i++) {
             let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
             let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
@@ -149,7 +149,7 @@ export class AuthService {
         return httpsAgent;
     }
 
-    async buildUser(token: string) : Promise<CdrUser | undefined> {
+    async buildUser(token: string) : Promise<DsbCdrUser | undefined> {
         // First the JWT access token must be decoded and the signature verified
         let decoded: any = jwtDecode(token);
         // decrypt the loginId, ie the sub claim from token:
