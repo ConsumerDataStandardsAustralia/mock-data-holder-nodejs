@@ -1,12 +1,15 @@
 import { DsbResponse } from "@cds-au/holder-sdk";
-import { AuthService } from "../services/auth-service";
+import { AuthService } from "./auth-service";
+import { IDatabase } from "../services/database.interface";
 
 
 
-export function cdrAuthorization(authServer: AuthService): any {
+export function cdrAuthorization(dbService: IDatabase): any {
     // Do something with config here
-    let srv = authServer;
+    //let srv = authServer;
+    
     return function authorize(req: Request, res: DsbResponse) {
+        let authService = new AuthService(dbService);
         let temp = req.headers?.get('Authorization') as string;
         if (temp == null) {
             res.status(404).json('No authorization header provided');

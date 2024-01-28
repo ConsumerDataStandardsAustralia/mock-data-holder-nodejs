@@ -10,8 +10,8 @@ import * as CryptoJS from 'crypto-js';
 import jwtDecode from "jwt-decode";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { Inject, Service } from "typedi";
-import { MongoData } from "./database.service";
-import { IDatabase } from "./database.interface";
+import { MongoData } from "../services/database.service";
+import { IDatabase } from "../services/database.interface";
 import { enc, lib } from "crypto-js";
 import { CryptoUtils } from "../utils/crypto-utils";
 
@@ -41,7 +41,7 @@ export class AuthService {
         this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
     }
 
-    getEncrptionKey(idPermanenceKey: string): Buffer {
+    private getEncrptionKey(idPermanenceKey: string): Buffer {
         const utf8EncodeText = new TextEncoder();
         let alg = createHash('sha512');
         alg.write(utf8EncodeText.encode(idPermanenceKey));
@@ -49,7 +49,7 @@ export class AuthService {
         return keyH;
     }
 
-    decryptLoginId(token: string) : string {
+    private decryptLoginId(token: string) : string {
         let decoded: any = jwtDecode(token);
         let encodedLoginID = decoded?.sub as string;
         let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
@@ -59,7 +59,7 @@ export class AuthService {
     }
 
 
-    decryptAccountArray(token: string) : string[]{
+    private decryptAccountArray(token: string) : string[]{
         let decoded: any = jwtDecode(token);
         let accountIds: string [] = [];
         if (Array.isArray(decoded?.account_id) == true)
@@ -79,7 +79,7 @@ export class AuthService {
         return accounts;
     }
 
-    async initAuthService(): Promise<boolean> {
+    public async initAuthService(): Promise<boolean> {
         try {
             console.log('Initialise auth service..');
             const httpsAgent = this.buildHttpsAgent();
@@ -112,7 +112,7 @@ export class AuthService {
         }       
     }
     
-    async verifyAccessToken(token: string): Promise<boolean> {
+    public async verifyAccessToken(token: string): Promise<boolean> {
         try {
             // no introspective endpoint exists
             if (this.introspection_endpoint_internal == undefined)
@@ -142,14 +142,14 @@ export class AuthService {
         }
     }
 
-    buildHttpsAgent(): https.Agent {
+    private buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
             ca: readFileSync(path.join(__dirname, '../security/cdr-auth-server/mtls', process.env.CA_FILE as string))
            })
         return httpsAgent;
     }
 
-    async buildUser(token: string) : Promise<DsbCdrUser | undefined> {
+    private async buildUser(token: string) : Promise<DsbCdrUser | undefined> {
         // First the JWT access token must be decoded and the signature verified
         let decoded: any = jwtDecode(token);
         // decrypt the loginId, ie the sub claim from token:
@@ -168,7 +168,7 @@ export class AuthService {
                 encodeUserId: decoded?.sub,
                 encodedAccounts: decoded?.account_id,
                 accounts: undefined,
-                scopes_supported: decoded?.scopes
+                scopes_supported: decoded?.scope
             }
             // Once the customerId (here: userId) has been the account ids can be decrypted.
             // The parameters here are the decrypted customerId from above and the software_id from the token
@@ -182,19 +182,19 @@ export class AuthService {
         }
     }
 
-    calculateTLSThumbprint(): string {
+    private calculateTLSThumbprint(): string {
         // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint
         
         return '';
     }
 
-    buildIntrospecticePostBody(token: string): any {
+    private buildIntrospecticePostBody(token: string): any {
         let postBody: any = {};
         postBody.token = token.replace('Bearer ', '');
         return postBody;
     }
 
-    verifyScope(scope: string): boolean {
+    private verifyScope(scope: string): boolean {
         if (this.authUser?.scopes_supported == undefined)
            return false;
         else
