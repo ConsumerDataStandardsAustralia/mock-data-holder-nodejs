@@ -2,8 +2,7 @@ import express, { request } from 'express';
 import { NextFunction, Request, Response } from 'express';
 import endpoints from '../data/endpoints.json';
 import {
-    EndpointConfig, CdrConfig, cdrHeaderValidator, DefaultBankingEndpoints,
-    DefaultEnergyEndpoints,
+    EndpointConfig, CdrConfig, cdrHeaderValidator,
     cdrJwtScopes,
     DsbAuthConfig,
     cdrTokenValidator,
@@ -21,8 +20,6 @@ import cors from 'cors';
 import path from 'path';
 import { readFileSync } from 'fs';
 import * as https from 'https'
-
-import { Issuer } from 'openid-client';
 import { AuthService } from './modules/auth-service';
 import { cdrAuthorization } from './modules/auth';
 import { DsbCdrUser } from './models/user';
@@ -97,10 +94,6 @@ var userService: IUserService = {
     getUser: function (): DsbCdrUser | undefined {
         if (authService.authUser == null)
             return undefined;
-        // var servicePoints: string[] | undefined;
-        //if (authService.authUser == null) next();
-        // if (authService.authUser?.accounts)
-        //     servicePoints = await dbService.getServicePointsForCustomer(authService?.authUser?.customerId);   
         let user: DsbCdrUser | undefined = {
             customerId: authService?.authUser?.customerId as string,
             scopes_supported: authService.authUser?.scopes_supported,
@@ -115,14 +108,14 @@ var userService: IUserService = {
     }
 };
 
-// app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
+app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), "/login-data/energy", "/jwks", `${basePath}/energy/plans`));
+
 // app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data/energy", "/jwks", `${basePath}/energy/plans`));
 app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data/energy", "/jwks", `${basePath}/energy/plans`));
-//app.use(unless(cdrHeaderValidator(dsbOptions), "/login-data/energy", "/jwks"));
-app.use(unless(validateCurrentUserInfo, "/login-data/energy", "/jwks", `${basePath}/energy/plans`))
 app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `${basePath}/energy/plans`));
-//app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `${basePath}/energy/plans`));
+// app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
+app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `${basePath}/energy/plans`));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -152,16 +145,6 @@ async function initaliseApp() {
 
 }
 
-async function validateCurrentUserInfo(req: Request, res: Response, next: NextFunction) {
-    if (req.headers?.authorization == null) next();
-    let temp = req.headers?.authorization as string;
-    let tokenIsValid = await authService.verifyAccessToken(temp)
-    if (tokenIsValid == false) {
-        res.status(401).json('Not authorized');
-        return;
-    }
-    next();
-}
 
 // function used to determine if the middleware is to be bypassed for the given 'paths'
 function unless(middleware: any, ...paths: any) {
@@ -175,12 +158,6 @@ function unless(middleware: any, ...paths: any) {
 router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
 
     try {
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
-
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["invoices", "billing", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
@@ -410,10 +387,6 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     return;
-        // }
         let result = await dbService.getDerForServicePoint(authService.authUser?.customerId as string, req.params.servicePointId);
         if (result == null || result?.data == null) {
             res.sendStatus(404);
@@ -431,11 +404,6 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
 app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
         let result = await dbService.getDerForMultipleServicePoints(authService.authUser?.customerId as string, req.body?.accountIds)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
@@ -509,7 +477,6 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 // get invoices for account, returns EnergyInvoiceListResponse
 app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received POST request on ${port} for ${req.url}`);
-
     let result = await dbService.getInvoicesForMultipleAccounts(authService.authUser?.customerId as string, req.body?.data?.accountIds)
     if (result == null || result?.data == null) {
         res.sendStatus(404);
@@ -539,7 +506,6 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
 app.get(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received GET request on ${port} for ${req.url}`);
-
         if (!authService?.authUser?.customerId) return;
         let result = await dbService.getBulkInvoicesForUser(authService?.authUser?.customerId);
         if (result == null || result?.data == null) {
@@ -574,7 +540,6 @@ app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Reque
 app.get(`${basePath}/energy/accounts/:accountId/concessions`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-
         let result = await dbService.getConcessionsForAccount(authService.authUser?.customerId as string, req.params?.accountId)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
@@ -690,15 +655,6 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
     }
 });
 
-// In the absence of an IdP we use the accessToken as userId
-// function getUserId(req: any): string | undefined {
-//     return authService?.authUser?.customerId;
-// }
-
-// function accountIsValid(accountId: string): boolean {
-//     let idx = authService?.authUser?.accounts?.findIndex(x => x == accountId)
-//     return (idx != undefined && idx > -1);
-// }
 
 function sectorIsValid(sector: string): boolean {
     let validSectors = ['energy', 'banking']
