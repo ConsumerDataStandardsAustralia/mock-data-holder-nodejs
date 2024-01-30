@@ -87,6 +87,9 @@ services:
       - "3000:3000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
+      - REACT_APP_DEFAULT_USER_NAME_TEXT=Doe.John
+      - REACT_APP_CDR_POLICY_LINK=https://cdr-policy
+      - REACT_APP_CDR_FAQ_LINK=https://www.cdr.gov.au
     extra_hosts:
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"

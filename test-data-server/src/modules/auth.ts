@@ -3,22 +3,26 @@ import { AuthService } from "./auth-service";
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
 import { CdrConfig, DefaultBankingEndpoints, DefaultCommonEndpoints, DefaultEnergyEndpoints, EndpointConfig } from "@cds-au/holder-sdk";
-import { DsbEndpoint } from "@cds-au/holder-sdk/src/models/dsb-endpoint-entity";
 import energyEndpoints  from '../../src/data/cdr-energy-endpoints.json';
 import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
 import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
+import { IDatabase } from "../services/database.interface";
+import { DsbEndpoint } from "../models/dsb-endpoints";
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
+var svc: AuthService;
+
 
 // TODO need to be incorporated in holder-sdk middleware
-export function cdrAuthorization(authService: AuthService,  options: CdrConfig | undefined): any {
+export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | undefined): any {
+    
     return async function authorize(req: Request, res: Response, next: NextFunction) {
         let allEP: EndpointConfig[] = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...DefaultCommonEndpoints];
         let config: CdrConfig = {
             endpoints: allEP,
             basePath: options?.basePath
         }
-
+        svc = new AuthService(dbService);
         let ep = getEndpoint(req, config);
         if (ep == null || ep.authScopesRequired == null) {
             next();
@@ -30,13 +34,14 @@ export function cdrAuthorization(authService: AuthService,  options: CdrConfig |
             res.status(404).json('No authorization header provided');
             return;
         }
+        
         // initialise the authService
-        if (await authService.initAuthService() == false) {
+        if (await svc.initAuthService() == false) {
             res.status(500).json('Could not communicate with authorisation server');
             return;
         }
         // validate access token via introspective endpoint
-        if (await authService.verifyAccessToken(accessToken) == false) {
+        if (await svc.verifyAccessToken(accessToken) == false) {
             res.status(404).json('Invalid access token');
             return;
         }
@@ -124,3 +129,7 @@ export function cdrAuthorization(authService: AuthService,  options: CdrConfig |
     }
 
 };
+
+export function authService() {
+    return svc;
+}
