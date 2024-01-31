@@ -78,7 +78,9 @@ export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | und
 
         return pathArray.slice(baseArray.length);
     }
-
+    // This will get the full endpoint information based on the rquest url
+    // The DsbEndpoint class contains information re requirements for x-fapi-interaction-id, 
+    // x-cds-arrangment-id and other things
     function getEndpoint(req: Request, options: CdrConfig | undefined): DsbEndpoint | null {
         var  endpoints = defaultEndpoints as DsbEndpoint[];
         let requestUrlElements: string[] = req.url.split('?');
