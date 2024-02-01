@@ -357,7 +357,7 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
     
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-        let result = await dbService.getEnergyAllPlans()
+        let result = await dbService.getEnergyAllPlans(req.query)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {

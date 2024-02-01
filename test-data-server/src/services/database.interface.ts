@@ -43,7 +43,7 @@ export interface IDatabase {
 
     getEnergyPlanDetails(planId: string): Promise<any>;
     
-    getEnergyAllPlans(): Promise<any>;
+    getEnergyAllPlans(params: any): Promise<any>;
 
     getBulkInvoicesForUser(customerId: string): Promise<any>;
 

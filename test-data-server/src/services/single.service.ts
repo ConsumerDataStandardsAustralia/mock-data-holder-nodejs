@@ -56,14 +56,24 @@ export class SingleData implements IDatabase {
     }
 
     async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> {
-        let allData = await allDataCollection.findOne();
-        let allPlans = null;
+        let allData: mongoDB.WithId<mongoDB.Document>|null = await allDataCollection.findOne();
+        let allPlans : any;
+        let retPlans = null;
         if (allData?.holders != null)
             allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
+            // now filter the plans
+            retPlans = allPlans
         if (query != null) {
-
+            retPlans = allPlans.filter((p: any) => {
+                if (
+                    (query.fuelType == null  || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
+                 && (query.type == null  || query.type.toUpperCase() == p?.type.toUpperCase()) 
+                 && (query["update-since"] == null  || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated)) ){
+                    return p;
+                }
+            });
         }
-        return allPlans;
+        return retPlans;
     }
 
     async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
@@ -232,10 +242,10 @@ export class SingleData implements IDatabase {
         ret.meta = m;
         return ret;
     }
-    async getEnergyAllPlans(): Promise<any> {
+    async getEnergyAllPlans(params: any): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        let allPlans: any = await this.getPlans(allData, undefined);
+        let allPlans: any = await this.getPlans(allData, params);
         let retArray: any[] = [];
         if (allPlans == null) {
             ret.data = { plans: retArray };
