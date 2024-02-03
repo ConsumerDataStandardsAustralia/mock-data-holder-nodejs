@@ -51,8 +51,6 @@ if (isSingle == true)
 else
     dbService = new MongoData(connString, process.env.MONGO_DB as string);
 
-//let authService = new AuthService(dbService);
-
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
 //const allowedOrigins = corsAllowedOrigin;
@@ -94,8 +92,8 @@ var userService: IUserService = {
         let user: DsbCdrUser | undefined = {
             customerId: authService().authUser?.customerId as string,
             scopes_supported: authService().authUser?.scopes_supported,
-            accounts: authService().authUser?.accounts,
-            accountsEnergy: authService().authUser?.accounts,
+            //accounts: authService().authUser?.accounts,
+            accountsEnergy: authService().authUser?.accountsEnergy,
             energyServicePoints: undefined,
             loginId: authService().authUser?.loginId as string,
             encodeUserId: authService().authUser?.encodeUserId as string,
@@ -105,6 +103,7 @@ var userService: IUserService = {
     }
 };
 
+// This is a function which interacts with the Authorisation server developed by the ACCC
 app.use(cdrAuthorization(dbService, endpointValidatorOptions));
 app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data/energy", "/health"));
 app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data/energy", "/health"));
@@ -210,11 +209,6 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
 router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async (req, res) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
         var excludes = ["usage", "der"];
         if (excludes.indexOf(req.params?.servicePointId) == -1) {
             let result = await dbService.getServicePointDetails(authService()?.authUser?.customerId as string, req.params?.servicePointId)
@@ -254,12 +248,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
 app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
-        let ret = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accounts as string[], req.query);
+        let ret = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
         ret.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
         res.send(ret);
     } catch (e) {
@@ -272,13 +261,7 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
 app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
         let result = await dbService.getServicePoints(authService()?.authUser?.customerId as string);
-        //let result: any = null;
         if (result == null || result?.data == null) {
             res.sendStatus(404);
             return;
@@ -295,11 +278,6 @@ app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res
 app.get(`${basePath}/common/customer/detail`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
         let result = await dbService.getCustomerDetails(authService()?.authUser?.customerId as string);
         if (result == null || result?.data == null) {
             res.sendStatus(404);
@@ -316,11 +294,6 @@ app.get(`${basePath}/common/customer/detail`, async (req: Request, res: Response
 app.get(`${basePath}/common/customer`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // let userId = getUserId(req);
-        // if (userId == undefined) {
-        //     res.status(401).json('Not authorized');
-        //     return;
-        // }
         let result = await dbService.getCustomerDetails(authService()?.authUser?.customerId as string);
         if (result == null || result?.data == null) {
             res.sendStatus(404);
