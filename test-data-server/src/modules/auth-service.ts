@@ -41,14 +41,6 @@ export class AuthService {
         this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
     }
 
-    private getEncrptionKey(idPermanenceKey: string): Buffer {
-        const utf8EncodeText = new TextEncoder();
-        let alg = createHash('sha512');
-        alg.write(utf8EncodeText.encode(idPermanenceKey));
-        let keyH = alg.digest().slice(0,24);
-        return keyH;
-    }
-
     private decryptLoginId(token: string) : string {
         let decoded: any = jwtDecode(token);
         let encodedLoginID = decoded?.sub as string;
@@ -57,7 +49,6 @@ export class AuthService {
         let login = CryptoUtils.decrypt(encryptionKey, buffer);
         return login;
     }
-
 
     private decryptAccountArray(token: string) : string[]{
         let decoded: any = jwtDecode(token);
@@ -194,10 +185,4 @@ export class AuthService {
         return postBody;
     }
 
-    private verifyScope(scope: string): boolean {
-        if (this.authUser?.scopes_supported == undefined)
-           return false;
-        else
-           return this.authUser?.scopes_supported?.indexOf(scope) > -1
-    }
 }

@@ -173,7 +173,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
             }
         }
         if (req.params?.accountId == "invoices") {
-            let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string)
+            let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string, req?.query)
             if (result == null || result?.data == null) {
                 res.sendStatus(404);
             } else {
@@ -182,7 +182,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
         }
 
         if (req.params?.accountId == "billing") {
-            let result = await dbService.getBulkBilllingForUser(authService()?.authUser?.customerId as string)
+            let result = await dbService.getBulkBilllingForUser(authService()?.authUser?.customerId as string, req.query)
             if (result == null || result?.data == null) {
                 res.sendStatus(404);
             } else {
@@ -227,7 +227,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
         }
         if (req.params?.servicePointId == "usage") {
             console.log(`Received request on ${port} for ${req.url}`);
-            let result = await dbService.getBulkUsageForUser(authService()?.authUser?.customerId as string)
+            let result = await dbService.getBulkUsageForUser(authService()?.authUser?.customerId as string, req?.query)
             if (result == null || result?.data == null) {
                 res.sendStatus(404);
             } else {
@@ -259,7 +259,7 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
         //     res.status(401).json('Not authorized');
         //     return;
         // }
-        let ret = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accounts as string[]);
+        let ret = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accounts as string[], req.query);
         ret.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
         res.send(ret);
     } catch (e) {
@@ -374,7 +374,7 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getUsageForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId)
+        let result = await dbService.getUsageForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId, req?.query)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -448,7 +448,7 @@ app.get(`${basePath}/energy/accounts/:accountId`, async (req: Request, res: Resp
 app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
+        let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -465,7 +465,7 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params.accountId)
+        let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -481,7 +481,7 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 // get invoices for account, returns EnergyInvoiceListResponse
 app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received POST request on ${port} for ${req.url}`);
-    let result = await dbService.getInvoicesForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds)
+    let result = await dbService.getInvoicesForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
     if (result == null || result?.data == null) {
         res.sendStatus(404);
     } else {
@@ -511,7 +511,7 @@ app.get(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respon
     try {
         console.log(`Received GET request on ${port} for ${req.url}`);
         if (!authService()?.authUser?.customerId) return;
-        let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string);
+        let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string, req.query);
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -527,7 +527,7 @@ app.get(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respon
 app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getUsageForMultipleServicePoints(authService()?.authUser?.customerId as string, req.body?.data?.servicePointIds)
+        let result = await dbService.getUsageForMultipleServicePoints(authService()?.authUser?.customerId as string, req.body?.data?.servicePointIds, req.query)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -612,7 +612,7 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
 app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getBillingForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds)
+        let result = await dbService.getBillingForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {

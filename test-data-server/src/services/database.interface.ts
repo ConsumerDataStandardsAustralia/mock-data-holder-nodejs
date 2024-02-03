@@ -7,17 +7,17 @@ export interface IDatabase {
 
     loadCustomer(customer: any): Promise<boolean>;
 
-    getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any>;
+    getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
     getServicePoints(customerId: string): Promise<any>;
 
     getEnergyAccountDetails(customerId: string, accountId: string): Promise<any>;
 
-    getInvoicesForAccount(customerId: string, accountId: string): Promise<any>;
+    getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<any>;
 
-    getInvoicesForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any>;
+    getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
-    getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> 
+    getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any): Promise<any> 
 
     getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> 
 
@@ -27,7 +27,7 @@ export interface IDatabase {
 
     getServicePointDetails(customerId: string, servicePointId: string): Promise<any>;
 
-    getUsageForServicePoint(customerId: string, servicePointId: string): Promise<any>;
+    getUsageForServicePoint(customerId: string, servicePointId: string, query: any): Promise<any>;
 
     getDerForServicePoint(customerId: string, servicePointId: string): Promise<any>;
 
@@ -35,7 +35,7 @@ export interface IDatabase {
 
     getTransactionsForAccount(customerId: string, accountId: string): Promise<any>;
 
-    getBillingForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any>;
+    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
     getConcessionsForAccount(customerId: string, accountId: string): Promise<any>;
 
@@ -43,15 +43,15 @@ export interface IDatabase {
 
     getEnergyPlanDetails(planId: string): Promise<any>;
     
-    getEnergyAllPlans(params: any): Promise<any>;
+    getEnergyAllPlans(query: any): Promise<any>;
 
-    getBulkInvoicesForUser(customerId: string): Promise<any>;
+    getBulkInvoicesForUser(customerId: string, query: any): Promise<any>;
 
-    getBulkBilllingForUser(customerId: string): Promise<any>;
+    getBulkBilllingForUser(customerId: string, query: any): Promise<any>;
 
     getBulkBalancesForUser(customerId: string): Promise<any>;
 
-    getBulkUsageForUser(customerId: string): Promise<any>;
+    getBulkUsageForUser(customerId: string, query: any): Promise<any>;
 
     getBulkDerForUser(customerId: string): Promise<any>;
 

@@ -45,6 +45,8 @@ export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | und
             res.status(404).json('Invalid access token');
             return;
         }
+        // get service points for user
+        
         next();
     };
 
