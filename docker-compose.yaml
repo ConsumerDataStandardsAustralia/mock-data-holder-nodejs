@@ -28,9 +28,10 @@ services:
 
   mock-data-recipient:
     container_name: mock-data-recipient
-    build:
-      context: . 
-      dockerfile: dockerfile.mock-data-recipient
+    image: consumerdatastandardsaustralia/mock-data-recipient:0.2
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.mock-data-recipient
     ports: 
       - "9001:9001"
     environment:
@@ -53,9 +54,10 @@ services:
     
   cdr-auth-server:
     container_name: cdr-auth-server
-    build:
-      context: . 
-      dockerfile: dockerfile.cdr-auth-server 
+    image: consumerdatastandardsaustralia/cdr-auth-server:0.2
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.cdr-auth-server 
     ports: 
       - "8001:8001"
       - "8080:8080"
@@ -80,9 +82,10 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
-    build:
-      context: . 
-      dockerfile: dockerfile.authserver-ui
+    image: consumerdatastandardsaustralia/authserver-ui:0.2
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.authserver-ui
     ports: 
       - "3000:3000"
     environment:
@@ -101,9 +104,10 @@ services:
 
   tls-gateway:
     container_name: tls-gateway
-    build:
-      context: . 
-      dockerfile: dockerfile.tlsgateway  
+    image: consumerdatastandardsaustralia/tls-gateway:0.2
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.tlsgateway  
     extra_hosts:
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
@@ -118,9 +122,10 @@ services:
      
   mtls-gateway:
     container_name: mtls-gateway
-    build:
-      context: . 
-      dockerfile: dockerfile.mtlsgateway    
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.mtlsgateway  
+    image: consumerdatastandardsaustralia/mtls-gateway:0.2
     ports: 
       - "8082:8082"
     extra_hosts:
@@ -136,9 +141,10 @@ services:
 
   mock-data-holder:
     container_name: mock-data-holder
-    build:
-      context: . 
-      dockerfile: dockerfile.dsb-test-data-server    
+    image: consumerdatastandardsaustralia/energy-data-holder
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.dsb-test-data-server    
     restart: unless-stopped
     env_file: .env.docker
     extra_hosts:
@@ -160,7 +166,8 @@ services:
   
   mssql:
     container_name: mssql
-    image: 'mcr.microsoft.com/mssql/server:2019-latest'
+    image: consumerdatastandardsaustralia/energy-sql-data
+    #image: 'mcr.microsoft.com/mssql/server:2019-latest'
     ports:
       - '1433:1433'
     environment:
@@ -183,10 +190,11 @@ services:
       - "27017:27017"
 
   dsb-data-loader:
-    build:
-      context: .
-      dockerfile: dockerfile.dsb-data-loader
+    # build:
+    #   context: .
+    #   dockerfile: dockerfile.dsb-data-loader
     container_name: dsb-data-loader
+    image: consumerdatastandardsaustralia/energy-data-loader
     env_file: .env.docker
     depends_on:
       - mongodb

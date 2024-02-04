@@ -34,11 +34,16 @@ This repository provides a convenient way to create a test data server. The syst
 
 ## How to use
 
-This instructions are if you want to run this system in a containerised environment
+This instructions are if you want to run this system in a containerised environment.
 
 **Run `docker compose up`**
 
-Wait until all containers have started and are *healthy*, then follow the *Additional Setup Steps* below where this applies
+By default this will pull the images from the consumerdatastandardsaustralia Dockerhub.
+As a result the system will host the data as contained in the `load-test-data\input\<VERSION>` directory.
+
+If the image for the mssql container is rebuild, then additional set instructions as outlined below must be completed. 
+
+Wait until all containers have started and are *healthy*, then follow the *Additional Setup Steps* below where this applies.
 
 ### Additional Setup Steps
 
