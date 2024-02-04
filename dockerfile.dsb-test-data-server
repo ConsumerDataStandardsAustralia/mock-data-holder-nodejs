@@ -38,6 +38,15 @@ RUN npm run build:prod
 COPY ./security/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 
+RUN apt-get update
+RUN apt-get -y install -y iputils-ping
+RUN apt-get -y install -y ssh
+RUN apt-get -y install vim
+
 CMD [ "node", "dist/src/app.js"]
 
+
 EXPOSE 3005
+
+# Need to run this command on the MSSQL container
+# CMD /opt/mssql-tools/bin/sqlcmd  -U sa -P Pa{}w0rd2019 -i ./AddClientScriptRelease.sql
