@@ -8,9 +8,10 @@ import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
 import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 import { IDatabase } from "../services/database.interface";
 import { DsbEndpoint } from "../models/dsb-endpoints";
+import { IAuthService } from "./auth-service.interface";
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
-var svc: AuthService;
+var svc: IAuthService;
 
 
 // TODO need to be incorporated in holder-sdk middleware
