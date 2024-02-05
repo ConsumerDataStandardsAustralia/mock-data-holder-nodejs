@@ -136,7 +136,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/common/customer",
+      "UpstreamPathTemplate": "/cds-au/v1/common/customer",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -152,7 +152,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/common/customer/detail",
+      "UpstreamPathTemplate": "/cds-au/v1/common/customer/detail",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -168,7 +168,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/plans",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/plans",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -184,7 +184,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/plans/{planId}",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/plans/{planId}",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -201,7 +201,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/{servicePointId}",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/{servicePointId}",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -217,7 +217,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -233,7 +233,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/usage",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/usage",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -249,7 +249,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/usage",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/usage",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -265,7 +265,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/der",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/der",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -280,7 +280,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/electricity/servicepoints/der",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/electricity/servicepoints/der",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -297,7 +297,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -313,7 +313,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -330,7 +330,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/payment-schedule",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/payment-schedule",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -347,7 +347,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/concession",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/concession",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -364,7 +364,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/balance",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/balance",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -379,7 +379,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/balances",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/balances",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -394,7 +394,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/balances",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/balances",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -411,7 +411,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/invoices",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/invoices",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -426,7 +426,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/invoices",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/invoices",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -442,7 +442,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/invoices",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/invoices",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -459,7 +459,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/{accountId}/billing",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/{accountId}/billing",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -474,7 +474,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/billing",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/billing",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -490,7 +490,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/energy/accounts/billing",
+      "UpstreamPathTemplate": "/cds-au/v1/energy/accounts/billing",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -509,7 +509,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -525,7 +525,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -541,7 +541,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/direct-debits",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/direct-debits",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -556,7 +556,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/direct-debits",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/direct-debits",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -573,7 +573,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/balances",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/balances",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -589,7 +589,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/balances",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/balances",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -605,7 +605,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/transactions",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/transactions",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -621,7 +621,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/transactions/{transactionId}",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/transactions/{transactionId}",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -639,7 +639,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/direct-debits",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/direct-debits",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -657,7 +657,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payments/scheduled",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/payments/scheduled",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -673,7 +673,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payments/scheduled",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/payments/scheduled",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -688,7 +688,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/accounts/{accountId}/payments/scheduled",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/accounts/{accountId}/payments/scheduled",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -705,7 +705,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payees",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/payees",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -720,7 +720,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/payees/{payeeId}",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/payees/{payeeId}",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -736,7 +736,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/products",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/products",
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -751,7 +751,7 @@
           "Port": 3005
         }
       ],
-      "UpstreamPathTemplate": "/resource/cds-au/v1/banking/products/{productId}",
+      "UpstreamPathTemplate": "/cds-au/v1/banking/products/{productId}",
       "UpstreamHttpMethod": [
         "GET"
       ],

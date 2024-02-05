@@ -3,7 +3,6 @@ import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
-import { devNull } from "os";
 import { Service } from "typedi";
 import { AccountModel, CustomerModel } from "../models/login";
 
@@ -57,14 +56,24 @@ export class SingleData implements IDatabase {
     }
 
     async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> {
-        let allData = await allDataCollection.findOne();
-        let allPlans = null;
+        let allData: mongoDB.WithId<mongoDB.Document>|null = await allDataCollection.findOne();
+        let allPlans : any;
+        let retPlans = null;
         if (allData?.holders != null)
             allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
+            // now filter the plans
+            retPlans = allPlans
         if (query != null) {
-
+            retPlans = allPlans.filter((p: any) => {
+                if (
+                    (query.fuelType == null  || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
+                 && (query.type == null  || query.type.toUpperCase() == p?.type.toUpperCase()) 
+                 && (query["update-since"] == null  || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated)) ){
+                    return p;
+                }
+            });
         }
-        return allPlans;
+        return retPlans;
     }
 
     async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
@@ -156,14 +165,32 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getBulkBilllingForUser(customerId: string): Promise<any> {
+    async getBulkBilllingForUser(customerId: string, query: any): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
         if (cust != null) {
+            let mSecInYear = 31536000000;
+            // check newest time
+            var newTime = Date.now();
+            //const newTime: any = currentDate.getMilliseconds();
+            if(query["newest-time"] != null && isNaN(query["newest-time"]) == false) {
+                newTime = Date.parse(query["newest-time"]);
+            }
+            var oldestTime = newTime-mSecInYear;
+            // check oldest time
+            if(query["oldest-time"] != null && isNaN(query["oldest-time"]) == false) {
+                oldestTime = newTime = Date.parse(query["oldest-time"]);
+            } 
             cust?.energy?.accounts.forEach((acc: any) => {
-                retArray.push(...acc?.transactions)
+                let filteredTransactions: any[] = [];
+                acc?.transactions.filter((tr:any) => {
+                    let refDate = Date.parse(tr.executionDateTime);
+                    if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                        filteredTransactions.push(tr)
+                })
+                retArray.push(...filteredTransactions);
             });
         }
 
@@ -211,16 +238,43 @@ export class SingleData implements IDatabase {
         }
         return ret;
     }
-    async getBulkInvoicesForUser(customerId: string): Promise<any> {
+    async getBulkInvoicesForUser(customerId: string, query: any): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
+
         if (cust != null) {
-            cust?.energy?.accounts.forEach((acc: any) => {
-                retArray.push(...acc?.invoices)
-            });
+            let mSecInYear = 31536000000;
+            // check newest time
+            var newTime = Date.now();
+            //const newTime: any = currentDate.getMilliseconds();
+            if(query["newest-date"] != null && isNaN(Date.parse(query["newest-date"])) == false) {
+                newTime = Date.parse(query["newest-date"]);
+            }
+            var oldestTime = newTime-mSecInYear;
+            // check oldest time
+            if(query["oldest-date"] != null && isNaN(Date.parse(query["oldest-date"])) == false) {
+                oldestTime = Date.parse(query["oldest-date"]);
+            } 
+            cust?.energy?.accounts?.forEach((acc: any) => {
+                    if (acc?.invoices != null) {
+                        let filteredInvoices: any[] = [];
+                        acc?.invoices.filter((inv:any) => {
+                            let refDate = Date.parse(inv.issueDate);
+                            if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                                filteredInvoices.push(inv)
+                            else
+                                console.log(`Not added ${inv?.issueDate}`)
+                        })
+                        if (filteredInvoices.length > 0)
+                            retArray.push(filteredInvoices);
+                    }
+
+            })
         }
+
+
         ret.data = { invoices: retArray };
         let l: LinksPaginated = {
             self: ""
@@ -233,10 +287,10 @@ export class SingleData implements IDatabase {
         ret.meta = m;
         return ret;
     }
-    async getEnergyAllPlans(): Promise<any> {
+    async getEnergyAllPlans(query: any): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        let allPlans: any = await this.getPlans(allData, undefined);
+        let allPlans: any = await this.getPlans(allData, query);
         let retArray: any[] = [];
         if (allPlans == null) {
             ret.data = { plans: retArray };
@@ -511,7 +565,7 @@ export class SingleData implements IDatabase {
         return response;
 
     }
-    async getInvoicesForAccount(customerId: string, accountId: string): Promise<any> {
+    async getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
@@ -529,10 +583,29 @@ export class SingleData implements IDatabase {
             meta: m
         }
         if (cust != null) {
+            let mSecInYear = 31536000000;
+            // check newest time
+            var newTime = Date.now();
+            //const newTime: any = currentDate.getMilliseconds();
+            if(query["newest-time"] != null && isNaN(Date.parse(query["newest-time"])) == false) {
+                newTime = Date.parse(query["newest-time"]);
+            }
+            var oldestTime = newTime-mSecInYear;
+            // check oldest time
+            if(query["oldest-time"] != null && isNaN(Date.parse(query["oldest-time"])) == false) {
+                oldestTime = Date.parse(query["oldest-time"]);
+            } 
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
-                        ret.data.invoices.push(...acc?.invoices);
+                        let filteredInvoices: any[] = [];
+                        acc?.invoices.filter((inv:any) => {
+                            let refDate = Date.parse(inv.issueDate);
+                            if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                            filteredInvoices.push(inv)
+                        })
+                        if (filteredInvoices.length > 0)
+                            ret.data.invoices.push(...acc?.filteredInvoices);
                     }
                 }
             })
@@ -769,6 +842,17 @@ export class SingleData implements IDatabase {
 
         return listResponse;
 
+    }
+
+    async getServicePointsForCustomer(customerId: string): Promise<string[] | undefined> {
+        let ret: string[] = [];
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let allPoints: any = cust?.energy.servicePoints;
+        allPoints.forEach((sp:any) => {
+            ret.push(sp.servicePointId)
+        })
+        return ret;
     }
 
     async connectDatabase() {

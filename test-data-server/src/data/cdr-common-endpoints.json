@@ -1,0 +1,42 @@
+[
+    {
+        "requestType": "GET",
+        "requestPath": "/common/customer",
+        "requiresXFAPIAuthdate": true,
+        "authScopesRequired": "common:customer.basic:read",
+        "requiresCDSClientHeader": false,
+        "requiresXv": true,
+        "requiresCDSArrangementID": false,
+        "requiresXFAPI": true
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/common/customer/detail",
+        "requiresXFAPIAuthdate": true,
+        "authScopesRequired": "common:customer.detail:read",
+        "requiresCDSClientHeader": false,
+        "requiresXv": true,
+        "requiresCDSArrangementID": false,
+        "requiresXFAPI": true
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/discovery/status",
+        "requiresXFAPIAuthdate": false,
+        "authScopesRequired": null,
+        "requiresCDSClientHeader": false,
+        "requiresXv": true,
+        "requiresCDSArrangementID": false,
+        "requiresXFAPI": false
+    },
+    {
+        "requestType": "GET",
+        "requestPath": "/discovery/outages",
+        "requiresXFAPIAuthdate": false,
+        "authScopesRequired": null,
+        "requiresCDSClientHeader": false,
+        "requiresXv": true,
+        "requiresCDSArrangementID": false,
+        "requiresXFAPI": false
+    }
+]
