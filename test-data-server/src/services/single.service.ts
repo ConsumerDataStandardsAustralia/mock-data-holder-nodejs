@@ -55,19 +55,26 @@ export class SingleData implements IDatabase {
         }
     }
 
-    async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> {
+    async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> { 
         let allData: mongoDB.WithId<mongoDB.Document>|null = await allDataCollection.findOne();
         let allPlans : any;
         let retPlans = null;
-        if (allData?.holders != null)
-            allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
-            // now filter the plans
-            retPlans = allPlans
+        // filter out the expired plans
+        if (allData?.holders != null){
+            allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans
+                .filter((x:any) => {
+                    if (x.effectiveTo == null || Date.now() < Date.parse(x.effectiveTo)) {
+                        return x;
+                    }});
+        }
+        if (query.effective)
+        // now filter the plans
+        retPlans = allPlans
         if (query != null) {
             retPlans = allPlans.filter((p: any) => {
                 if (
-                    (query.fuelType == null  || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
-                 && (query.type == null  || query.type.toUpperCase() == p?.type.toUpperCase()) 
+                    (query.fuelType == null || query.fuelType.toUpperCase() == 'ALL' || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
+                 && (query.type == null || query.type.toUpperCase() == 'ALL'  || query.type.toUpperCase() == p?.type.toUpperCase()) 
                  && (query["update-since"] == null  || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated)) ){
                     return p;
                 }
@@ -111,21 +118,46 @@ export class SingleData implements IDatabase {
         }
         return ret;
     }
-    async getBulkUsageForUser(customerId: string): Promise<any> {
+    async getBulkUsageForUser(customerId: string, query : any): Promise<any> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-
+        // interval-reads, oldest-date, newest-date
         let retArray: any[] = [];
         if (cust != null) {
+            let mSecInYear = 31536000000;
+            // check newest time
+            var newTime = Date.now();
+            //const newTime: any = currentDate.getMilliseconds();
+            if(query["newest-date"] != null && isNaN(Date.parse(query["newest-date"])) == false) {
+                newTime = Date.parse(query["newest-date"]);
+            }
+            var oldestTime = newTime-mSecInYear*2;
+            // check oldest time
+            if(query["oldest-date"] != null && isNaN(Date.parse(query["oldest-date"])) == false) {
+                oldestTime = Date.parse(query["oldest-date"]);
+            } 
+            // interval reads
+            var intervalReads = "NONE";
+            if(query["interval-reads"] != null) {
+                intervalReads = query["interval-reads"];
+            }            
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 if (sp?.usage != null) {
-                    retArray.push(...sp?.usage);
+                        let filteredUsage: any[] = [];
+                        sp.usage.filter((u:any) => {
+                            let refDate = Date.parse(u.readStartDate);
+                            if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                                filteredUsage.push(u)
+                            else
+                                console.log(`Not added ${u?.readStartDate}`)
+                        })
+                        if (filteredUsage.length > 0)
+                            retArray.push(filteredUsage);                                 
+                    retArray.push(...filteredUsage);
                 }
             })
         }
-
-
         ret.data = { reads: retArray };
         let l: LinksPaginated = {
             self: ""
