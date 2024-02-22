@@ -3,13 +3,18 @@ USE [cdr-auth-server]
 DECLARE @ClientId NVARCHAR(450) = N'77831c42-7e8b-457a-93b2-d714bb3b2bc6'
 DECLARE @OrganisationId NVARCHAR(450) = N'5242a9d7-4c5d-43c7-a78a-844e352c7593'
 DECLARE @LegalEntityId NVARCHAR(450) = N'8ecd3c03-1638-4936-97c3-76d2f3ac9d0d'
-DECLARE @LegalEntityName NVARCHAR(450) = N'DSB Data Recipient'
-DECLARE @BrandId NVARCHAR(450) = N'67e23b31-f5a4-4f5b-b8ec-95869292026c'
-DECLARE @BrandName NVARCHAR(450) = N'DSB Energy Provider'
-DECLARE @SoftwareId NVARCHAR(450) = N'36094666-7e37-4717-8ab0-0c3d3485f56e'
-DECLARE @SoftwareName NVARCHAR(450) = N'DSB Test Software'
+DECLARE @LegalEntityName NVARCHAR(450) = N'Data Standards Body'
+DECLARE @NodeBrandId NVARCHAR(450) = N'67e23b31-f5a4-4f5b-b8ec-95869292026c'
+DECLARE @JavaBrandId NVARCHAR(450) = N'c90f6f6f-6b38-40bb-8de5-1dfcddf1188f'
+DECLARE @NodeBrandName NVARCHAR(450) = N'DSB Node Provider'
+DECLARE @JavaBrandName NVARCHAR(450) = N'DSB Java Provider'
+DECLARE @NodeSoftwareId NVARCHAR(450) = N'36094666-7e37-4717-8ab0-0c3d3485f56e'
+DECLARE @NodeSoftwareName NVARCHAR(450) = N'DSB Node Software'
+DECLARE @JavaSoftwareId NVARCHAR(450) = N'39ea251a-7612-4fbb-8c95-57a07232c608'
+DECLARE @JavaSoftwareName NVARCHAR(450) = N'DSB Java Software'
 DECLARE @DataRecipientBaseUri NVARCHAR(450) = N'https://mock-data-recipient:9001'
-DECLARE @DataHolderBaseUri NVARCHAR(450) = N'https://mock-data-holder:3005'
+DECLARE @NodeDataHolderBaseUri NVARCHAR(450) = N'https://node-data-holder:3005'
+DECLARE @JavaDataHolderBaseUri NVARCHAR(450) = N'https://java-data-holder:3006'
 DECLARE @InfoSecBaseUri NVARCHAR(450) = N'https://cdr-auth-server:8001'
 -- Set this to wherever the data recipient client is running
 DECLARE @LogoUri NVARCHAR(450) = @DataRecipientBaseUri + '/logo.png'
@@ -26,7 +31,7 @@ DELETE FROM dbo.[ClientClaims] WHERE ClientId IN (@ClientId)
 INSERT [dbo].[Clients]
       ([ClientId], [ClientIdIssuedAt], [ClientName], [ClientDescription])
 VALUES
-      (@ClientId, 1667260800, @SoftwareName, @SoftwareName)
+      (@ClientId, 1667260800, @NodeSoftwareName, @NodeSoftwareName)
 
 
 
@@ -49,7 +54,7 @@ VALUES
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
-      (@ClientId, 'software_id', @SoftwareId);
+      (@ClientId, 'software_id', @NodeSoftwareId);
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
@@ -109,11 +114,16 @@ VALUES
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
-      (@ClientId, N'org_id', @BrandId);
+      (@ClientId, N'org_id', @NodeBrandID);
+
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
-      (@ClientId, N'org_name', @BrandName);
+      (@ClientId, N'org_id', @JavaBrandID);      
+INSERT INTO [dbo].[ClientClaims]
+      ([ClientId],[Type],[Value])
+VALUES
+      (@ClientId, N'org_name', @NodeBrandName);
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
@@ -128,7 +138,7 @@ VALUES
       (@ClientId, N'authorization_signed_response_alg', N'PS256');
 
 -- Add the clients into the software products table.
-DELETE FROM [dbo].[SoftwareProducts] WHERE SoftwareProductId IN (@SoftwareId)
+DELETE FROM [dbo].[SoftwareProducts] WHERE SoftwareProductId IN (@NodeSoftwareId, @JavaSoftwareId)
 
 
 
@@ -145,30 +155,54 @@ INSERT INTO [dbo].[SoftwareProducts]
       ,[BrandName]
       ,[BrandStatus])
 VALUES
-      (@SoftwareId
-           , @SoftwareName
-           , @SoftwareName
+      (@NodeSoftwareId
+           , @NodeSoftwareName
+           , @NodeSoftwareName
            , @LogoUri
            , 'ACTIVE'
            , @LegalEntityId
            , @LegalEntityName
            , 'ACTIVE'
-           , @BrandId
-           , @BrandName
+           , @NodeBrandID
+           , @NodeBrandName
            , 'ACTIVE')
 
 
+INSERT INTO [dbo].[SoftwareProducts]
+      ([SoftwareProductId]
+      ,[SoftwareProductName]
+      ,[SoftwareProductDescription]
+      ,[LogoUri]
+      ,[Status]
+      ,[LegalEntityId]
+      ,[LegalEntityName]
+      ,[LegalEntityStatus]
+      ,[BrandId]
+      ,[BrandName]
+      ,[BrandStatus])
+VALUES
+      (@NodeSoftwareId
+           , @JavaSoftwareName
+           , @JavaSoftwareName
+           , @LogoUri
+           , 'ACTIVE'
+           , @LegalEntityId
+           , @LegalEntityName
+           , 'ACTIVE'
+           , @JavaBrandID
+           , @JavaBrandName
+           , 'ACTIVE')
 
 -- Update Other stuff
 USE [cdr-mdr]
-DELETE FROM dbo.[DataHolderBrand] WHERE DataHolderBrandId IN (@BrandId)
+DELETE FROM dbo.[DataHolderBrand] WHERE DataHolderBrandId IN (@NodeBrandID, @JavaBrandID)
 DELETE FROM dbo.[Registration] WHERE ClientId IN (@ClientId)
 
 INSERT INTO dbo.DataHolderBrand
 VALUES
-      (@BrandId,
-            '{"DataHolderBrandId": "' + @BrandId + '",
-    "BrandName": "' + @BrandName + '",
+      (@NodeBrandID,
+            '{"DataHolderBrandId": "' + @NodeBrandID + '",
+    "BrandName": "' + @NodeBrandName + '",
     "LegalEntity": {
         "LegalEntityId": "' +  @LegalEntityId + '",
         "LegalEntityName": "' + @LegalEntityName + '"
@@ -176,8 +210,8 @@ VALUES
     "Status": "ACTIVE",
     "EndpointDetail": {
         "Version": "1",
-        "PublicBaseUri": "' + @DataHolderBaseUri + '",
-        "ResourceBaseUri": "' + @DataHolderBaseUri + '",
+        "PublicBaseUri": "' + @NodeDataHolderBaseUri + '",
+        "ResourceBaseUri": "' + @NodeDataHolderBaseUri + '",
         "InfoSecBaseUri": "' + @InfoSecBaseUri + '",
         "ExtensionBaseUri": "",
         "WebsiteUri": "https://www.consumerdatastandards.gov.au"
@@ -191,11 +225,37 @@ VALUES
     "LastUpdated": "2023-04-19T11:58:00Z"
 }', null)
 
+INSERT INTO dbo.DataHolderBrand
+VALUES
+      (@JavaBrandID,
+            '{"DataHolderBrandId": "' + @JavaBrandID + '",
+    "BrandName": "' + @JavaBrandName + '",
+    "LegalEntity": {
+        "LegalEntityId": "' +  @LegalEntityId + '",
+        "LegalEntityName": "' + @LegalEntityName + '"
+    },
+    "Status": "ACTIVE",
+    "EndpointDetail": {
+        "Version": "1",
+        "PublicBaseUri": "' + @JavaDataHolderBaseUri + '",
+        "ResourceBaseUri": "' + @JavaDataHolderBaseUri + '",
+        "InfoSecBaseUri": "' + @InfoSecBaseUri + '",
+        "ExtensionBaseUri": "",
+        "WebsiteUri": "https://www.consumerdatastandards.gov.au"
+    },
+    "AuthDetails": [
+        {
+            "RegisterUType": "SIGNED-JWT",
+            "JwksEndpoint": "' + @DataRecipientBaseUri + '/jwks"
+        }
+    ],
+    "LastUpdated": "2023-04-19T11:58:00Z"
+}', null)
 
 INSERT INTO Registration (ClientId, JsonDocument, DataHolderBrandId)
 VALUES (@ClientId,
-'{"DataHolderBrandId": "' + @BrandId + '",
-    "BrandName": "' + @BrandName + '",
+'{"DataHolderBrandId": "' + @NodeBrandID + '",
+    "BrandName": "' + @NodeBrandName + '",
     "MessageState": null,
     "LastUpdated": "2023-07-01T00:00:00",
     "ClientId": "' + @ClientId + '",
@@ -234,11 +294,56 @@ VALUES (@ClientId,
     "SoftwareStatement": "eyJhbGciOiJQUzI1NiIsImtpZCI6IjIwM0E",
     "SoftwareId": "36094666-7e37-4717-8ab0-0c3d3485f56e", 
     "Scope": "openid profile common:customer.basic:read common:customer.detail:read bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read cdr:registration"}'
-    ,@BrandId)
+    ,@NodeBrandID)
+
+
+INSERT INTO Registration (ClientId, JsonDocument, DataHolderBrandId)
+VALUES (@ClientId,
+'{"DataHolderBrandId": "' + @JavaBrandID + '",
+    "BrandName": "' + @JavaBrandName + '",
+    "MessageState": null,
+    "LastUpdated": "2023-07-01T00:00:00",
+    "ClientId": "' + @ClientId + '",
+    "ClientIdIssuedAt": 1690595990,
+    "ClientDescription": "A product to help you manage your budget",
+    "ClientUri": "https://dsb/energy-app",
+    "OrgId": "' + @OrganisationId + '",
+    "OrgName": "Mock Finance Tools",
+    "RedirectUris": [
+        "' + @DataRecipientBaseUri + '/consent/callback"
+    ],
+    "LogoUri": "https://dsb/energy-app/img/logo.png",
+    "TosUri": "https://dsb/energy-app/terms",
+    "PolicyUri": "https://dsb/energy-app/policy",
+    "JwksUri": "' + @DataRecipientBaseUri + '/jwks",
+    "RevocationUri": "' + @DataRecipientBaseUri + '/revocation",
+    "RecipientBaseUri": "' + @DataRecipientBaseUri + '",
+    "TokenEndpointAuthSigningAlg": "PS256",
+    "TokenEndpointAuthMethod": "private_key_jwt",
+    "GrantTypes": [
+        "client_credentials",
+        "authorization_code",
+        "refresh_token"
+    ],
+    "ResponseTypes": [
+        "code id_token"
+    ],
+    "ApplicationType": "web",
+    "IdTokenSignedResponseAlg": "PS256",
+    "IdTokenEncryptedResponseAlg": "RSA-OAEP",
+    "IdTokenEncryptedResponseEnc": "A256GCM",
+    "AuthorizationSignedResponseAlg": null,
+    "AuthorizationEncryptedResponseAlg": null,
+    "AuthorizationEncryptedResponseEnc": null,
+    "RequestObjectSigningAlg": "PS256",
+    "SoftwareStatement": "eyJhbGciOiJQUzI1NiIsImtpZCI6IjIwM0E",
+    "SoftwareId": "36094666-7e37-4717-8ab0-0c3d3485f56e", 
+    "Scope": "openid profile common:customer.basic:read common:customer.detail:read bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read cdr:registration"}'
+    ,@JavaBrandID)
 
 --     UPDATE dbo.Registration
---     SET JsonDocument = '{"DataHolderBrandId": "' + @BrandId + '",
---     "BrandName": "' + @BrandName + '",
+--     SET JsonDocument = '{"DataHolderBrandId": "' + @NodeBrandID + '",
+--     "BrandName": "' + @NodeBrandName + '",
 --     "MessageState": null,
 --     "LastUpdated": "2023-07-01T00:00:00",
 --     "ClientId": "' + @ClientId + '",
