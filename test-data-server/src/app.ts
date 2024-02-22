@@ -10,7 +10,7 @@ import {
     cdrEndpointValidator,
     cdrScopeValidator,
     cdrResourceValidator
-} from '@cds-au/holder-sdk'
+} from "@cds-au/holder-sdk"
 import { MongoData } from './services/database.service';
 import { IDatabase } from './services/database.interface';
 import bodyParser from 'body-parser';
@@ -94,7 +94,7 @@ var userService: IUserService = {
             scopes_supported: authService().authUser?.scopes_supported,
             //accounts: authService().authUser?.accounts,
             accountsEnergy: authService().authUser?.accountsEnergy,
-            energyServicePoints: undefined,
+            energyServicePoints: getServicePointsForAccount(authService().authUser?.accountsEnergy),
             loginId: authService().authUser?.loginId as string,
             encodeUserId: authService().authUser?.encodeUserId as string,
             encodedAccounts: authService().authUser?.encodedAccounts
@@ -103,6 +103,8 @@ var userService: IUserService = {
     }
 };
 
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 // This is a function which interacts with the Authorisation server developed by the ACCC
 app.use(cdrAuthorization(dbService, endpointValidatorOptions));
 app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data/energy", "/health"));
@@ -111,8 +113,7 @@ app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `/
 // app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 // app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
 app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+
 
 app.use('/', router);
 
@@ -637,6 +638,12 @@ function sectorIsValid(sector: string): boolean {
     let validSectors = ['energy', 'banking']
     let st = sector.toLowerCase();
     return validSectors.indexOf(st) > -1
+}
+
+function getServicePointsForAccount(accountIds: string[]| undefined): string[] {
+    let retVal: string[] = [];
+    retVal = ['09196792-a2fa-45cc-a42b-a04d3012b7f5'];
+    return retVal;
 }
 
 initaliseApp();
