@@ -58,7 +58,8 @@ const corsOptions: cors.CorsOptions = {
     origin: corsAllowedOrigin
 };
 app.use(cors(corsOptions));
-
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 const router = exp.Router();
 const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
@@ -110,9 +111,10 @@ app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data/energy",
 app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `/health`));
 // app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 // app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
-app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+
+// TODO once @cds-au/holde-sdk version 2.0.2 has been released and incorportated uncomment the line below
+//app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
+
 
 app.use('/', router);
 
