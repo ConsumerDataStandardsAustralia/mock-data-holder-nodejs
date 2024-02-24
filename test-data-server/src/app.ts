@@ -22,6 +22,8 @@ import { readFileSync } from 'fs';
 import * as https from 'https'
 import { DsbCdrUser } from './models/user';
 import {authService, cdrAuthorization } from './modules/auth';
+import { ResponseErrorListV2 } from 'consumer-data-standards/common';
+import { EnergyServicePointDetail } from 'consumer-data-standards/energy';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -349,13 +351,28 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        // find service point in user object, if it is not a service point associated with
+        if ((await getServicePointsForUser(authService()?.authUser?.customerId as string, req?.params?.servicePointId)) == false) {
+            let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Invalid Service Point", "DER");
+            res.status(404).json(errorList);
+            return;
+        }
         let result = await dbService.getUsageForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId, req?.query)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
+        if (result == null || result?.data== null) {
+            let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Unavailable Service Point", "Usage");
+            res.status(404).json(errorList);
+            return;
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
+           // next();
         }
+        // if (result == null || result?.data == null) {
+        //     res.sendStatus(404);
+        // } else {
+        //     result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+        //     res.send(result);
+        // }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -366,16 +383,26 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        // find service point in user object, if it is not a service point associated with
+        if ((await getServicePointsForUser(authService()?.authUser?.customerId as string, req.params.servicePointId)) == false) {
+            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Invalid Service Point", "DER");
+            res.status(404).json(errorList);
+            return;
+        }
         let result = await dbService.getDerForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId);
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
+        if (result == null || result?.data?.derData == null) {
+            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Unavailable Service Point", "DER");
+            res.status(404).json(errorList);
+            return;
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
-        res.sendStatus(500);
+        res.status(500);
+        return;
     }
 });
 
@@ -639,6 +666,35 @@ function sectorIsValid(sector: string): boolean {
     let validSectors = ['energy', 'banking']
     let st = sector.toLowerCase();
     return validSectors.indexOf(st) > -1
+}
+
+async function getServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
+    let idx = (await dbService.getServicePoints(customerId))?.data?.servicePoints?.findIndex((x:EnergyServicePointDetail) => x.servicePointId == servicePointId)
+    return (idx > -1);
+}
+
+function buildErrorMessageForServicePoint(servicePointId: string, errorTitle: string, dataSetName: string): ResponseErrorListV2 {
+    var retVal: ResponseErrorListV2 = {
+        errors: [         
+        ]
+    };
+    let errorCode = '';
+    let errorDetail = '';
+    if (errorTitle.toLowerCase() == "invalid service point" ) {
+        errorCode = 'urn:au-cds:error:cds-energy:Authorisation/InvalidServicePoint';
+        errorDetail = 'This service point is invalid for the accounts consent has been given for.';
+    }
+    if (errorTitle.toLowerCase() == "unavailable service point" ){
+        errorCode = 'urn:au-cds:error:cds-energy:Authorisation/UnavailableServicePoint';
+        errorDetail = `This service point does contain any data for ${dataSetName}`;
+    }
+    let error = {
+        code: errorCode,
+        title: errorTitle,
+        detail: errorDetail
+    }
+    retVal.errors.push(error);
+    return retVal;
 }
 
 initaliseApp();
