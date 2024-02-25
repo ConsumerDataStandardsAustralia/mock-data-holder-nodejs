@@ -95,9 +95,8 @@ var userService: IUserService = {
         let user: DsbCdrUser | undefined = {
             customerId: authService().authUser?.customerId as string,
             scopes_supported: authService().authUser?.scopes_supported,
-            //accounts: authService().authUser?.accounts,
             accountsEnergy: authService().authUser?.accountsEnergy,
-            energyServicePoints: undefined,
+            energyServicePoints: authService().authUser?.energyServicePoints,
             loginId: authService().authUser?.loginId as string,
             encodeUserId: authService().authUser?.encodeUserId as string,
             encodedAccounts: authService().authUser?.encodedAccounts
@@ -352,7 +351,7 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         // find service point in user object, if it is not a service point associated with
-        if ((await getServicePointsForUser(authService()?.authUser?.customerId as string, req?.params?.servicePointId)) == false) {
+        if ((await isServicePointsForUser(authService()?.authUser?.customerId as string, req?.params?.servicePointId)) == false) {
             let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Invalid Service Point", "DER");
             res.status(404).json(errorList);
             return;
@@ -365,14 +364,8 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
-           // next();
+            return;
         }
-        // if (result == null || result?.data == null) {
-        //     res.sendStatus(404);
-        // } else {
-        //     result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-        //     res.send(result);
-        // }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -384,7 +377,7 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         // find service point in user object, if it is not a service point associated with
-        if ((await getServicePointsForUser(authService()?.authUser?.customerId as string, req.params.servicePointId)) == false) {
+        if ((await isServicePointsForUser(authService()?.authUser?.customerId as string, req.params.servicePointId)) == false) {
             let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Invalid Service Point", "DER");
             res.status(404).json(errorList);
             return;
@@ -668,9 +661,13 @@ function sectorIsValid(sector: string): boolean {
     return validSectors.indexOf(st) > -1
 }
 
-async function getServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
-    let idx = (await dbService.getServicePoints(customerId))?.data?.servicePoints?.findIndex((x:EnergyServicePointDetail) => x.servicePointId == servicePointId)
-    return (idx > -1);
+async function isServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
+    let retVal: boolean =  false;
+    if (userService != null) {
+        let idx = (await userService.getUser())?.energyServicePoints?.findIndex((x: string) => servicePointId);
+        retVal = (idx != null)&&(idx > - 1)? true : false;
+     }
+    return retVal
 }
 
 function buildErrorMessageForServicePoint(servicePointId: string, errorTitle: string, dataSetName: string): ResponseErrorListV2 {
