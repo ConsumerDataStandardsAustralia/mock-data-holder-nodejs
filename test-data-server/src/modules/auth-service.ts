@@ -9,6 +9,7 @@ import jwtDecode from "jwt-decode";
 import { IDatabase } from "../services/database.interface";
 import { CryptoUtils } from "../utils/crypto-utils";
 import { IAuthService } from "./auth-service.interface";
+import { EnergyServicePoint } from "consumer-data-standards/energy";
 
 
 export class AuthService implements IAuthService {
@@ -119,7 +120,7 @@ export class AuthService implements IAuthService {
             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
             if (customerId == undefined)
                return undefined;
-               this.authUser  = {
+            this.authUser  = {
                 loginId : loginId,
                 customerId: customerId,
                 encodeUserId: decoded?.sub,
@@ -130,8 +131,15 @@ export class AuthService implements IAuthService {
             // Once the customerId (here: userId) has been the account ids can be decrypted.
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
-            let accountIds: string[] = this.decryptAccountArray(token) 
+            let accountIds: string[] = this.decryptAccountArray(token);
+            let servicePointIds: string[] = [];
             this.authUser.accountsEnergy = accountIds;
+            let spList: EnergyServicePoint[]  = (await this.dbService.getServicePoints(customerId))?.data?.servicePoints;
+            spList.forEach((sp: EnergyServicePoint) => {
+                servicePointIds.push(sp.servicePointId)
+                
+            });
+            this.authUser.energyServicePoints = servicePointIds;
             return this.authUser;
         } catch(ex) {
             console.log(JSON.stringify(ex))

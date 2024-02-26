@@ -94,11 +94,11 @@ export class SingleData implements IDatabase {
                 if (idx > -1) {
                     if (acc?.balance != null) {
                         let balance: any = {
-                            balance: acc.balance.balance,
+                            balance: acc.balance,
                             accountId: acc.account.accountId
                         }
                         balances.push(balance);
-                    }
+                    } 
                 }
             })
         }
@@ -733,19 +733,21 @@ export class SingleData implements IDatabase {
     async getDerForServicePoint(customerId: string, servicePointId: string): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let sp: any = cust?.energy.servicePoints.find((x: any) => x.der.servicePointId == servicePointId);
-        let data = sp?.der as EnergyDerRecord;
+        let sp: any = cust?.energy.servicePoints.find((x: any) => x.der?.servicePointId == servicePointId);
+        let derData = sp?.der;
         let lk: Links = {
             self: ""
         }
         let m: Meta = {
         }
+        if (derData == undefined) { derData = {}}
         let ret: EnergyDerDetailResponse = {
-            data: data,
+            data: derData,
             links: lk,
             meta: m
         };
-        return ret;
+         
+         return ret;
     }
 
     async getEnergyAccountDetails(customerId: string, accountId: string): Promise<any> {
@@ -935,6 +937,14 @@ export class SingleData implements IDatabase {
               })    
           } 
           return loginModel;      
+    }
+
+    async getServicePointsForUser(customerId: string): Promise<string[] | undefined> {
+        let ret: string[] = [];
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+
+        return ret;
     }
 
 }
