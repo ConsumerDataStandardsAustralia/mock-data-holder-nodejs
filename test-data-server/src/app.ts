@@ -22,6 +22,10 @@ import { readFileSync } from 'fs';
 import * as https from 'https'
 import { DsbCdrUser } from './models/user';
 import {authService, cdrAuthorization } from './modules/auth';
+import { PaginationParameters, paginate } from 'mongoose-paginate-v2'
+import mongoose, { Model, Schema } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate';
+import { EnergyInvoice } from 'consumer-data-standards/energy';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -325,7 +329,6 @@ app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, 
 
 });
 
-
 // this endpoint does NOT require authentication
 app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     
@@ -343,6 +346,7 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
         res.sendStatus(500);
     }
 });
+
 
 // get usage fort a service point, returns EnergyUsageListResponse
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
@@ -434,6 +438,16 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
         res.sendStatus(500);
     }
 });
+
+
+
+// app.get(`${basePath}/energy/accounts/:accountId/invoices`, (req, res) => {
+//     myModel.paginate().then(...new PaginationParameters(req).get()).then((result:any) => {
+//       // process the paginated result.
+//     });
+  
+//     console.log(new PaginationParameters(req).get()); // [{ color: "blue", published: true }, { page: 1, limit: 10, projection: { color: 1 } }]
+// });
 
 // get invoices for account, returns EnergyInvoiceListResponse
 app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {

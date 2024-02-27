@@ -7,14 +7,16 @@ export interface IDatabase {
 
     loadCustomer(customer: any): Promise<boolean>;
 
+    //DONE, except pagination
     getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
     getServicePoints(customerId: string): Promise<any>;
 
     getEnergyAccountDetails(customerId: string, accountId: string): Promise<any>;
-
+    //DONE, except pagination
     getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<any>;
 
+    //DONE, except pagination
     getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
     getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any): Promise<any> 
