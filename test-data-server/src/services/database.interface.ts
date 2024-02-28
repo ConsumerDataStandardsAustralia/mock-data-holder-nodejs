@@ -29,6 +29,7 @@ export interface IDatabase {
 
     getServicePointDetails(customerId: string, servicePointId: string): Promise<any>;
 
+    //DONE, except pagination snd interval reads
     getUsageForServicePoint(customerId: string, servicePointId: string, query: any): Promise<any>;
 
     getDerForServicePoint(customerId: string, servicePointId: string): Promise<any>;

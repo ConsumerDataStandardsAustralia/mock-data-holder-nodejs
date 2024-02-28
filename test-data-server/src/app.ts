@@ -656,7 +656,7 @@ function sectorIsValid(sector: string): boolean {
 
 function getServicePointsForAccount(accountIds: string[]| undefined): string[] {
     let retVal: string[] = [];
-    retVal = ['09196792-a2fa-45cc-a42b-a04d3012b7f5'];
+    retVal = ['f2fd331d-b05c-4f30-af2a-ff7af4477840'];
     return retVal;
 }
 
