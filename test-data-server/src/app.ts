@@ -22,6 +22,8 @@ import { readFileSync } from 'fs';
 import * as https from 'https'
 import { DsbCdrUser } from './models/user';
 import {authService, cdrAuthorization } from './modules/auth';
+import { ResponseErrorListV2 } from 'consumer-data-standards/common';
+import { EnergyServicePointDetail } from 'consumer-data-standards/energy';
 import { PaginationParameters, paginate } from 'mongoose-paginate-v2'
 import mongoose, { Model, Schema } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate';
@@ -62,7 +64,8 @@ const corsOptions: cors.CorsOptions = {
     origin: corsAllowedOrigin
 };
 app.use(cors(corsOptions));
-
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 const router = exp.Router();
 const sampleEndpoints = [...endpoints] as EndpointConfig[];
 const dsbOptions: CdrConfig = {
@@ -96,9 +99,8 @@ var userService: IUserService = {
         let user: DsbCdrUser | undefined = {
             customerId: authService().authUser?.customerId as string,
             scopes_supported: authService().authUser?.scopes_supported,
-            //accounts: authService().authUser?.accounts,
             accountsEnergy: authService().authUser?.accountsEnergy,
-            energyServicePoints: getServicePointsForAccount(authService().authUser?.accountsEnergy),
+            energyServicePoints: authService().authUser?.energyServicePoints,
             loginId: authService().authUser?.loginId as string,
             encodeUserId: authService().authUser?.encodeUserId as string,
             encodedAccounts: authService().authUser?.encodedAccounts
@@ -116,7 +118,9 @@ app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data/energy",
 app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `/health`));
 // app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 // app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
-app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
+
+// TODO once @cds-au/holde-sdk version 2.0.2 has been released and incorportated uncomment the line below
+//app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
 
 
 app.use('/', router);
@@ -352,12 +356,21 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        // find service point in user object, if it is not a service point associated with
+        if ((await isServicePointsForUser(authService()?.authUser?.customerId as string, req?.params?.servicePointId)) == false) {
+            let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Invalid Service Point", "DER");
+            res.status(404).json(errorList);
+            return;
+        }
         let result = await dbService.getUsageForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId, req?.query)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
+        if (result == null || result?.data== null) {
+            let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Unavailable Service Point", "Usage");
+            res.status(404).json(errorList);
+            return;
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -369,16 +382,26 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        // find service point in user object, if it is not a service point associated with
+        if ((await isServicePointsForUser(authService()?.authUser?.customerId as string, req.params.servicePointId)) == false) {
+            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Invalid Service Point", "DER");
+            res.status(404).json(errorList);
+            return;
+        }
         let result = await dbService.getDerForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId);
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
+        if (result == null || result?.data?.derData == null) {
+            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Unavailable Service Point", "DER");
+            res.status(404).json(errorList);
+            return;
         } else {
             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.send(result);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
-        res.sendStatus(500);
+        res.status(500);
+        return;
     }
 });
 
@@ -654,9 +677,36 @@ function sectorIsValid(sector: string): boolean {
     return validSectors.indexOf(st) > -1
 }
 
-function getServicePointsForAccount(accountIds: string[]| undefined): string[] {
-    let retVal: string[] = [];
-    retVal = ['f2fd331d-b05c-4f30-af2a-ff7af4477840'];
+async function isServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
+    let retVal: boolean =  false;
+    if (userService != null) {
+        let idx = (await userService.getUser())?.energyServicePoints?.findIndex((x: string) => servicePointId);
+        retVal = (idx != null)&&(idx > - 1)? true : false;
+     }
+    return retVal
+}
+
+function buildErrorMessageForServicePoint(servicePointId: string, errorTitle: string, dataSetName: string): ResponseErrorListV2 {
+    var retVal: ResponseErrorListV2 = {
+        errors: [         
+        ]
+    };
+    let errorCode = '';
+    let errorDetail = '';
+    if (errorTitle.toLowerCase() == "invalid service point" ) {
+        errorCode = 'urn:au-cds:error:cds-energy:Authorisation/InvalidServicePoint';
+        errorDetail = 'This service point is invalid for the accounts consent has been given for.';
+    }
+    if (errorTitle.toLowerCase() == "unavailable service point" ){
+        errorCode = 'urn:au-cds:error:cds-energy:Authorisation/UnavailableServicePoint';
+        errorDetail = `This service point does contain any data for ${dataSetName}`;
+    }
+    let error = {
+        code: errorCode,
+        title: errorTitle,
+        detail: errorDetail
+    }
+    retVal.errors.push(error);
     return retVal;
 }
 

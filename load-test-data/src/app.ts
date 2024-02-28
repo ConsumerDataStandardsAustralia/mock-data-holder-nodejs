@@ -56,10 +56,13 @@ dbService.connectDatabase()
                 process.exit();
             }
         } else {
-            
-            var singleDataFilePath = path.join(inputPath, "all-data");
-            console.log("Processing sinle data file from: " + singleDataFilePath);
-            await processSingleFiles(singleDataFilePath);
+            var dataInputPath = path.join(inputPath, "all-data");
+            if (holderId != null) {
+                if (fs.existsSync(dataInputPath) == true)
+                    dataInputPath = path.join(inputPath, holderId);
+            }      
+            console.log("Processing sinle data file from: " + dataInputPath);
+            await processSingleFiles(dataInputPath);
             process.exit();
         };
     })
@@ -69,22 +72,23 @@ dbService.connectDatabase()
     })
 
 async function processSingleFiles(singleDataFilePath: string): Promise<boolean> {
-    //var singleDataFiles = fs.readdirSync(singleDataFilePath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
     let defaultColName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "data-factory-output";
-    //var holderSubs = fs.readdirSync(singleDataFiles, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
     let singleDataFiles = fs.readdirSync(singleDataFilePath);
     let cnt = singleDataFiles.length;
     for (let i = 0; i < cnt; i++) {
         console.log("Processing data file: " + singleDataFiles[i]);
         let file = singleDataFiles[i];
         var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
-        if (defaultColName.toLowerCase() != collectionName)
+        if (holderId == null && defaultColName.toLowerCase() != collectionName)
             continue;
+        // delete existing collection
+        await dbService.deleteCollection(collectionName);
+
         var filePath = path.join(singleDataFilePath, file);
         let fileString = fs.readFileSync(filePath).toString();
         var data = JSON.parse(fileString);
-        //await dbService.createEmptyCollection(collectionName);
         console.log("Created " + collectionName);
+        
         await dbService.addCompleteDataSet(data, collectionName);
         console.log("Loaded data for " + collectionName);
     }
