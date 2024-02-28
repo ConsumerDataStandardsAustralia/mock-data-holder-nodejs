@@ -119,8 +119,7 @@ app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `/
 // app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 // app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
 
-// TODO once @cds-au/holde-sdk version 2.0.2 has been released and incorportated uncomment the line below
-//app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
+app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
 
 
 app.use('/', router);

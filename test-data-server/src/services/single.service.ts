@@ -1,11 +1,12 @@
 import { LinksPaginated, MetaPaginated } from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
+import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { Service } from "typedi";
 import { AccountModel, CustomerModel } from "../models/login";
 import { QueryRange } from "../models/query-range";
+import { Query } from "mongoose";
 
 @Service()
 export class SingleData implements IDatabase {
@@ -127,18 +128,7 @@ export class SingleData implements IDatabase {
         // interval-reads, oldest-date, newest-date
         let retArray: any[] = [];
         if (cust != null) {
-            let mSecInYear = 31536000000;
-            // check newest time
-            var newTime = Date.now();
-            //const newTime: any = currentDate.getMilliseconds();
-            if (query["newest-date"] != null && isNaN(Date.parse(query["newest-date"])) == false) {
-                newTime = Date.parse(query["newest-date"]);
-            }
-            var oldestTime = newTime - mSecInYear * 2;
-            // check oldest time
-            if (query["oldest-date"] != null && isNaN(Date.parse(query["oldest-date"])) == false) {
-                oldestTime = Date.parse(query["oldest-date"]);
-            }
+            let range: QueryRange = this.getDateRangeFromQueryParams(query,"oldest-date","newest-date");
             // interval reads
             var intervalReads = "NONE";
             if (query["interval-reads"] != null) {
@@ -149,7 +139,7 @@ export class SingleData implements IDatabase {
                     let filteredUsage: any[] = [];
                     sp.usage.filter((u: any) => {
                         let refDate = Date.parse(u.readStartDate);
-                        if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                        if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
                             filteredUsage.push(u)
                         else
                             console.log(`Not added ${u?.readStartDate}`)
@@ -462,7 +452,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getBillingForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any> {
+    async getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let l: LinksPaginated = {
@@ -479,12 +469,18 @@ export class SingleData implements IDatabase {
             links: l,
             meta: m
         }
+        let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
+        //let filteredBilling: EnergyBillingTransactionV2[] = [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 var idx = accountIds?.indexOf(acc.account.accountId)
                 if (idx > -1) {
-                    if (acc?.invoices != null) {
-                        ret.data.transactions.push(...acc?.transactions);
+                    if (acc?.transactions != null) {
+                        acc?.transactions.forEach((tr:EnergyBillingTransactionV2) => {
+                            if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {{
+                                ret.data.transactions.push(...acc?.transactions);
+                            }}
+                        })                 
                     }
                 }
             })
@@ -542,6 +538,9 @@ export class SingleData implements IDatabase {
         };
         return retVal;
     }
+    compareByStartDate(a: any, b: any) {
+        return a.readStartDate.localeCompare(b.readStartDate);
+    }
 
     async getUsageForMultipleServicePoints(customerId: string, servicePointIds: string[], query: any): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
@@ -562,27 +561,32 @@ export class SingleData implements IDatabase {
         }
         let readType: string = 'NONE';
         if (query["interval-reads"] != null &&
-            (query["interval-reads"].toUpperCase() == "MIN_30")
-            || query["interval-reads"].toUpperCase() == "FULL"
-            || query["interval-reads"].toUpperCase() == "NONE") {
+            (query["interval-reads"]?.toUpperCase() == "MIN_30")
+            || query["interval-reads"]?.toUpperCase() == "FULL"
+            || query["interval-reads"]?.toUpperCase() == "NONE") {
             readType = query["interval-reads"].toUpperCase();
         }
         if (cust != null) {
-            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
+            var range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
+            let filteredReads: EnergyUsageRead[] = [];
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 var idx = servicePointIds?.indexOf(sp.servicePoint.servicePointId)
                 if (idx > -1) {
-                    let filteredReads: EnergyUsageRead[] = [];
-                    if (sp.usage.readUType == "intervalRead" && (readType == "MIN_30" || readType == "FULL")){
-                        if (sp.usage.intervalRead != null) {
-                            //TODO do something with the read intervals, ie calculate it then set it
-                        }              
-                    }
-                    let refDate = Date.parse(sp.usage.readStartDate);
-                    if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange)) {
-                        filteredReads.push(sp.usage)
-                        ret.data.reads = filteredReads;
-                    }
+                    
+                    sp?.usage.forEach((read: EnergyUsageRead) => {
+                        if (read.readUType == "intervalRead" && (readType == "MIN_30" || readType == "FULL")){
+                            if (read.intervalRead != null) {
+                                //TODO do something with the read intervals, ie calculate it then set it
+                            }              
+                        }
+                        //sp.usage?.sort(this.compareByStartDate);
+                        let refDate = Date.parse(read.readStartDate);
+                        if (isNaN(refDate)==false && (refDate >= range.startRange && refDate <= range.endRange)) {
+                            filteredReads.push(read)
+                            ret.data.reads = filteredReads;
+                        }
+                    })
+
                 }
             })
         }

@@ -19,6 +19,7 @@ export interface IDatabase {
     //DONE, except pagination
     getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
+    //DONE, except pagination snd interval reads
     getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any): Promise<any> 
 
     getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> 
@@ -54,6 +55,7 @@ export interface IDatabase {
 
     getBulkBalancesForUser(customerId: string): Promise<any>;
 
+    //DONE, except pagination and interval reads
     getBulkUsageForUser(customerId: string, query: any): Promise<any>;
 
     getBulkDerForUser(customerId: string): Promise<any>;
