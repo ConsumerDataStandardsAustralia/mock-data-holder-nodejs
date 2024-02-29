@@ -58,27 +58,52 @@ export class SingleData implements IDatabase {
     }
 
     async getPlans(allDataCollection: mongoDB.Collection, query: any): Promise<any> {
+/*
+        type	 Enum 
+        Used to filter results on the type field. Any one of the valid values for this field can be supplied plus 'ALL'. If absent defaults to 'ALL'
+        
+        fuelType Enum
+        Used to filter results on the fuelType field. Any one of the valid values for this field can be supplied plus 'ALL'. If absent defaults to 'ALL'
+        
+        effective   Enum
+        Allows for the filtering of plans based on whether the current time is within the period of time defined as effective by the effectiveFrom and effectiveTo fields. Valid values are ‘CURRENT’, ‘FUTURE’ and ‘ALL’. If absent defaults to 'CURRENT'
+        
+        updated-since DateTimeString
+        Only include plans that have been updated after the specified date and time. If absent defaults to include all plans
+        
+        brand string
+        Used to filter results on the brand field. If absent defaults to include all plans
+*/
+
         let allData: mongoDB.WithId<mongoDB.Document> | null = await allDataCollection.findOne();
         let allPlans: any;
         let retPlans = null;
+        var refToDate = Date.now();
+        var refFromDate = 0;
+        if (query["effective"] != null && (query["effective"].toUpperCase() == "FUTURE")) {
+            refFromDate = Date.now();
+            refToDate = Number.MAX_VALUE; 
+        }
+        if (query["effective"] != null && (query["effective"].toUpperCase() == "ALL")) {
+            refToDate = Number.MAX_VALUE;
+        }
         // filter out the expired plans
         if (allData?.holders != null) {
             allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans
                 .filter((x: any) => {
-                    if (x.effectiveTo == null || Date.now() < Date.parse(x.effectiveTo)) {
+                    var refDate = Date.parse(x.effectiveTo);
+                    if (refDate >= refFromDate && refDate <= refToDate) {
                         return x;
                     }
                 });
         }
-        if (query.effective)
-            // now filter the plans
-            retPlans = allPlans
         if (query != null) {
             retPlans = allPlans.filter((p: any) => {
                 if (
                     (query.fuelType == null || query.fuelType.toUpperCase() == 'ALL' || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
                     && (query.type == null || query.type.toUpperCase() == 'ALL' || query.type.toUpperCase() == p?.type.toUpperCase())
-                    && (query["update-since"] == null || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated))) {
+                    && (query["update-since"] == null || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated))
+                    && (query["brand"] == null || query["brand"].toUpperCase() === p.brand.toUpperCase())) {
                     return p;
                 }
             });
@@ -195,23 +220,13 @@ export class SingleData implements IDatabase {
         let cust: any = await this.getCustomer(allData, customerId);
         let retArray: any[] = [];
         if (cust != null) {
-            let mSecInYear = 31536000000;
-            // check newest time
-            var newTime = Date.now();
-            //const newTime: any = currentDate.getMilliseconds();
-            if (query["newest-time"] != null && isNaN(query["newest-time"]) == false) {
-                newTime = Date.parse(query["newest-time"]);
-            }
-            var oldestTime = newTime - mSecInYear;
-            // check oldest time
-            if (query["oldest-time"] != null && isNaN(query["oldest-time"]) == false) {
-                oldestTime = newTime = Date.parse(query["oldest-time"]);
-            }
+            let range: QueryRange = this.getDateRangeFromQueryParams(query,"oldest-time","newest-time");
+
             cust?.energy?.accounts.forEach((acc: any) => {
                 let filteredTransactions: any[] = [];
                 acc?.transactions.filter((tr: any) => {
                     let refDate = Date.parse(tr.executionDateTime);
-                    if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                    if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
                         filteredTransactions.push(tr)
                 })
                 retArray.push(...filteredTransactions);
@@ -269,24 +284,13 @@ export class SingleData implements IDatabase {
         let retArray: any[] = [];
 
         if (cust != null) {
-            let mSecInYear = 31536000000;
-            // check newest time
-            var newTime = Date.now();
-            //const newTime: any = currentDate.getMilliseconds();
-            if (query["newest-date"] != null && isNaN(Date.parse(query["newest-date"])) == false) {
-                newTime = Date.parse(query["newest-date"]);
-            }
-            var oldestTime = newTime - mSecInYear;
-            // check oldest time
-            if (query["oldest-date"] != null && isNaN(Date.parse(query["oldest-date"])) == false) {
-                oldestTime = Date.parse(query["oldest-date"]);
-            }
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc?.invoices != null) {
                     let filteredInvoices: any[] = [];
                     acc?.invoices.filter((inv: any) => {
                         let refDate = Date.parse(inv.issueDate);
-                        if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
+                        if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
                             filteredInvoices.push(inv)
                         else
                             console.log(`Not added ${inv?.issueDate}`)
@@ -313,6 +317,22 @@ export class SingleData implements IDatabase {
     }
 
     async getEnergyAllPlans(query: any): Promise<any> {
+/*
+        type	 Enum 
+        Used to filter results on the type field. Any one of the valid values for this field can be supplied plus 'ALL'. If absent defaults to 'ALL'
+        
+        fuelType Enum
+        Used to filter results on the fuelType field. Any one of the valid values for this field can be supplied plus 'ALL'. If absent defaults to 'ALL'
+        
+        effective   Enum
+        Allows for the filtering of plans based on whether the current time is within the period of time defined as effective by the effectiveFrom and effectiveTo fields. Valid values are ‘CURRENT’, ‘FUTURE’ and ‘ALL’. If absent defaults to 'CURRENT'
+        
+        updated-since DateTimeString
+        Only include plans that have been updated after the specified date and time. If absent defaults to include all plans
+        
+        brand string
+        Used to filter results on the brand field. If absent defaults to include all plans
+*/
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let allPlans: EnergyPlan[] = await this.getPlans(allData, query);
@@ -478,7 +498,7 @@ export class SingleData implements IDatabase {
                     if (acc?.transactions != null) {
                         acc?.transactions.forEach((tr:EnergyBillingTransactionV2) => {
                             if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {{
-                                ret.data.transactions.push(...acc?.transactions);
+                                ret.data.transactions.push(tr);
                             }}
                         })                 
                     }

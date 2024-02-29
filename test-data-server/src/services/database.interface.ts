@@ -39,6 +39,7 @@ export interface IDatabase {
 
     getTransactionsForAccount(customerId: string, accountId: string): Promise<any>;
 
+     //DONE, except pagination
     getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
 
     getConcessionsForAccount(customerId: string, accountId: string): Promise<any>;
@@ -47,10 +48,13 @@ export interface IDatabase {
 
     getEnergyPlanDetails(planId: string): Promise<any>;
     
+    //DONE, except pagination
     getEnergyAllPlans(query: any): Promise<any>;
 
+    //DONE, except pagination
     getBulkInvoicesForUser(customerId: string, query: any): Promise<any>;
 
+    //DONE, except pagination
     getBulkBilllingForUser(customerId: string, query: any): Promise<any>;
 
     getBulkBalancesForUser(customerId: string): Promise<any>;
