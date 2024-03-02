@@ -11,7 +11,7 @@ import {
     cdrScopeValidator,
     cdrResourceValidator
 } from "@cds-au/holder-sdk"
-import { MongoData } from './services/database.service';
+
 import { IDatabase } from './services/database.interface';
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
@@ -21,13 +21,14 @@ import path from 'path';
 import { readFileSync } from 'fs';
 import * as https from 'https'
 import { DsbCdrUser } from './models/user';
-import {authService, cdrAuthorization } from './modules/auth';
+import { authService, cdrAuthorization } from './modules/auth';
 import { ResponseErrorListV2 } from 'consumer-data-standards/common';
-import { EnergyServicePointDetail } from 'consumer-data-standards/energy';
+import { EnergyAccount, EnergyAccountDetailResponse, EnergyAccountDetailV3, EnergyAccountListResponse, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponse, EnergyBillingTransactionV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoiceListResponse, EnergyPlan, EnergyPlanDetailV2, EnergyPlanListResponse, EnergyPlanResponse, EnergyServicePointDetail, EnergyServicePointDetailResponse, EnergyUsageListResponse, EnergyUsageRead } from 'consumer-data-standards/energy';
 import { PaginationParameters, paginate } from 'mongoose-paginate-v2'
 import mongoose, { Model, Schema } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate';
 import { EnergyInvoice } from 'consumer-data-standards/energy';
+import { getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -52,10 +53,8 @@ var isSingle = isSingleStr?.toLowerCase() == 'false' ? false : true;
 console.log(`Connection string is ${connString}`);
 
 var dbService: IDatabase;
-if (isSingle == true)
-    dbService = new SingleData(connString, process.env.MONGO_DB as string);
-else
-    dbService = new MongoData(connString, process.env.MONGO_DB as string);
+dbService = new SingleData(connString, process.env.MONGO_DB as string);
+
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
@@ -119,7 +118,7 @@ app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `/
 // app.use(unless(cdrTokenValidator(tokenValidatorOptions), "/login-data/energy", "/jwks"));
 // app.use(unless(cdrJwtScopes(authOption), "/login-data/energy", "/jwks"));
 
-app.use(unless(cdrResourceValidator(userService),  "/login-data/energy", "/jwks", `/health`));
+app.use(unless(cdrResourceValidator(userService), "/login-data/energy", "/jwks", `/health`));
 
 
 app.use('/', router);
@@ -147,7 +146,7 @@ async function initaliseApp() {
 // this endpoint requires authentication
 app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log(`Received request on ${port} for ${req.url}`);      
+        console.log(`Received request on ${port} for ${req.url}`);
         let user = authService()?.authUser?.loginId;
         res.send(`Service is running....${user}`);
     } catch (e) {
@@ -171,47 +170,61 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["invoices", "billing", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let result = await dbService.getEnergyAccountDetails(authService()?.authUser?.customerId as string, req.params?.accountId)
-            if (result == null || result?.data == null) {
+            let data : any | undefined = await dbService.getEnergyAccountDetails(authService()?.authUser?.customerId as string, req.params?.accountId)
+            if (data == null) {
                 res.sendStatus(404);
             } else {
-                result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-                res.send(result);
+                let resp: EnergyAccountDetailResponse = {
+                    data: data,
+                    links: {
+                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                    }
+                }
+                res.send(resp);
+                return;
             }
         }
-        if (req.params?.accountId == "invoices") {
-            let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string, req?.query)
-            if (result == null || result?.data == null) {
-                res.sendStatus(404);
-            } else {
-                res.send(result);
-            }
-        }
+        // if (req.params?.accountId == "invoices") {
+        //     let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string, req?.query)
+        //     if (result == null || result?.data == null) {
+        //         res.sendStatus(404);
+        //     } else {
+        //         res.send(result);
+        //     }
+        // }
 
-        if (req.params?.accountId == "billing") {
-            let result = await dbService.getBulkBilllingForUser(authService()?.authUser?.customerId as string, req.query)
-            if (result == null || result?.data == null) {
-                res.sendStatus(404);
-            } else {
-                res.send(result);
-            }
-        }
+        // if (req.params?.accountId == "billing") {
+        //     let result = await dbService.getBulkBilllingForUser(authService()?.authUser?.customerId as string, req.query)
+        //     if (result == null || result?.data == null) {
+        //         res.sendStatus(404);
+        //     } else {
+        //         res.send(result);
+        //     }
+        // }
 
         if (req.params?.accountId == "balances") {
-            let result = await dbService.getBulkBalancesForUser(authService()?.authUser?.customerId as string)
-            if (result == null || result?.data == null) {
+            let result: any[] = await dbService.getBulkBalancesForUser(authService()?.authUser?.customerId as string)
+            if (result == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                res.send(result);
+                let paginatedData = paginateData(result, req.query);
+                let listResponse: EnergyBalanceListResponse = {
+                    links: getLinksPaginated(),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        balances: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
             }
         }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
-
-
-})
+ })
 
 // anything /energy/electricity/servicepoints/<something-else> needs  to be routed like this 
 router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async (req, res) => {
@@ -219,31 +232,56 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["usage", "der"];
         if (excludes.indexOf(req.params?.servicePointId) == -1) {
-            let result = await dbService.getServicePointDetails(authService()?.authUser?.customerId as string, req.params?.servicePointId)
-            if (result == null || result?.data == null) {
+            let result :  EnergyServicePointDetail = await dbService.getServicePointDetails(authService()?.authUser?.customerId as string, req.params?.servicePointId)
+            if (result == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-                res.send(result);
+                let resp: EnergyServicePointDetailResponse = {
+                    data: result,
+                    links: {
+                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                    }
+                }
+                res.send(resp);
+                return;
             }
         }
         if (req.params?.servicePointId == "usage") {
             console.log(`Received request on ${port} for ${req.url}`);
-            let result = await dbService.getBulkUsageForUser(authService()?.authUser?.customerId as string, req?.query)
-            if (result == null || result?.data == null) {
+            let result : EnergyUsageRead[] = await dbService.getBulkUsageForUser(authService()?.authUser?.customerId as string, req?.query)
+            if (result == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-                res.send(result);
+                let paginatedData = paginateData(result, req.query);
+                let listResponse: EnergyUsageListResponse = {
+                    links: getLinksPaginated(),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        reads: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
             }
         }
-
         if (req.params?.servicePointId == "der") {
-            let result = await dbService.getBulkDerForUser(authService()?.authUser?.customerId as string)
-            if (result == null || result?.data == null) {
+            let result: EnergyDerRecord[] = await dbService.getBulkDerForUser(authService()?.authUser?.customerId as string)
+            if (result == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                res.send(result);
+                let paginatedData = paginateData(result, req.query);
+                let listResponse: EnergyDerListResponse = {
+                    links: getLinksPaginated(),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        derRecords: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
             }
         }
     } catch (e) {
@@ -253,35 +291,43 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
 })
 
 // this endpoint requires authentication
-app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next: NextFunction) => {
+app.get(`${basePath}/energy/accounts`,  async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let ret = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
-        ret.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-        res.send(ret);
+        let result: EnergyAccount[] = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
+        let paginatedData = paginateData(result, req.query);
+        let listResponse: EnergyAccountListResponse = {
+            data: {
+                accounts: paginatedData
+            },
+            links: getLinksPaginated(),
+            meta: getMetaPaginated(req.query, result.length)
+        }
+        res.send(listResponse);
+        return;
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
 });
 
-// tget list of service points, returns EnergyServicePointListResponse
-app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getServicePoints(authService()?.authUser?.customerId as string);
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-            return;
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
+// // tget list of service points, returns EnergyServicePointListResponse
+// app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received request on ${port} for ${req.url}`);
+//         let result = await dbService.getServicePoints(authService()?.authUser?.customerId as string);
+//         if (result == null || result?.data == null) {
+//             res.sendStatus(404);
+//             return;
+//         } else {
+//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+//             res.send(result);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
 
 app.get(`${basePath}/common/customer/detail`, async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -299,31 +345,37 @@ app.get(`${basePath}/common/customer/detail`, async (req: Request, res: Response
     }
 });
 
-app.get(`${basePath}/common/customer`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getCustomerDetails(authService()?.authUser?.customerId as string);
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
+// app.get(`${basePath}/common/customer`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received request on ${port} for ${req.url}`);
+//         let result = await dbService.getCustomerDetails(authService()?.authUser?.customerId as string);
+//         if (result == null || result?.data == null) {
+//             res.sendStatus(404);
+//         } else {
+//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+//             res.send(result);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
 
 app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getEnergyPlanDetails(req.params.planId)
-        if (result == null || result?.data == null) {
+        let data: EnergyPlanDetailV2 | null = await dbService.getEnergyPlanDetails(req.params.planId)
+        if (data == null) {
             res.sendStatus(404);
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            let result: EnergyPlanResponse = {
+                data: data,
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                }
+            }
             res.send(result);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -334,16 +386,21 @@ app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, 
 
 // this endpoint does NOT require authentication
 app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
-    
+
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-        let result = await dbService.getEnergyAllPlans(req.query)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+        let result: EnergyPlan[] = await dbService.getEnergyAllPlans(req.query);
+        let paginatedData = paginateData(result, req.query);
+        let listResponse: EnergyPlanListResponse = {
+            data: {
+                plans: paginatedData
+            },
+            links: getLinksPaginated(),
+            meta: getMetaPaginated(req.query, result.length)
         }
+        // paginate data 
+        res.send(listResponse);
+        return;
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -355,22 +412,19 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        // find service point in user object, if it is not a service point associated with
-        if ((await isServicePointsForUser(authService()?.authUser?.customerId as string, req?.params?.servicePointId)) == false) {
-            let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Invalid Service Point", "DER");
-            res.status(404).json(errorList);
-            return;
+
+        let result: EnergyUsageRead[] = await dbService.getUsageForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId, req?.query)
+        let paginatedData = paginateData(result, req.query);
+        let listResponse: EnergyUsageListResponse = {
+            links: getLinksPaginated(),
+            meta: getMetaPaginated(req.query, result.length),
+            data: {
+                reads: paginatedData
+            }
         }
-        let result = await dbService.getUsageForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId, req?.query)
-        if (result == null || result?.data== null) {
-            let errorList = buildErrorMessageForServicePoint(req?.params?.servicePointId, "Unavailable Service Point", "Usage");
-            res.status(404).json(errorList);
-            return;
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-            return;
-        }
+        // paginate data 
+        res.send(listResponse);
+        return;
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -387,14 +441,20 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
             res.status(404).json(errorList);
             return;
         }
-        let result = await dbService.getDerForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId);
-        if (result == null || result?.data?.derData == null) {
+        let data: EnergyDerRecord | undefined = await dbService.getDerForServicePoint(authService()?.authUser?.customerId as string, req.params.servicePointId);
+        if (data == null) {
             let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Unavailable Service Point", "DER");
             res.status(404).json(errorList);
             return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            let ret : EnergyDerDetailResponse = {
+                data: data,
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                },
+                meta: {}
+            } 
+            res.send(ret);
             return;
         }
     } catch (e) {
@@ -404,62 +464,69 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
     }
 });
 
-// get der for a service point, returns EnergyDerDetailResponse
+// get der for a list service point, returns EnergyDerListResponse
 app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getDerForMultipleServicePoints(authService()?.authUser?.customerId as string, req.body?.accountIds)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
 
-// get account details for an accountID, returns EnergyAccountDetailResponseV2
-app.get(`${basePath}/energy/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        var excludes = ["invoices"];
-        if (excludes.indexOf(req.params?.accountId) == -1) {
-            let result = await dbService.getEnergyAccountDetails(authService()?.authUser?.customerId as string, req.params?.accountId)
-            if (result == null || result?.data == null) {
-                res.sendStatus(404);
-            } else {
-                result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-                res.send(result);
+        let result: EnergyDerRecord[] = await dbService.getDerForMultipleServicePoints(authService()?.authUser?.customerId as string, req.body?.data?.servicePointIds);
+        let paginatedData = paginateData(result, req.query);
+        let listResponse: EnergyDerListResponse = {
+            links: getLinksPaginated(),
+            meta: getMetaPaginated(req.query, result.length),
+            data: {
+                derRecords: paginatedData
             }
         }
-        else {
-            app.get(`${basePath}/energy/accounts/`);
-        }
+        // paginate data 
+        res.send(listResponse);
+        return;
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
+
 });
 
-// get account details for an accountID, returns EnergyAccountDetailResponseV2
-app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
+// // get account details for an accountID, returns EnergyAccountDetailResponseV2
+// app.get(`${basePath}/energy/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received request on ${port} for ${req.url}`);
+//         var excludes = ["invoices"];
+//         if (excludes.indexOf(req.params?.accountId) == -1) {
+//             let result = await dbService.getEnergyAccountDetails(authService()?.authUser?.customerId as string, req.params?.accountId)
+//             if (result == null || result?.data == null) {
+//                 res.sendStatus(404);
+//             } else {
+//                 result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+//                 res.send(result);
+//             }
+//         }
+//         else {
+//             app.get(`${basePath}/energy/accounts/`);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
+
+// // get account details for an accountID, returns EnergyAccountDetailResponseV2
+// app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received request on ${port} for ${req.url}`);
+//         let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
+//         if (result == null || result?.data == null) {
+//             res.sendStatus(404);
+//         } else {
+//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+//             res.send(result);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
 
 
 
@@ -467,7 +534,7 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 //     myModel.paginate().then(...new PaginationParameters(req).get()).then((result:any) => {
 //       // process the paginated result.
 //     });
-  
+
 //     console.log(new PaginationParameters(req).get()); // [{ color: "blue", published: true }, { page: 1, limit: 10, projection: { color: 1 } }]
 // });
 
@@ -475,12 +542,21 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
-        if (result == null || result?.data == null) {
+        let data: EnergyInvoice[] = await dbService.getInvoicesForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
+        if (data == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            let paginatedData = paginateData(data, req.query);
+            let listResponse : EnergyInvoiceListResponse = {
+                data: {
+                    invoices: paginatedData
+                },
+                links: getLinksPaginated(),
+                meta: getMetaPaginated(req.query, data.length)
+            } 
+            res.send(listResponse);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -491,11 +567,21 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 // get invoices for account, returns EnergyInvoiceListResponse
 app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received POST request on ${port} for ${req.url}`);
-    let result = await dbService.getInvoicesForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
-    if (result == null || result?.data == null) {
+    let data: EnergyInvoice[] = await dbService.getInvoicesForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+    if (data == null) {
         res.sendStatus(404);
+        return;
     } else {
-        res.send(result);
+        let paginatedData = paginateData(data, req.query);
+        let listResponse : EnergyInvoiceListResponse = {
+            data: {
+                invoices: paginatedData
+            },
+            links: getLinksPaginated(),
+            meta: getMetaPaginated(req.query, data.length)
+        } 
+        res.send(listResponse);
+        return;
     }
 });
 
@@ -504,11 +590,21 @@ app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respo
 app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received POST request on ${port} for ${req.url}`);
-        let result = await dbService.getBalancesForMultipleAccount(authService()?.authUser?.customerId as string, req.body?.data?.accountIds)
-        if (result == null || result?.data == null) {
+        let result: any[] = await dbService.getBalancesForMultipleAccount(authService()?.authUser?.customerId as string, req.body?.data?.accountIds)
+        if (result == null) {
             res.sendStatus(404);
+            return;
         } else {
-            res.send(result);
+            let paginatedData = paginateData(result, req.query);
+            let listResponse : EnergyBalanceListResponse = {
+                links: getLinksPaginated(),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    balances: paginatedData
+                }
+            } 
+            res.send(listResponse);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -516,33 +612,42 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
     }
 });
 
-// get invoices for account, returns EnergyInvoiceListResponse
-app.get(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received GET request on ${port} for ${req.url}`);
-        if (!authService()?.authUser?.customerId) return;
-        let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string, req.query);
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
+// // get invoices for account, returns EnergyInvoiceListResponse
+// app.get(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received GET request on ${port} for ${req.url}`);
+//         if (!authService()?.authUser?.customerId) return;
+//         let result = await dbService.getBulkInvoicesForUser(authService()?.authUser?.customerId as string, req.query);
+//         if (result == null || result?.data == null) {
+//             res.sendStatus(404);
+//         } else {
+//             res.send(result);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
 
 // get invoices for account, returns EnergyInvoiceListResponse
 app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getUsageForMultipleServicePoints(authService()?.authUser?.customerId as string, req.body?.data?.servicePointIds, req.query)
-        if (result == null || result?.data == null) {
+        let data: EnergyUsageRead[] = await dbService.getUsageForMultipleServicePoints(authService()?.authUser?.customerId as string, req.body?.data?.servicePointIds, req.query)
+        if (data == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            let paginatedData = paginateData(data, req.query);
+            let listResponse : EnergyUsageListResponse = {
+                links: getLinksPaginated(),
+                meta: getMetaPaginated(req.query, data.length),
+                data: {
+                    reads: paginatedData
+                }
+            } 
+            res.send(listResponse);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -554,12 +659,22 @@ app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Reque
 app.get(`${basePath}/energy/accounts/:accountId/concessions`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getConcessionsForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
-        if (result == null || result?.data == null) {
+        let result : EnergyConcession[] | undefined = await dbService.getConcessionsForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
+        if (result == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            let ret : EnergyConcessionsResponse = {
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                },
+                meta: {},
+                data: {
+                    concessions: result
+                }
+            } 
+            res.send(ret);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -573,11 +688,21 @@ app.get(`${basePath}/energy/accounts/:accountId/balance`, async (req: Request, r
         console.log(`Received request on ${port} for ${req.url}`);
         let st = `Received request on ${port} for ${req.url}`;
         let result = await dbService.getBalanceForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
-        if (result == null || result?.data == null) {
+        if (result == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            let ret : EnergyBalanceResponse = {
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                },
+                meta: {},
+                data: {
+                    balance: result
+                }
+            } 
+            res.send(ret);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -585,32 +710,42 @@ app.get(`${basePath}/energy/accounts/:accountId/balance`, async (req: Request, r
     }
 });
 
-// get payment schedule for account, returns EnergyPaymentScheduleResponse
-app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getPaymentSchedulesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
+// // get payment schedule for account, returns EnergyPaymentScheduleResponse
+// app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received request on ${port} for ${req.url}`);
+//         let result = await dbService.getPaymentSchedulesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
+//         if (result == null || result?.data == null) {
+//             res.sendStatus(404);
+//         } else {
+//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+//             res.send(result);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
 
 // get payment schedule for account, returns EnergyPaymentScheduleResponse
 app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getTransactionsForAccount(authService().authUser?.customerId as string, req.params?.accountId)
-        if (result == null || result?.data == null) {
+        let result: EnergyBillingTransactionV2[] = await dbService.getBillingForAccount(authService().authUser?.customerId as string, req.params?.accountId, req?.query)
+        if (result == null) {
             res.sendStatus(404);
+            return;
         } else {
-            res.send(result);
+            let paginatedData = paginateData(result, req.query);
+            let listResponse : EnergyBillingListResponse = {
+                links: getLinksPaginated(),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    transactions: paginatedData
+                }
+            } 
+            res.send(listResponse);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -622,12 +757,21 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
 app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getBillingForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
-        if (result == null || result?.data == null) {
+        let result : EnergyBillingTransactionV2[] = await dbService.getBillingForMultipleAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        if (result == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            let paginatedData = paginateData(result, req.query);
+            let listResponse : EnergyBillingListResponse = {
+                links: getLinksPaginated(),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    transactions: paginatedData
+                }
+            } 
+            res.send(listResponse);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -636,21 +780,21 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 });
 
 
-app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getPaymentSchedulesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
-        if (result == null || result?.data == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        }
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
+// app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         console.log(`Received request on ${port} for ${req.url}`);
+//         let result = await dbService.getPaymentSchedulesForAccount(authService()?.authUser?.customerId as string, req.params?.accountId)
+//         if (result == null || result?.data == null) {
+//             res.sendStatus(404);
+//         } else {
+//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+//             res.send(result);
+//         }
+//     } catch (e) {
+//         console.log('Error:', e);
+//         res.sendStatus(500);
+//     }
+// });
 
 // Get the information required by the Auth server to displaythe login screen
 app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
@@ -677,26 +821,26 @@ function sectorIsValid(sector: string): boolean {
 }
 
 async function isServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
-    let retVal: boolean =  false;
+    let retVal: boolean = false;
     if (userService != null) {
         let idx = (await userService.getUser())?.energyServicePoints?.findIndex((x: string) => servicePointId);
-        retVal = (idx != null)&&(idx > - 1)? true : false;
-     }
+        retVal = (idx != null) && (idx > - 1) ? true : false;
+    }
     return retVal
 }
 
 function buildErrorMessageForServicePoint(servicePointId: string, errorTitle: string, dataSetName: string): ResponseErrorListV2 {
     var retVal: ResponseErrorListV2 = {
-        errors: [         
+        errors: [
         ]
     };
     let errorCode = '';
     let errorDetail = '';
-    if (errorTitle.toLowerCase() == "invalid service point" ) {
+    if (errorTitle.toLowerCase() == "invalid service point") {
         errorCode = 'urn:au-cds:error:cds-energy:Authorisation/InvalidServicePoint';
         errorDetail = 'This service point is invalid for the accounts consent has been given for.';
     }
-    if (errorTitle.toLowerCase() == "unavailable service point" ){
+    if (errorTitle.toLowerCase() == "unavailable service point") {
         errorCode = 'urn:au-cds:error:cds-energy:Authorisation/UnavailableServicePoint';
         errorDetail = `This service point does contain any data for ${dataSetName}`;
     }

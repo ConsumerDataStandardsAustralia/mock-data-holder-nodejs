@@ -1,3 +1,4 @@
+import { EnergyAccount, EnergyAccountBase, EnergyAccountDetailV3, EnergyBillingTransaction, EnergyBillingTransactionV2, EnergyConcession, EnergyDerDetailResponse, EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetail, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead } from "consumer-data-standards/energy";
 import { CustomerModel } from "../models/login";
 
 export interface IDatabase {
@@ -7,62 +8,56 @@ export interface IDatabase {
 
     loadCustomer(customer: any): Promise<boolean>;
 
-    //DONE, except pagination
-    getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
+    getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccount[]>;
 
     getServicePoints(customerId: string): Promise<any>;
 
-    getEnergyAccountDetails(customerId: string, accountId: string): Promise<any>;
-    //DONE, except pagination
-    getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<any>;
+    getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined>;
+  
+    getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<EnergyInvoice[]>;
 
-    //DONE, except pagination
-    getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
+    getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyInvoice[]>;
 
-    //DONE, except pagination snd interval reads
-    getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any): Promise<any> 
+    getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any): Promise<EnergyUsageRead[]> 
 
-    getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> 
+    getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<EnergyDerRecord[]> 
 
     getBalanceForAccount(customerId: string, accountId: string): Promise<any>;
 
-    getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any>;
+    getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any[]>;
 
-    getServicePointDetails(customerId: string, servicePointId: string): Promise<any>;
+    getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail>;
 
-    //DONE, except pagination snd interval reads
-    getUsageForServicePoint(customerId: string, servicePointId: string, query: any): Promise<any>;
+    getUsageForServicePoint(customerId: string, servicePointId: string, query: any): Promise<EnergyUsageRead[]>;
 
-    getDerForServicePoint(customerId: string, servicePointId: string): Promise<any>;
+    getDerForServicePoint(customerId: string, servicePointId: string): Promise<EnergyDerRecord | undefined>;
 
     getCustomerDetails(customerId: string): Promise<any>;
 
-    getTransactionsForAccount(customerId: string, accountId: string): Promise<any>;
+    getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
 
-     //DONE, except pagination
-    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<any>;
+    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV2[]>;
 
-    getConcessionsForAccount(customerId: string, accountId: string): Promise<any>;
+    getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined>;
 
-    getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<any>;
+    // getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]>;
 
-    getEnergyPlanDetails(planId: string): Promise<any>;
+    getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null>;
     
     //DONE, except pagination
-    getEnergyAllPlans(query: any): Promise<any>;
+    getEnergyAllPlans(query: any): Promise<EnergyPlan[]>;
 
-    //DONE, except pagination
-    getBulkInvoicesForUser(customerId: string, query: any): Promise<any>;
+    // //DONE, except pagination
+    // getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]>;
 
-    //DONE, except pagination
-    getBulkBilllingForUser(customerId: string, query: any): Promise<any>;
+    // //DONE, except pagination
+    // getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
 
-    getBulkBalancesForUser(customerId: string): Promise<any>;
+    getBulkBalancesForUser(customerId: string): Promise<any[]>;
 
-    //DONE, except pagination and interval reads
-    getBulkUsageForUser(customerId: string, query: any): Promise<any>;
+    getBulkUsageForUser(customerId: string, query: any): Promise<EnergyUsageRead[]>;
 
-    getBulkDerForUser(customerId: string): Promise<any>;
+    getBulkDerForUser(customerId: string): Promise<EnergyDerRecord[]>;
 
     getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
 
