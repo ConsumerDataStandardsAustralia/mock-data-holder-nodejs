@@ -10,7 +10,7 @@ export interface IDatabase {
 
     getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccount[]>;
 
-    getServicePoints(customerId: string): Promise<any>;
+    getServicePoints(customerId: string): Promise<EnergyServicePoint[]>;
 
     getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined>;
   
@@ -40,18 +40,15 @@ export interface IDatabase {
 
     getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined>;
 
-    // getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]>;
+    getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]>;
 
     getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null>;
     
-    //DONE, except pagination
     getEnergyAllPlans(query: any): Promise<EnergyPlan[]>;
 
-    // //DONE, except pagination
-    // getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]>;
+    getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]>;
 
-    // //DONE, except pagination
-    // getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
 
     getBulkBalancesForUser(customerId: string): Promise<any[]>;
 

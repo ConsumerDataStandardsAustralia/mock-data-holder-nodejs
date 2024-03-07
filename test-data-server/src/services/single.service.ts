@@ -176,37 +176,24 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getBulkBilllingForUser(customerId: string, query: any): Promise<any> {
+    async getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let retArray: any[] = [];
+        let retArray: EnergyBillingTransactionV2[] = [];
         if (cust != null) {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
-
             cust?.energy?.accounts.forEach((acc: any) => {
-                let filteredTransactions: any[] = [];
                 acc?.transactions.filter((tr: any) => {
                     let refDate = Date.parse(tr.executionDateTime);
                     if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
-                        filteredTransactions.push(tr)
+                    retArray.push(tr)
                 })
-                retArray.push(...filteredTransactions);
             });
         }
-
-        ret.data = { transactions: retArray };
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return retArray;
     }
+
     async getBulkBalancesForUser(customerId: string): Promise<any[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
@@ -224,11 +211,11 @@ export class SingleData implements IDatabase {
         }
         return balances;
     }
-    async getBulkInvoicesForUser(customerId: string, query: any): Promise<any> {
+    async getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let retArray: any[] = [];
+        let retArray: EnergyInvoice[] = [];
 
         if (cust != null) {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
@@ -242,24 +229,9 @@ export class SingleData implements IDatabase {
                         else
                             console.log(`Not added ${inv?.issueDate}`)
                     })
-                    if (filteredInvoices.length > 0)
-                        retArray.push(filteredInvoices);
                 }
-
             })
         }
-
-
-        ret.data = { invoices: retArray };
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
         return ret;
     }
 
@@ -320,52 +292,26 @@ export class SingleData implements IDatabase {
         }
         return concessions;
     }
-    async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<any> {
+    async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyPaymentScheduleResponse = {
-            data: {
-                paymentSchedules: []
-            },
-            links: l,
-            meta: m,
-        }
+        let ret: EnergyPaymentSchedule[]= [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.paymentSchedule != null) {
-                        ret.data.paymentSchedules.push(...acc?.paymentSchedule);
+                        ret.push(...acc?.paymentSchedule);
                     }
                 }
             })
         }
         return ret;
     }
-    async getServicePoints(customerId: string): Promise<any> {
+    async getServicePoints(customerId: string): Promise<EnergyServicePoint[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyServicePointListResponse = {
-            data: {
-                servicePoints: []
-            },
-            links: l,
-            meta: m
-        }
-        let spList: any[] = [];
+
+        let spList: EnergyServicePoint[] = [];
         if (cust != null) {
             let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetail[];
             if (spDetailList != null) {
@@ -383,10 +329,9 @@ export class SingleData implements IDatabase {
                     if (sp.servicePoint.isGenerator) newSP.isGenerator = sp.servicePoint.isGenerator;
                     spList.push(newSP);
                 })
-                ret.data.servicePoints = spList;
             }
         }
-        return ret;
+        return spList;
     }
 
     async getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV2[]> {
