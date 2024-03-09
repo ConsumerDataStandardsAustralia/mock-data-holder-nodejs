@@ -49,7 +49,9 @@ Wait until all containers have started and are *healthy*, then follow the *Addit
 
 Some manual setup steps need to be completed for the system to function. 
 
-1. Initialisation script (essential)
+1. Initialisation script 
+
+   The `consumerdatastandardsaustralia/energy-sql-data` docker image contains data for a registered client. If the mssql conatiner in the docker-compose file is rebuild then a client registration has to be created.
 
    The current setup bypasses the client registration, i.e. it the "accredited data recipient" is created via the backdoor using an SQL script.
    This step is essential for the functioning of the `mock-data-recpient` and the authorisation process.
@@ -68,7 +70,7 @@ Some manual setup steps need to be completed for the system to function.
    
    A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, and */private/etc/hosts* on MacOS (although this may be different).
 
-   - 127.0.0.1 mock-data-holder
+   - 127.0.0.1 node-data-holder
    - 127.0.0.1 mock-data-recipient
    - 127.0.0.1 mock-data-holder-energy
    - 127.0.0.1 mock-register
