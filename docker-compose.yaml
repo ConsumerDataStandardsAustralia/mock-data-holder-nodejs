@@ -139,8 +139,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
 
-  mock-data-holder:
-    container_name: mock-data-holder
+  node-data-holder:
+    container_name: node-data-holder
     image: consumerdatastandardsaustralia/energy-data-holder
     # build:
     #   context: . 
