@@ -616,7 +616,8 @@ export class SingleData implements IDatabase {
         if (accDetailList != null) {
             accDetailList.forEach((acc: any) => {
                 let cnt = acc?.account?.plans?.length;
-                if (openStatus == null || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())) {
+                if ((openStatus == null) || (openStatus.toUpperCase() == "ALL")
+                    || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())) {
                     if (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1) {
                         let planList: any[] = [];
                         for (let i = 0; i < cnt; i++) {
@@ -627,8 +628,8 @@ export class SingleData implements IDatabase {
                             }
                             if (acc.account?.openStatus == null || acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
                                 newPlan.planOverview = acc.account?.plans[i]?.planOverview;
-                            if (acc.account?.plans[i]?.servicePointsIds)
-                                newPlan.servicePointIds = acc.account?.plans[i]?.servicePointsIds
+                            if (acc.account?.plans[i]?.servicePointIds)
+                                newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
                             planList.push(newPlan);
                         }
                         let newAccount: EnergyAccount = {
