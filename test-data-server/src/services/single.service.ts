@@ -212,16 +212,14 @@ export class SingleData implements IDatabase {
         return balances;
     }
     async getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]> {
-        let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let retArray: EnergyInvoice[] = [];
+        let filteredInvoices: EnergyInvoice[] = [];
 
         if (cust != null) {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc?.invoices != null) {
-                    let filteredInvoices: any[] = [];
                     acc?.invoices.filter((inv: any) => {
                         let refDate = Date.parse(inv.issueDate);
                         if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
@@ -232,7 +230,7 @@ export class SingleData implements IDatabase {
                 }
             })
         }
-        return ret;
+        return filteredInvoices;
     }
 
     async getEnergyAllPlans(query: any): Promise<EnergyPlan[]> {
@@ -245,27 +243,8 @@ export class SingleData implements IDatabase {
         } else {
             await allPlans.forEach((p: EnergyPlan) =>
                 retArray.push(p));
-            //ret.data = { plans: retArray };
         }
         return retArray;
-        // let pageSize = 25; //Default
-        // let page = 1;
-        // if (query["page-size"] != null)
-        //     pageSize = parseInt(query["page-size"]);
-        // if (query["page"] != null)
-        //     page = parseInt(query["page"]);        
-        // let paginatedData: EnergyPlan[]  = paginate(retArray, page, pageSize);
-        // ret.data = { plans: paginatedData }
-        // let l: LinksPaginated = {
-        //     self: ""
-        // }
-        // let m: MetaPaginated = {
-        //     totalPages: 0,
-        //     totalRecords: 0
-        // }
-        // ret.links = l;
-        // ret.meta = m;
-        // return ret;
     }
     async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null> {
 
