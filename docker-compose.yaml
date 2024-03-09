@@ -139,9 +139,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
 
-  node-data-holder:
-    container_name: node-data-holder
-    image: consumerdatastandardsaustralia/energy-data-holder
+  mock-data-holder:
+    container_name: mock-data-holder
+    image: consumerdatastandardsaustralia/energy-data-holder:0.2
     # build:
     #   context: . 
     #   dockerfile: dockerfile.dsb-test-data-server    
@@ -194,7 +194,7 @@ services:
     #   context: .
     #   dockerfile: dockerfile.dsb-data-loader
     container_name: dsb-data-loader
-    image: consumerdatastandardsaustralia/energy-data-loader
+    image: consumerdatastandardsaustralia/energy-data-loader:0.2
     env_file: .env.docker
     depends_on:
       - mongodb
