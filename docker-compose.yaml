@@ -82,7 +82,7 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
-    image: consumerdatastandardsaustralia/authserver-ui:0.2
+    image: consumerdatastandardsaustralia/authserver-ui:0.3
     # build:
     #   context: . 
     #   dockerfile: dockerfile.authserver-ui

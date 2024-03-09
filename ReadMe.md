@@ -49,7 +49,27 @@ Wait until all containers have started and are *healthy*, then follow the *Addit
 
 Some manual setup steps need to be completed for the system to function. 
 
-1. Initialisation script 
+1. Trusted Certificates (essential)
+
+All certificates used with this ecosytem have been generated with the CA which can be found in `secrity\cdr-auth-server\nginx\ssl`.
+
+The ca certificate in this folder needs to be trusted by your browser, ie be a "Trusted CA". Dependent on which OS, what security settings, and other parameters this may differ for each user. 
+
+
+2. Edit Host file  (essential)
+   
+   A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, and */private/etc/hosts* on MacOS (although this may be different).
+
+   - 127.0.0.1 mock-data-holder
+   - 127.0.0.1 mock-data-recipient
+   - 127.0.0.1 mock-data-holder-energy
+   - 127.0.0.1 mock-register
+   - 127.0.0.1 mtls-gateway
+   - 127.0.0.1 tls-gateway
+
+These entries match the names of the containers and are required to resolve host names.
+
+3. Initialisation script (depends)
 
    The `consumerdatastandardsaustralia/energy-sql-data` docker image contains data for a registered client. If the mssql conatiner in the docker-compose file is rebuild then a client registration has to be created.
 
@@ -66,20 +86,8 @@ Some manual setup steps need to be completed for the system to function.
 
    This will create a registered client.
 
-2. Edit Host file  (essential)
-   
-   A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, and */private/etc/hosts* on MacOS (although this may be different).
 
-   - 127.0.0.1 node-data-holder
-   - 127.0.0.1 mock-data-recipient
-   - 127.0.0.1 mock-data-holder-energy
-   - 127.0.0.1 mock-register
-   - 127.0.0.1 mtls-gateway
-   - 127.0.0.1 tls-gateway
-
-These entries match the names of the containers and are required to resolve host names.
-
-3. App config settings (depends)
+4. App config settings (depends)
    
    The `config` folder contains a number of appsettings files, which are utilised during the docker build process.
    Normally you would leave these files as they are unless you start changing urls, ids, etc.
@@ -91,7 +99,7 @@ These entries match the names of the containers and are required to resolve host
    
    Step 1 may need to be repeated.
 
-4. Certificates (depends)
+5. Certificates Generation
    
    The certificates being used by the containers have been created for this setup. In particular, the naming of hosts is important when certificates are created. So, unless you change stuff in that space or you want to use your own CA, there should be nothing that requires change her.
 
