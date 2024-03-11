@@ -58,7 +58,7 @@ The ca certificate in this folder needs to be trusted by your browser, ie be a "
 
 2. Edit Host file  (essential)
    
-   A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, and */private/etc/hosts* on MacOS (although this may be different).
+   A number of entries are required in the `host` file.</br>These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, */etc/hosts* on UNIX/Linux and */private/etc/hosts* on MacOS (although this may be different).
 
    - 127.0.0.1 mock-data-holder
    - 127.0.0.1 mock-data-recipient
@@ -66,6 +66,8 @@ The ca certificate in this folder needs to be trusted by your browser, ie be a "
    - 127.0.0.1 mock-register
    - 127.0.0.1 mtls-gateway
    - 127.0.0.1 tls-gateway
+   - 127.0.0.1 authserver-ui
+   - 127.0.0.1 cdr-auth-server
 
 These entries match the names of the containers and are required to resolve host names.
 
