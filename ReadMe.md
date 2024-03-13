@@ -51,7 +51,7 @@ Some manual setup steps need to be completed for the system to function.
 
 1. Trusted Certificates (essential)
 
-All certificates used with this ecosytem have been generated with the CA which can be found in `secrity\cdr-auth-server\nginx\ssl`.
+All certificates used with this ecosystem have been generated with the CA which can be found in `security\cdr-auth-server\nginx\ssl`.
 
 The ca certificate in this folder needs to be trusted by your browser, ie be a "Trusted CA". Dependent on which OS, what security settings, and other parameters this may differ for each user. 
 
@@ -73,13 +73,13 @@ These entries match the names of the containers and are required to resolve host
 
 3. Initialisation script (depends)
 
-   The `consumerdatastandardsaustralia/energy-sql-data` docker image contains data for a registered client. If the mssql conatiner in the docker-compose file is rebuild then a client registration has to be created.
+   The `consumerdatastandardsaustralia/energy-sql-data` docker image contains data for a registered client. If the mssql container in the docker-compose file is rebuilt then a client registration has to be created.
 
-   The current setup bypasses the client registration, i.e. it the "accredited data recipient" is created via the backdoor using an SQL script.
-   This step is essential for the functioning of the `mock-data-recpient` and the authorisation process.
-   In order to complete this step, you a need to connect to the SQL database used by the mock-register.
+   The current setup bypasses the client registration, i.e. the "accredited data recipient" is created via the backdoor using an SQL script.
+   This step is essential for the functioning of the `mock-data-recipient` and the authorisation process.
+   In order to complete this step, you need to connect to the SQL database used by the mock-register.
    
-   The conenction detail (i.e. username/ passowrd) can be found in the `docker-compose.yaml` for the `mssql` container.
+   The connection detail (i.e. username/ password) can be found in the `docker-compose.yaml` for the `mssql` container.
    
    *Default is user=sa, pwd=Pa{}w0rd2019*
 
@@ -122,7 +122,7 @@ In order to obtain an access token, the PAR authorisation flow must be completed
 
 Navigate to `https://mock-data-recipient:9001` and complete the authentication flow.
 
-Required for authorisation flow is a LoginID. The resource dataset will contain all the user loaded by the `dsb-data-loader` container. Refer to the data files in the `load-test-data\input` directory to obtain a LoginID (LastName.FirstName).</br>
+Required for authorisation flow is a LoginID. The resource dataset will contain all the users loaded by the `dsb-data-loader` container. Refer to the data files in the `load-test-data\input` directory to obtain a LoginID (LastName.FirstName).</br>
 *Note:You could also use a UI to the actual data, such as MongoDB Compass to read this directly*
 
 ### Call the resource API
@@ -135,7 +135,7 @@ If another UI is used to call the data holder via the mtls-gateway the `mtls-gat
 
 ## Use Postman to interrogate the data holder resource API
 
-If you want to use Postman, the `mtls-gateway\client.pfx` certificate must be associated with `https://mtls-gateway:8082` and the `mtls-gateway\ca.pem` must be specified as the Certificate Authority. Please refer to the Post certificate management documentation for more information.
+If you want to use Postman, the `mtls-gateway\client.pfx` certificate must be associated with `https://mtls-gateway:8082` and the `mtls-gateway\ca.pem` must be specified as the Certificate Authority. Please refer to the Postman certificate management documentation for more information.
 
 The running test data server can then be interrogated using the `CDR_Energy_Sector_Conformance_tests` collection
 from the [Postman collection](https://github.com/ConsumerDataStandardsAustralia/dsb-postman) repository.
