@@ -1,10 +1,13 @@
 import { LinksPaginated, MetaPaginated } from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
+import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountDetailV3, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { Service } from "typedi";
 import { AccountModel, CustomerModel } from "../models/login";
+import { QueryRange } from "../models/query-range";
+import { Query } from "mongoose";
+import { paginateData } from "../utils/paginate-data";
 
 @Service()
 export class SingleData implements IDatabase {
@@ -20,7 +23,7 @@ export class SingleData implements IDatabase {
         this.dsbData = this.client.db(dbName);
     }
 
-    async getUserForLoginId(loginId: string, userType: string): Promise<string| undefined> {
+    async getUserForLoginId(loginId: string, userType: string): Promise<string | undefined> {
         // split loginId into first and last name
         var customerId;
         let arr: string[] = loginId.split('.');
@@ -34,13 +37,13 @@ export class SingleData implements IDatabase {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
             if (allCustomers.length < 1)
                 return undefined;
-            allCustomers.forEach( (c: any) => {
+            allCustomers.forEach((c: any) => {
                 if (c?.customer?.person?.firstName.toUpperCase() == firstName.toUpperCase()
-                && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
+                    && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
                     customerId = c.customerId;
                 }
-            })    
-        } 
+            })
+        }
         return customerId;
     }
 
@@ -49,26 +52,60 @@ export class SingleData implements IDatabase {
         if (allData?.holders != undefined) {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
             let cust = allCustomers?.find(((x: any) => x.customerId == customerId));
-            return cust;       
+            return cust;
         } else {
             return null;
         }
     }
 
-    async getPlans(allDataCollection: mongoDB.Collection, query : any): Promise<any> {
-        let allData: mongoDB.WithId<mongoDB.Document>|null = await allDataCollection.findOne();
-        let allPlans : any;
+    private async getPlans(allDataCollection: mongoDB.Collection, query: any): Promise<any> {
+        /*
+                type	 Enum 
+                Used to filter results on the type field. Any one of the valid values for this field can be supplied plus 'ALL'. If absent defaults to 'ALL'
+                
+                fuelType Enum
+                Used to filter results on the fuelType field. Any one of the valid values for this field can be supplied plus 'ALL'. If absent defaults to 'ALL'
+                
+                effective   Enum
+                Allows for the filtering of plans based on whether the current time is within the period of time defined as effective by the effectiveFrom and effectiveTo fields. Valid values are ‘CURRENT’, ‘FUTURE’ and ‘ALL’. If absent defaults to 'CURRENT'
+                
+                updated-since DateTimeString
+                Only include plans that have been updated after the specified date and time. If absent defaults to include all plans
+                
+                brand string
+                Used to filter results on the brand field. If absent defaults to include all plans
+        */
+
+        let allData: mongoDB.WithId<mongoDB.Document> | null = await allDataCollection.findOne();
+
+        let allPlans: any;
         let retPlans = null;
-        if (allData?.holders != null)
-            allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans;
-            // now filter the plans
-            retPlans = allPlans
+        var refToDate = Number.MAX_VALUE;
+        var refFromDate = 0;
+        if (query["effective"] != null && (query["effective"].toUpperCase() == "FUTURE")) {
+            refFromDate = Date.now();
+            refToDate = Number.MAX_VALUE;
+        }
+        if (query["effective"] != null && (query["effective"].toUpperCase() == "CURRENT")) {
+            refToDate = Date.now();
+        }
+        // filter out the expired plans
+        if (allData?.holders != null) {
+            allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans
+                .filter((x: any) => {
+                    var refDate = Date.parse(x.effectiveTo);
+                    if (refDate >= refFromDate && refDate <= refToDate) {
+                        return x;
+                    }
+                });
+        }
         if (query != null) {
             retPlans = allPlans.filter((p: any) => {
                 if (
-                    (query.fuelType == null  || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
-                 && (query.type == null  || query.type.toUpperCase() == p?.type.toUpperCase()) 
-                 && (query["update-since"] == null  || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated)) ){
+                    (query.fuelType == null || query.fuelType.toUpperCase() == 'ALL' || query.fuelType.toUpperCase() == p?.fuelType.toUpperCase())
+                    && (query.type == null || query.type.toUpperCase() == 'ALL' || query.type.toUpperCase() == p?.type.toUpperCase())
+                    && (query["update-since"] == null || Date.parse(query["update-since"]) < Date.parse(p.lastUpdated))
+                    && (query["brand"] == null || query["brand"].toUpperCase() === p.brand.toUpperCase())) {
                     return p;
                 }
             });
@@ -76,17 +113,10 @@ export class SingleData implements IDatabase {
         return retPlans;
     }
 
-    async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
+    async getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
         let balances: any[] = [];
+        let cust: any = await this.getCustomer(allData, customerId);
 
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
@@ -98,312 +128,169 @@ export class SingleData implements IDatabase {
                             accountId: acc.account.accountId
                         }
                         balances.push(balance);
-                    } 
+                    }
                 }
             })
         }
-        let ret: EnergyBalanceListResponse = {
-            data: {
-                balances: balances
-            },
-            links: l,
-            meta: m
-        }
-        return ret;
+        return balances;
     }
-    async getBulkUsageForUser(customerId: string): Promise<any> {
+    async getBulkUsageForUser(customerId: string, query: any): Promise<EnergyUsageRead[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-
-        let retArray: any[] = [];
+        let filteredUsage: EnergyUsageRead[] = [];
         if (cust != null) {
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
+            // interval reads
+            var intervalReads = "NONE";
+            if (query["interval-reads"] != null) {
+                intervalReads = query["interval-reads"];
+            }
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 if (sp?.usage != null) {
-                    retArray.push(...sp?.usage);
+                    
+                    sp.usage.filter((u: any) => {
+                        let refDate = Date.parse(u.readStartDate);
+                        if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                            filteredUsage.push(u)
+                        else
+                            console.log(`Not added ${u?.readStartDate}`)
+                    })
                 }
             })
         }
-
-
-        ret.data = { reads: retArray };
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return filteredUsage;
     }
-    async getBulkDerForUser(customerId: string): Promise<any> {
-        let ret: any = {};
+    async getBulkDerForUser(customerId: string): Promise<EnergyDerRecord[]> {
+        let ret: EnergyDerRecord[] = [];
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
 
-        let retArray: any[] = [];
         if (cust != null) {
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 if (sp?.der != null) {
-                    retArray.push(sp?.der);
+                    ret.push(sp?.der);
                 }
             })
         }
-
-        ret.data = { derRecords: retArray };
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
         return ret;
     }
 
-    async getBulkBilllingForUser(customerId: string, query: any): Promise<any> {
+    async getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let retArray: any[] = [];
+        let retArray: EnergyBillingTransactionV2[] = [];
         if (cust != null) {
-            let mSecInYear = 31536000000;
-            // check newest time
-            var newTime = Date.now();
-            //const newTime: any = currentDate.getMilliseconds();
-            if(query["newest-time"] != null && isNaN(query["newest-time"]) == false) {
-                newTime = Date.parse(query["newest-time"]);
-            }
-            var oldestTime = newTime-mSecInYear;
-            // check oldest time
-            if(query["oldest-time"] != null && isNaN(query["oldest-time"]) == false) {
-                oldestTime = newTime = Date.parse(query["oldest-time"]);
-            } 
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
             cust?.energy?.accounts.forEach((acc: any) => {
-                let filteredTransactions: any[] = [];
-                acc?.transactions.filter((tr:any) => {
+                acc?.transactions.filter((tr: any) => {
                     let refDate = Date.parse(tr.executionDateTime);
-                    if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
-                        filteredTransactions.push(tr)
+                    if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                    retArray.push(tr)
                 })
-                retArray.push(...filteredTransactions);
             });
         }
-
-        ret.data = { transactions: retArray };
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return retArray;
     }
-    async getBulkBalancesForUser(customerId: string): Promise<any> {
+
+    async getBulkBalancesForUser(customerId: string): Promise<any[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
         let balances: any[] = [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
-
                 if (acc?.balance != null) {
                     let balance: any = {
-                        balance: acc.balance.balance,
+                        balance: acc.balance,
                         accountId: acc.account.accountId
                     }
                     balances.push(balance);
                 }
             })
         }
-        let ret: EnergyBalanceListResponse = {
-            data: {
-                balances: balances
-            },
-            links: l,
-            meta: m
-        }
-        return ret;
+        return balances;
     }
-    async getBulkInvoicesForUser(customerId: string, query: any): Promise<any> {
-        let ret: any = {};
+    async getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let retArray: any[] = [];
+        let filteredInvoices: EnergyInvoice[] = [];
 
         if (cust != null) {
-            let mSecInYear = 31536000000;
-            // check newest time
-            var newTime = Date.now();
-            //const newTime: any = currentDate.getMilliseconds();
-            if(query["newest-date"] != null && isNaN(Date.parse(query["newest-date"])) == false) {
-                newTime = Date.parse(query["newest-date"]);
-            }
-            var oldestTime = newTime-mSecInYear;
-            // check oldest time
-            if(query["oldest-date"] != null && isNaN(Date.parse(query["oldest-date"])) == false) {
-                oldestTime = Date.parse(query["oldest-date"]);
-            } 
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
             cust?.energy?.accounts?.forEach((acc: any) => {
-                    if (acc?.invoices != null) {
-                        let filteredInvoices: any[] = [];
-                        acc?.invoices.filter((inv:any) => {
-                            let refDate = Date.parse(inv.issueDate);
-                            if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
-                                filteredInvoices.push(inv)
-                            else
-                                console.log(`Not added ${inv?.issueDate}`)
-                        })
-                        if (filteredInvoices.length > 0)
-                            retArray.push(filteredInvoices);
-                    }
-
+                if (acc?.invoices != null) {
+                    acc?.invoices.filter((inv: any) => {
+                        let refDate = Date.parse(inv.issueDate);
+                        if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                            filteredInvoices.push(inv)
+                        else
+                            console.log(`Not added ${inv?.issueDate}`)
+                    })
+                }
             })
         }
-
-
-        ret.data = { invoices: retArray };
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return filteredInvoices;
     }
-    async getEnergyAllPlans(query: any): Promise<any> {
+
+    async getEnergyAllPlans(query: any): Promise<EnergyPlan[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        let allPlans: any = await this.getPlans(allData, query);
-        let retArray: any[] = [];
+        let allPlans: EnergyPlan[] = await this.getPlans(allData, query);
+        let retArray: EnergyPlan[] = [];
         if (allPlans == null) {
             ret.data = { plans: retArray };
         } else {
             await allPlans.forEach((p: EnergyPlan) =>
                 retArray.push(p));
-            ret.data = { plans: retArray };
         }
-
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return retArray;
     }
-    async getEnergyPlanDetails(planId: string): Promise<any> {
-        let ret: any = {};
+    async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null> {
+
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         const query = { planId: planId };
-        let plan: any = await this.getPlans(allData, query);
-
-        if (plan == null)
+        let plans: EnergyPlanDetailV2[] = await this.getPlans(allData, query);
+        if (plans.length > 0)
+            return plans[0];
+        else
             return null;
-        ret.data = plan;
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta = {
-
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
     }
-    async getConcessionsForAccount(customerId: string, accountId: string): Promise<any> {
+    async getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyConcessionsResponse = {
-            data: {
-                concessions: []
-            },
-            links: l,
-            meta: m,
-        }
+        let concessions: EnergyConcession[] = [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.concessions != null) {
-                        ret.data.concessions.push(...acc?.concessions);
+                        concessions?.push(acc?.concessions);
                     }
                 }
             })
         }
-        return ret;
+        return concessions;
     }
-    async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<any> {
+    async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyPaymentScheduleResponse = {
-            data: {
-                paymentSchedules: []
-            },
-            links: l,
-            meta: m,
-        }
+        let ret: EnergyPaymentSchedule[]= [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.paymentSchedule != null) {
-                        ret.data.paymentSchedules.push(...acc?.paymentSchedule);
+                        ret.push(...acc?.paymentSchedule);
                     }
                 }
             })
         }
         return ret;
     }
-    async getServicePoints(customerId: string): Promise<any> {
+    async getServicePoints(customerId: string): Promise<EnergyServicePoint[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyServicePointListResponse = {
-            data: {
-                servicePoints: []
-            },
-            links: l,
-            meta: m
-        }
-        let spList: any[] = [];
+
+        let spList: EnergyServicePoint[] = [];
         if (cust != null) {
             let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetail[];
             if (spDetailList != null) {
@@ -421,128 +308,111 @@ export class SingleData implements IDatabase {
                     if (sp.servicePoint.isGenerator) newSP.isGenerator = sp.servicePoint.isGenerator;
                     spList.push(newSP);
                 })
-                ret.data.servicePoints = spList;
             }
         }
-        return ret;
+        return spList;
     }
 
-    async getBillingForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any> {
+    async getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV2[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyBillingListResponseV2 = {
-            data: {
-                transactions: []
-            },
-            links: l,
-            meta: m
-        }
+
+        let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
+        let filteredBilling: EnergyBillingTransactionV2[] = [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 var idx = accountIds?.indexOf(acc.account.accountId)
                 if (idx > -1) {
-                    if (acc?.invoices != null) {
-                        ret.data.transactions.push(...acc?.transactions);
+                    if (acc?.transactions != null) {
+                        acc?.transactions.forEach((tr: EnergyBillingTransactionV2) => {
+                            if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
+                                {
+                                    filteredBilling.push(tr);
+                                }
+                            }
+                        })
                     }
                 }
             })
         }
-        return ret;
+        return filteredBilling;
     }
-    async getInvoicesForMultipleAccounts(customerId: string, accountIds: string[]): Promise<any> {
+
+    async getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<EnergyDerRecord[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyInvoiceListResponse = {
-            data: {
-                invoices: []
-            },
-            links: l,
-            meta: m
-        }
-        if (cust != null) {
-            cust?.energy?.accounts?.forEach((acc: any) => {
-                var idx = accountIds?.indexOf(acc.account.accountId)
-                if (idx > -1) {
-                    if (acc?.invoices != null) {
-                        ret.data.invoices.push(...acc?.invoices);
-                    }
-                }
-            })
-        }
-        return ret;
-    }
-    async getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<any> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyDerListResponse = {
-            data: {
-                derRecords: []
-            },
-            links: l,
-            meta: m
-        }
+        let ret: EnergyDerRecord[] = [];
         if (cust != null) {
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 var idx = severvicePointIds?.indexOf(sp.servicePoint.servicePointId)
                 if (idx > -1) {
-                    if (sp?.usage != null) {
-                        ret.data.derRecords.push(...sp?.der);
+                    if (sp?.der != null) {
+                        ret.push(sp?.der);
                     }
                 }
             })
         }
         return ret;
     }
-    async getUsageForMultipleServicePoints(customerId: string, servicePointIds: string[]): Promise<any> {
+
+    getDateRangeFromQueryParams(query: any, paramNameStart: string, paramNameEnd: string): QueryRange {
+
+        let mSecInYear = 31536000000;
+        // check newest time
+        var newestTime = Date.now();
+        //const newTime: any = currentDate.getMilliseconds();
+        if (query[paramNameEnd] != null && isNaN(Date.parse(query[paramNameEnd])) == false) {
+            newestTime = Date.parse(query[paramNameEnd]);
+        }
+        var oldestTime = newestTime - mSecInYear;
+        // check oldest time
+        if (query[paramNameStart] != null && isNaN(Date.parse(query[paramNameStart])) == false) {
+            oldestTime = Date.parse(query[paramNameStart]);
+        }
+        let retVal: QueryRange = {
+            startRange: oldestTime,
+            endRange: newestTime
+        };
+        return retVal;
+    }
+    compareByStartDate(a: any, b: any) {
+        return a.readStartDate.localeCompare(b.readStartDate);
+    }
+
+    async getUsageForMultipleServicePoints(customerId: string, servicePointIds: string[], query: any): Promise<EnergyUsageRead[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyUsageListResponse = {
-            data: {
-                reads: []
-            },
-            links: l,
-            meta: m
+        let filteredReads: EnergyUsageRead[] = [];
+        let readType: string = 'NONE';
+        if (query["interval-reads"] != null &&
+            (query["interval-reads"]?.toUpperCase() == "MIN_30")
+            || query["interval-reads"]?.toUpperCase() == "FULL"
+            || query["interval-reads"]?.toUpperCase() == "NONE") {
+            readType = query["interval-reads"].toUpperCase();
         }
         if (cust != null) {
+            var range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
+            
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 var idx = servicePointIds?.indexOf(sp.servicePoint.servicePointId)
                 if (idx > -1) {
-                    if (sp?.usage != null) {
-                        ret.data.reads.push(...sp?.usage);
-                    }
+
+                    sp?.usage.forEach((read: EnergyUsageRead) => {
+                        if (read.readUType == "intervalRead" && (readType == "MIN_30" || readType == "FULL")) {
+                            if (read.intervalRead != null) {
+                                //TODO do something with the read intervals, ie calculate it then set it
+                            }
+                        }
+                        let refDate = Date.parse(read.readStartDate);
+                        if (isNaN(refDate) == false && (refDate >= range.startRange && refDate <= range.endRange)) {
+                            filteredReads.push(read)
+                        }
+                    })
+
                 }
             })
         }
-
-        return ret;
+        return filteredReads;
     }
     async getCustomerDetails(customerId: string): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
@@ -565,81 +435,47 @@ export class SingleData implements IDatabase {
         return response;
 
     }
-    async getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<any> {
+    async getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<EnergyInvoice[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyInvoiceListResponse = {
-            data: {
-                invoices: []
-            },
-            links: l,
-            meta: m
-        }
+        let filteredInvoices: EnergyInvoice[] = [];
         if (cust != null) {
-            let mSecInYear = 31536000000;
-            // check newest time
-            var newTime = Date.now();
-            //const newTime: any = currentDate.getMilliseconds();
-            if(query["newest-time"] != null && isNaN(Date.parse(query["newest-time"])) == false) {
-                newTime = Date.parse(query["newest-time"]);
-            }
-            var oldestTime = newTime-mSecInYear;
-            // check oldest time
-            if(query["oldest-time"] != null && isNaN(Date.parse(query["oldest-time"])) == false) {
-                oldestTime = Date.parse(query["oldest-time"]);
-            } 
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
-                        let filteredInvoices: any[] = [];
-                        acc?.invoices.filter((inv:any) => {
+                        
+                        acc?.invoices.filter((inv: EnergyInvoice) => {
                             let refDate = Date.parse(inv.issueDate);
-                            if (isNaN(refDate) || (refDate >= oldestTime && refDate <= newTime))
-                            filteredInvoices.push(inv)
+                            if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                                filteredInvoices.push(inv)
                         })
-                        if (filteredInvoices.length > 0)
-                            ret.data.invoices.push(...acc?.filteredInvoices);
                     }
                 }
             })
         }
-        return ret;
+        return filteredInvoices;
     }
 
-    async getInvoicesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any> {
+    async getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyInvoice[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyInvoiceListResponse = {
-            data: {
-                invoices: []
-            },
-            links: l,
-            meta: m
-        }
+        let filteredInvoices: EnergyInvoice[] = [];
         if (cust != null) {
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
             cust?.energy?.accounts?.forEach((acc: any) => {
-                if (accountIds.findIndex(acc.account.accountId) > -1) {
-                    if (acc?.invoices != null) {
-                        ret.data.invoices.push(...acc.invoices);
+                if (accountIds?.indexOf(acc.account?.accountId) > -1) {
+                    if (acc?.invoices != null) {                    
+                        acc?.invoices.filter((inv: any) => {
+                            let refDate = Date.parse(inv.issueDate);
+                            if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                                filteredInvoices.push(inv)
+                        })
                     }
                 }
             })
         }
-        return ret;
+        return filteredInvoices;
     }
 
     getConcesssionsForAccount(customerId: string, accountId: string): Promise<any> {
@@ -648,20 +484,7 @@ export class SingleData implements IDatabase {
     async getBalanceForAccount(customerId: string, accountId: string): Promise<any> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyBalanceResponse = {
-            data: {
-                balance: ""
-            },
-            links: l,
-            meta: m
-        }
+        let ret: any = null;
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
@@ -676,112 +499,84 @@ export class SingleData implements IDatabase {
         throw new Error("Method not implemented.");
     }
 
-    async getTransactionsForAccount(customerId: string, accountId: string): Promise<any> {
+    async getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV2[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyBillingListResponseV2 = {
-            data: {
-                transactions: []
-            },
-            links: l,
-            meta: m
-        }
+        let transactions: EnergyBillingTransactionV2[] = [];
         if (cust != null) {
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
-                        ret.data.transactions.push(...acc?.transactions);
+                        acc?.transactions.forEach((tr: EnergyBillingTransactionV2) => {
+                        if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
+                                transactions.push(tr);
+                            }
+                        })
                     }
                 }
             })
         }
-        return ret;
+        return transactions;
     }
 
-    async getUsageForServicePoint(customerId: string, servicePointId: string): Promise<any> {
+    async getUsageForServicePoint(customerId: string, servicePointId: string, query: any): Promise<EnergyUsageRead[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let sp: any = cust?.energy?.servicePoints?.find((x: any) => x.servicePoint.servicePointId == servicePointId);
 
-        let readData = sp?.usage as EnergyUsageRead[];
+        let filteredReads: EnergyUsageRead[] = [];
+        if (cust != null) {
 
-        let lk: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        let ret: EnergyUsageListResponse = {
+            let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
+            let sp: any = cust?.energy?.servicePoints?.find((x: any) => x.servicePoint.servicePointId == servicePointId);
+            let readData = sp?.usage as EnergyUsageRead[];
 
-            links: lk,
-            meta: m,
-            data: {
-                reads: []
+            let readType: string = 'NONE';
+            if ((query["interval-reads"] != undefined)) {
+                if ((query["interval-reads"].toUpperCase() == "MIN_30")
+                    || query["interval-reads"].toUpperCase() == "FULL"
+                    || query["interval-reads"].toUpperCase() == "NONE") {
+                    readType = query["interval-reads"].toUpperCase();
+                }
             }
-        };
-        ret.data.reads = (readData == undefined) ? [] : readData;
-        return ret;
+
+            readData.forEach((rd: EnergyUsageRead) => {
+                if (rd.readUType == "intervalRead" && (readType == "MIN_30" || readType == "FULL")) {
+                    if (rd.intervalRead != null) {
+                        //TODO do something with the read intervals, ie calculate it then set it
+                    }
+                }
+                let refDate = Date.parse(rd.readStartDate);
+                if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange)) {
+                    filteredReads.push(rd)
+                }
+            })
+        }
+        return filteredReads;
     }
-    async getDerForServicePoint(customerId: string, servicePointId: string): Promise<any> {
+    async getDerForServicePoint(customerId: string, servicePointId: string): Promise<EnergyDerRecord | undefined> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let sp: any = cust?.energy.servicePoints.find((x: any) => x.der?.servicePointId == servicePointId);
-        let derData = sp?.der;
-        let lk: Links = {
-            self: ""
-        }
-        let m: Meta = {
-        }
-        if (derData == undefined) { derData = {}}
-        let ret: EnergyDerDetailResponse = {
-            data: derData,
-            links: lk,
-            meta: m
-        };
-         
-         return ret;
+        let derData: EnergyDerRecord = sp?.der;
+        return derData;
     }
 
-    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<any> {
+    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.accounts.find((x: any) => x.account.accountId == accountId);
-        ret.data = acc?.account;
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta = {
-
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return acc?.account as EnergyAccountDetailV3;
     }
 
-    async getServicePointDetails(customerId: string, servicePointId: string): Promise<any> {
+    async getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.servicePoints.find((x: any) => x.servicePoint.servicePointId == servicePointId);
-        ret.data = acc?.servicePoint ? acc?.servicePoint : [];
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta = {
-
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        //ret.data = acc?.servicePoint ? acc?.servicePoint : [];
+        return acc?.servicePoint;
     }
     async loadCustomer(customer: any): Promise<boolean> {
         if (customer == null) return false;
@@ -790,60 +585,46 @@ export class SingleData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string, accountIds: string[]): Promise<any> {
+    async getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccount[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let accList: any[] = [];
+        let accList: EnergyAccount[] = [];
         let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV2[];
+        let openStatus = query["open-status"];
+
         if (accDetailList != null) {
             accDetailList.forEach((acc: any) => {
                 let cnt = acc?.account?.plans?.length;
-                if (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1) {
-                    let planList: any[] = [];
-                    for (let i = 0; i < cnt; i++) {
-    
-                        let newPlan: any = {
-                            nickname: acc.account?.plans[i]?.nickname,
-                            servicePointIds: []
-                        }
-                        if (acc.account?.openStatus == null || acc.account?.openStatus == 'OPEN')
-                            newPlan.planOverview = acc.account?.plans[i]?.planOverview;
-                        if (acc.account?.plans[i]?.servicePointsIds)
-                            newPlan.servicePointIds = acc.account?.plans[i]?.servicePointsIds
-                        planList.push(newPlan);
-                    }
-                    let newAccount: EnergyAccount = {
-                        plans: planList,
-                        accountNumber: acc.account?.accountNumber,
-                        accountId: acc.account?.accountId,
-                        displayName: acc.account?.displayName,
-                        openStatus: acc.account?.openStatus,
-                        creationDate: acc.account?.creationDate as string
-                    }
-                    accList.push(newAccount);
-                }
+                if ((openStatus == null) || (openStatus.toUpperCase() == "ALL")
+                    || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())) {
+                    if (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1) {
+                        let planList: any[] = [];
+                        for (let i = 0; i < cnt; i++) {
 
+                            let newPlan: any = {
+                                nickname: acc.account?.plans[i]?.nickname,
+                                servicePointIds: []
+                            }
+                            if (acc.account?.openStatus == null || acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
+                                newPlan.planOverview = acc.account?.plans[i]?.planOverview;
+                            if (acc.account?.plans[i]?.servicePointIds)
+                                newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
+                            planList.push(newPlan);
+                        }
+                        let newAccount: EnergyAccount = {
+                            plans: planList,
+                            accountNumber: acc.account?.accountNumber,
+                            accountId: acc.account?.accountId,
+                            displayName: acc.account?.displayName,
+                            openStatus: acc.account?.openStatus,
+                            creationDate: acc.account?.creationDate as string
+                        }
+                        accList.push(newAccount);
+                    }
+                }
             })
         }
-
-        let lk: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-
-        let listResponse: any = {
-            data: {
-                accounts: accList
-            },
-            links: lk,
-            meta: m
-        }
-
-        return listResponse;
-
+        return accList;
     }
 
     async getServicePointsForCustomer(customerId: string): Promise<string[] | undefined> {
@@ -851,7 +632,7 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let allPoints: any = cust?.energy.servicePoints;
-        allPoints.forEach((sp:any) => {
+        allPoints.forEach((sp: any) => {
             ret.push(sp.servicePointId)
         })
         return ret;
@@ -890,53 +671,53 @@ export class SingleData implements IDatabase {
 
     // get all the logins for the ACCC cdr-auth-server UI
     async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
-          var loginModel : CustomerModel[] = [];
-          let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-          let allData = await allDataCollection.findOne();
-          if (allData?.holders != undefined) {
-              let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
-              if (allCustomers.length < 1)
-                  return undefined;
-              allCustomers.forEach( (c: any) => {
-                    let aModel: CustomerModel = {
-                        LoginId: "",
-                        Accounts: []
-                    };
-                    aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
-                    let accounts: AccountModel [] = [];
-                    if (sector.toLowerCase() == 'energy') {
-                        // get the energy login data
-                        c?.energy?.accounts.forEach((acc: any) => {
-                            let loginAccount: AccountModel = {
-                                AccountId: acc?.account?.accountId,
-                                AccountNumber: acc?.account?.accountNumber,
-                                MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: acc?.account?.displayName
-                            };
-                            accounts.push(loginAccount)
-                        })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
+        var loginModel: CustomerModel[] = [];
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let allData = await allDataCollection.findOne();
+        if (allData?.holders != undefined) {
+            let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
+            if (allCustomers.length < 1)
+                return undefined;
+            allCustomers.forEach((c: any) => {
+                let aModel: CustomerModel = {
+                    LoginId: "",
+                    Accounts: []
+                };
+                aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+                let accounts: AccountModel[] = [];
+                if (sector.toLowerCase() == 'energy') {
+                    // get the energy login data
+                    c?.energy?.accounts.forEach((acc: any) => {
+                        let loginAccount: AccountModel = {
+                            AccountId: acc?.account?.accountId,
+                            AccountNumber: acc?.account?.accountNumber,
+                            MaskedName: acc?.account?.maskedNumber,
+                            DisplayName: acc?.account?.displayName
+                        };
+                        accounts.push(loginAccount)
+                    })
+                    aModel.Accounts = accounts;
+                    loginModel.push(aModel);
 
-                    }
-                    if (sector.toLowerCase() == 'banking') {
-                        // get the banking login data
-                        c?.banking?.accounts.forEach((acc: any) => {
-                            let loginAccount: AccountModel = {
-                                AccountId: acc?.account?.accountId,
-                                AccountNumber: acc?.account?.accountNumber,
-                                MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: acc?.account?.displayName
-                            };
-                            accounts.push(loginAccount)
-                        })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
-                    }              
+                }
+                if (sector.toLowerCase() == 'banking') {
+                    // get the banking login data
+                    c?.banking?.accounts.forEach((acc: any) => {
+                        let loginAccount: AccountModel = {
+                            AccountId: acc?.account?.accountId,
+                            AccountNumber: acc?.account?.accountNumber,
+                            MaskedName: acc?.account?.maskedNumber,
+                            DisplayName: acc?.account?.displayName
+                        };
+                        accounts.push(loginAccount)
+                    })
+                    aModel.Accounts = accounts;
+                    loginModel.push(aModel);
+                }
 
-              })    
-          } 
-          return loginModel;      
+            })
+        }
+        return loginModel;
     }
 
     async getServicePointsForUser(customerId: string): Promise<string[] | undefined> {

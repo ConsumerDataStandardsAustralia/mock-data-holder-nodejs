@@ -134,7 +134,7 @@ export class AuthService implements IAuthService {
             let accountIds: string[] = this.decryptAccountArray(token);
             let servicePointIds: string[] = [];
             this.authUser.accountsEnergy = accountIds;
-            let spList: EnergyServicePoint[]  = (await this.dbService.getServicePoints(customerId))?.data?.servicePoints;
+            let spList: EnergyServicePoint[]  = (await this.dbService.getServicePoints(customerId));
             spList.forEach((sp: EnergyServicePoint) => {
                 servicePointIds.push(sp.servicePointId)
                 

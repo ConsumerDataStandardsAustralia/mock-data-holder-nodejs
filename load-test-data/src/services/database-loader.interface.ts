@@ -22,5 +22,5 @@ export interface IDatabaseLoader {
 
     addCompleteDataSet(doc: any, datasetName: string): Promise<mongoDB.ObjectId|null>;
 
-    createEmptyCollection(colName: string): Promise<mongoDB.Collection> ;
+    deleteCollection(colName: string): Promise<mongoDB.DeleteResult>  ;
 }

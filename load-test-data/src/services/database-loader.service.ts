@@ -84,11 +84,12 @@ export class MongoData implements IDatabaseLoader {
         return retList;
     }
 
-    async createEmptyCollection(colName: string): Promise<mongoDB.Collection> {      
+    async deleteCollection(colName: string): Promise<mongoDB.DeleteResult> {      
        let collection = await this.dsbData.collection(colName);
        let ret = await collection.deleteMany({});
-       await collection.insertOne({});
-       return collection;
+       return ret;
+      // await collection.insertOne({});
+      // return collection;
     }
 }
 

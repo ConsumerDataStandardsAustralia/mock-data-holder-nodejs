@@ -72,9 +72,7 @@ dbService.connectDatabase()
     })
 
 async function processSingleFiles(singleDataFilePath: string): Promise<boolean> {
-    //var singleDataFiles = fs.readdirSync(singleDataFilePath, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
     let defaultColName = process.env.SINGLE_COLLECTION_NAME != null? process.env.SINGLE_COLLECTION_NAME: "data-factory-output";
-    //var holderSubs = fs.readdirSync(singleDataFiles, { withFileTypes: true }).filter(dirent => dirent.isDirectory());
     let singleDataFiles = fs.readdirSync(singleDataFilePath);
     let cnt = singleDataFiles.length;
     for (let i = 0; i < cnt; i++) {
@@ -83,14 +81,12 @@ async function processSingleFiles(singleDataFilePath: string): Promise<boolean> 
         var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
         if (holderId == null && defaultColName.toLowerCase() != collectionName)
             continue;
-       // let idx =  (await dbService.getCollections()).findIndex(x => x == collectionName);
-       // if (idx > 0) {
-            await dbService.createEmptyCollection(collectionName);
-       // }
+        // delete existing collection
+        await dbService.deleteCollection(collectionName);
+
         var filePath = path.join(singleDataFilePath, file);
         let fileString = fs.readFileSync(filePath).toString();
         var data = JSON.parse(fileString);
-        //await dbService.createEmptyCollection(collectionName);
         console.log("Created " + collectionName);
         
         await dbService.addCompleteDataSet(data, collectionName);
