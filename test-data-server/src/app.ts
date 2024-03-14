@@ -920,7 +920,13 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
             res.status(404).json('Not Found');
             return;
         }
-        let customers = await dbService.getLoginInformation(req.params?.sector)
+        let qry: any = req.query
+        let customers = await dbService.getLoginInformation(req.params?.sector, qry["loginId"])
+        if (customers == null) {
+            console.log(`Error: customer not found ${req.params?.loginId}`);
+            res.status(404).json('Not Found');
+            return;         
+        }
         let result = { Customers: customers };
         res.send(result);
     } catch (e) {

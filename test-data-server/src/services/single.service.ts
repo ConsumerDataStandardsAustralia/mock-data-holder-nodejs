@@ -670,7 +670,7 @@ export class SingleData implements IDatabase {
     }
 
     // get all the logins for the ACCC cdr-auth-server UI
-    async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformation(sector: string, loginId: string): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let allData = await allDataCollection.findOne();
@@ -678,42 +678,47 @@ export class SingleData implements IDatabase {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
             if (allCustomers.length < 1)
                 return undefined;
+            
             allCustomers.forEach((c: any) => {
-                let aModel: CustomerModel = {
-                    LoginId: "",
-                    Accounts: []
-                };
-                aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
-                let accounts: AccountModel[] = [];
-                if (sector.toLowerCase() == 'energy') {
-                    // get the energy login data
-                    c?.energy?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: acc?.account?.displayName
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
 
+                let id = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+                if (id == loginId) {
+                    let aModel: CustomerModel = {
+                        LoginId: id,
+                        Accounts: []
+                    };
+                    let accounts: AccountModel[] = [];
+                    if (sector.toLowerCase() == 'energy') {
+                        // get the energy login data
+                        c?.energy?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: acc?.account?.displayName
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+    
+                    }
+                    if (sector.toLowerCase() == 'banking') {
+                        // get the banking login data
+                        c?.banking?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: acc?.account?.displayName
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+                    }
                 }
-                if (sector.toLowerCase() == 'banking') {
-                    // get the banking login data
-                    c?.banking?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: acc?.account?.displayName
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
-                }
+
 
             })
         }
