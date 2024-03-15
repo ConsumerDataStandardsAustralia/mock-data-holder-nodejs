@@ -29,7 +29,7 @@ import {
     EnergyServicePointDetailResponse, EnergyServicePointListResponse, EnergyUsageListResponse,
     EnergyUsageRead, EnergyInvoice
 } from 'consumer-data-standards/energy';
-import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData, sectorIsValid } from './utils/paginate-data';
+import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -101,10 +101,10 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 // This is a function which interacts with the Authorisation server developed by the ACCC
 app.use(cdrAuthorization(dbService, endpointValidatorOptions));
-app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data/energy", "/health"));
-app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data/energy", "/health"));
-app.use(unless(cdrScopeValidator(userService), "/login-data/energy", "/jwks", `/health`));
-app.use(unless(cdrResourceValidator(userService), "/login-data/energy", "/jwks", `/health`));
+app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data", "/health"));
+app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data", "/health"));
+app.use(unless(cdrScopeValidator(userService), "/login-data", "/jwks", `/health`));
+app.use(unless(cdrResourceValidator(userService), "/login-data", "/jwks", `/health`));
 
 
 app.use('/', router);
@@ -913,13 +913,9 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 });
 
 // Get the information required by the Auth server to displaythe login screen
-app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
+app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        if (sectorIsValid(req.params?.sector) == false) {
-            res.status(404).json('Not Found');
-            return;
-        }
         let qry: any = req.query
         let customers = await dbService.getLoginInformation(req.params?.sector, qry["loginId"])
         if (customers == null) {
