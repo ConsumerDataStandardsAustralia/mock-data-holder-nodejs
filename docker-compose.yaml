@@ -82,7 +82,7 @@ services:
 
   authserver-ui:
     container_name: authserver-ui
-    image: consumerdatastandardsaustralia/authserver-ui:0.4
+    image: consumerdatastandardsaustralia/authserver-ui:0.5
     # build:
     #   context: . 
     #   dockerfile: dockerfile.authserver-ui
@@ -141,7 +141,7 @@ services:
 
   mock-data-holder:
     container_name: mock-data-holder
-    image: consumerdatastandardsaustralia/energy-data-holder:0.2
+    image: consumerdatastandardsaustralia/energy-data-holder:0.3
     # build:
     #   context: . 
     #   dockerfile: dockerfile.dsb-test-data-server    
