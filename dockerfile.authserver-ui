@@ -1,4 +1,4 @@
-FROM consumerdatastandardsaustralia/authserver-ui:0.1
+FROM consumerdatastandardsaustralia/authserver-ui:0.5
 
 COPY ./test-data-server/resources/cdr-logo.png /usr/share/nginx/html
 

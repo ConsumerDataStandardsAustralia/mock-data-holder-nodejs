@@ -115,9 +115,3 @@ export function buildErrorMessageForServicePoint(servicePointId: string, errorTi
     return retVal;
 }
 
-export function sectorIsValid(sector: string): boolean {
-    let validSectors = ['energy', 'banking']
-    let st = sector.toLowerCase();
-    return validSectors.indexOf(st) > -1
-}
-

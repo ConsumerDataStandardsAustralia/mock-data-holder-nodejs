@@ -31868,6 +31868,7 @@
                 "accounts": [
                   {
                     "account": {
+                      "displayName": "Janes Account 1",
                       "creationDate": "2022-07-06T23:44:31.001Z",
                       "plans": [
                         {
@@ -35043,6 +35044,7 @@
                   },
                   {
                     "account": {
+                      "displayName": "Janes Account 2",
                       "creationDate": "2022-05-27T01:15:24.300Z",
                       "plans": [
                         {
@@ -35051,8 +35053,7 @@
                         }
                       ],
                       "accountId": "05239d4a-5af5-4349-9462-cc939b2b925b",
-                      "openStatus": "CLOSED",
-                      "displayName": "Display name"
+                      "openStatus": "CLOSED"
                     },
                     "balance": "3779.10",
                     "invoices": [

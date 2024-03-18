@@ -148,7 +148,7 @@ export class SingleData implements IDatabase {
             }
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 if (sp?.usage != null) {
-                    
+
                     sp.usage.filter((u: any) => {
                         let refDate = Date.parse(u.readStartDate);
                         if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
@@ -187,7 +187,7 @@ export class SingleData implements IDatabase {
                 acc?.transactions.filter((tr: any) => {
                     let refDate = Date.parse(tr.executionDateTime);
                     if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
-                    retArray.push(tr)
+                        retArray.push(tr)
                 })
             });
         }
@@ -274,7 +274,7 @@ export class SingleData implements IDatabase {
     async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let ret: EnergyPaymentSchedule[]= [];
+        let ret: EnergyPaymentSchedule[] = [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
@@ -392,7 +392,7 @@ export class SingleData implements IDatabase {
         }
         if (cust != null) {
             var range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
-            
+
             cust?.energy?.servicePoints?.forEach((sp: any) => {
                 var idx = servicePointIds?.indexOf(sp.servicePoint.servicePointId)
                 if (idx > -1) {
@@ -444,7 +444,7 @@ export class SingleData implements IDatabase {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
-                        
+
                         acc?.invoices.filter((inv: EnergyInvoice) => {
                             let refDate = Date.parse(inv.issueDate);
                             if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
@@ -465,7 +465,7 @@ export class SingleData implements IDatabase {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-date", "newest-date");
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (accountIds?.indexOf(acc.account?.accountId) > -1) {
-                    if (acc?.invoices != null) {                    
+                    if (acc?.invoices != null) {
                         acc?.invoices.filter((inv: any) => {
                             let refDate = Date.parse(inv.issueDate);
                             if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
@@ -509,7 +509,7 @@ export class SingleData implements IDatabase {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
                         acc?.transactions.forEach((tr: EnergyBillingTransactionV2) => {
-                        if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
+                            if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
                                 transactions.push(tr);
                             }
                         })
@@ -670,7 +670,7 @@ export class SingleData implements IDatabase {
     }
 
     // get all the logins for the ACCC cdr-auth-server UI
-    async getLoginInformation(sector: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let allData = await allDataCollection.findOne();
@@ -678,43 +678,42 @@ export class SingleData implements IDatabase {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
             if (allCustomers.length < 1)
                 return undefined;
+
             allCustomers.forEach((c: any) => {
-                let aModel: CustomerModel = {
-                    LoginId: "",
-                    Accounts: []
-                };
-                aModel.LoginId = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
-                let accounts: AccountModel[] = [];
-                if (sector.toLowerCase() == 'energy') {
-                    // get the energy login data
+
+                let id = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+                if (id == loginId) {
+                    let aModel: CustomerModel = {
+                        LoginId: id,
+                        Accounts: []
+                    };
+                    let accounts: AccountModel[] = [];
+
                     c?.energy?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {
                             AccountId: acc?.account?.accountId,
                             AccountNumber: acc?.account?.accountNumber,
                             MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: acc?.account?.displayName
+                            DisplayName: `Energy - ${acc?.account?.displayName}`
                         };
                         accounts.push(loginAccount)
                     })
                     aModel.Accounts = accounts;
                     loginModel.push(aModel);
 
+                    // TODO Once we have the API implemented for Banking, we can uncomment this
+                    // c?.banking?.accounts.forEach((acc: any) => {
+                    //     let loginAccount: AccountModel = {
+                    //         AccountId: acc?.account?.accountId,
+                    //         AccountNumber: acc?.account?.accountNumber,
+                    //         MaskedName: acc?.account?.maskedNumber,
+                    //         DisplayName: `Banking - ${acc?.account?.displayName}`
+                    //     };
+                    //     accounts.push(loginAccount)
+                    // })
+                    // aModel.Accounts = accounts;
+                    // loginModel.push(aModel);
                 }
-                if (sector.toLowerCase() == 'banking') {
-                    // get the banking login data
-                    c?.banking?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: acc?.account?.displayName
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
-                }
-
             })
         }
         return loginModel;
