@@ -921,7 +921,7 @@ app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) =
         if (customers == null) {
             console.log(`Error: customer not found ${req.params?.loginId}`);
             res.status(404).json('Not Found');
-            return;         
+            return;
         }
         let result = { Customers: customers };
         res.send(result);

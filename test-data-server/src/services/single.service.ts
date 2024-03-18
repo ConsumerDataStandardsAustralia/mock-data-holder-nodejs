@@ -670,7 +670,7 @@ export class SingleData implements IDatabase {
     }
 
     // get all the logins for the ACCC cdr-auth-server UI
-    async getLoginInformation(sector: string, loginId: string): Promise<CustomerModel[] | undefined> {
+    async getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let allData = await allDataCollection.findOne();
@@ -701,7 +701,7 @@ export class SingleData implements IDatabase {
                     aModel.Accounts = accounts;
                     loginModel.push(aModel);
 
-                    // TODO Once we have to API implemented for Banking, we can uncomment this
+                    // TODO Once we have the API implemented for Banking, we can uncomment this
                     // c?.banking?.accounts.forEach((acc: any) => {
                     //     let loginAccount: AccountModel = {
                     //         AccountId: acc?.account?.accountId,
