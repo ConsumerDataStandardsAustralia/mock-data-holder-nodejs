@@ -11,7 +11,6 @@ import {
 
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
-import { EnergyDataSingle } from './services/single-energy.service';
 import cors from 'cors';
 import path from 'path';
 import { readFileSync } from 'fs';
@@ -30,7 +29,7 @@ import {
 } from 'consumer-data-standards/energy';
 import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
-import { SingleData } from './services/single-data';
+import { SingleData } from './services/single-data.service';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
