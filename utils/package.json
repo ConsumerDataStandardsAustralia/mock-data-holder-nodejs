@@ -14,5 +14,8 @@
     "typescript"
   ],
   "author": "Tomas Schier",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.16"
+  }
 }

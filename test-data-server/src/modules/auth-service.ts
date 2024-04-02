@@ -1,80 +1,43 @@
 import path from "path";
-import { CdrUser } from "../models/user";
+import { DsbCdrUser } from "../models/user";
 import * as https from 'https'
 import { readFileSync } from "fs";
 import { Introspection } from "../models/introspection";
 import { JwkKey } from "../models/jwt-key";
 import axios, { Axios, AxiosRequestConfig } from "axios";
-import {createHash} from 'crypto'; 
 import jwtDecode from "jwt-decode";
+import { IDatabase } from "../services/database.interface";
 import { CryptoUtils } from "../utils/crypto-utils";
-import { IAuthData } from "./database-auth.interface";
+import { IAuthService } from "./auth-service.interface";
+import { EnergyServicePoint } from "consumer-data-standards/energy";
 
 
-export class AuthService {
+export class AuthService implements IAuthService {
 
-    token_endpoint: string | undefined;
-    introspection_endpoint: string | undefined;
-    introspection_endpoint_internal: string | undefined;
-    jwks_uri: string | undefined;
-    issuer: string | undefined;
+    private token_endpoint: string | undefined;
+    private introspection_endpoint: string | undefined;
+    private introspection_endpoint_internal: string | undefined;
+    private jwks_uri: string | undefined;
+    private issuer: string | undefined;
 
 
-    authUser: CdrUser| undefined;
-    jwkKeys: JwkKey[] | undefined;
-    tlsThumPrint: string | undefined;
-    jwtEncodingAlgorithm: string | undefined;
-    algorithm = 'AES-256-CBC';
+    authUser: DsbCdrUser| undefined;
+    private jwkKeys: JwkKey[] | undefined;
+    private tlsThumPrint: string | undefined;
+    private jwtEncodingAlgorithm: string;
+    private algorithm = 'AES-256-CBC';
     // This key must be the same on the authorisation server
-    idPermanenceKey = process.env.IDPERMANENCEKEY;
-    iv = Buffer.alloc(16);
-    dbService: IAuthData;
+    private idPermanenceKey = process.env.IDPERMANENCEKEY;
+    private iv = Buffer.alloc(16);
+    private dbService: IDatabase;
 
-    constructor(dbService: IAuthData) {
+    constructor(dbService: IDatabase) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
         this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
     }
 
-    getEncrptionKey(idPermanenceKey: string): Buffer {
-        const utf8EncodeText = new TextEncoder();
-        let alg = createHash('sha512');
-        alg.write(utf8EncodeText.encode(idPermanenceKey));
-        let keyH = alg.digest().slice(0,24);
-        return keyH;
-    }
-
-    decryptLoginId(token: string) : string {
-        let decoded: any = jwtDecode(token);
-        let encodedLoginID = decoded?.sub as string;
-        let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-        let buffer = Buffer.from(CryptoUtils.decode(encodedLoginID), 'base64')
-        let login = CryptoUtils.decrypt(encryptionKey, buffer);
-        return login;
-    }
-
-
-    decryptAccountArray(token: string) : string[]{
-        let decoded: any = jwtDecode(token);
-        let accountIds: string [] = [];
-        if (Array.isArray(decoded?.account_id) == true)
-            accountIds = decoded?.account_id as string[];
-        else
-            accountIds.push(CryptoUtils.decode(decoded?.account_id));
-
-        let accounts: string[] = [];
-        const userNameLength = this.authUser?.loginId.length as number;
-        for(let i = 0; i < accountIds.length; i++) {
-            let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-            let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
-            let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
-            let accountId = decryptedValue?.substring(userNameLength)
-            accounts.push(accountId);
-        }
-        return accounts;
-    }
-
-    async initAuthService(): Promise<boolean> {
+    public async initAuthService(): Promise<boolean> {
         try {
             console.log('Initialise auth service..');
             const httpsAgent = this.buildHttpsAgent();
@@ -107,7 +70,7 @@ export class AuthService {
         }       
     }
     
-    async verifyAccessToken(token: string): Promise<boolean> {
+    public async verifyAccessToken(token: string): Promise<boolean> {
         try {
             // no introspective endpoint exists
             if (this.introspection_endpoint_internal == undefined)
@@ -137,14 +100,14 @@ export class AuthService {
         }
     }
 
-    buildHttpsAgent(): https.Agent {
+    private buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
             ca: readFileSync(path.join(__dirname, '../security/cdr-auth-server/mtls', process.env.CA_FILE as string))
            })
         return httpsAgent;
     }
 
-    async buildUser(token: string) : Promise<CdrUser | undefined> {
+    private async buildUser(token: string) : Promise<DsbCdrUser | undefined> {
         // First the JWT access token must be decoded and the signature verified
         let decoded: any = jwtDecode(token);
         // decrypt the loginId, ie the sub claim from token:
@@ -157,19 +120,26 @@ export class AuthService {
             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
             if (customerId == undefined)
                return undefined;
-               this.authUser  = {
+            this.authUser  = {
                 loginId : loginId,
                 customerId: customerId,
                 encodeUserId: decoded?.sub,
                 encodedAccounts: decoded?.account_id,
-                accounts: undefined,
-                scopes_supported: decoded?.scopes
+                accountsEnergy: undefined,
+                scopes_supported: decoded?.scope
             }
             // Once the customerId (here: userId) has been the account ids can be decrypted.
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
-            let accountIds: string[] = this.decryptAccountArray(token) 
-            this.authUser.accounts = accountIds;
+            let accountIds: string[] = this.decryptAccountArray(token);
+            let servicePointIds: string[] = [];
+            this.authUser.accountsEnergy = accountIds;
+            let spList: EnergyServicePoint[]  = (await this.dbService.getServicePoints(customerId));
+            spList.forEach((sp: EnergyServicePoint) => {
+                servicePointIds.push(sp.servicePointId)
+                
+            });
+            this.authUser.energyServicePoints = servicePointIds;
             return this.authUser;
         } catch(ex) {
             console.log(JSON.stringify(ex))
@@ -177,22 +147,43 @@ export class AuthService {
         }
     }
 
-    calculateTLSThumbprint(): string {
-        // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint
-        
+    private calculateTLSThumbprint(): string {
+        // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint   
         return '';
     }
 
-    buildIntrospecticePostBody(token: string): any {
+    private buildIntrospecticePostBody(token: string): any {
         let postBody: any = {};
         postBody.token = token.replace('Bearer ', '');
         return postBody;
     }
 
-    verifyScope(scope: string): boolean {
-        if (this.authUser?.scopes_supported == undefined)
-           return false;
+    private decryptLoginId(token: string) : string {
+        let decoded: any = jwtDecode(token);
+        let encodedLoginID = decoded?.sub as string;
+        let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
+        let buffer = Buffer.from(CryptoUtils.decode(encodedLoginID), 'base64')
+        let login = CryptoUtils.decrypt(encryptionKey, buffer);
+        return login;
+    }
+
+    private decryptAccountArray(token: string) : string[]{
+        let decoded: any = jwtDecode(token);
+        let accountIds: string [] = [];
+        if (Array.isArray(decoded?.account_id) == true)
+            accountIds = decoded?.account_id as string[];
         else
-           return this.authUser?.scopes_supported?.indexOf(scope) > -1
+            accountIds.push(CryptoUtils.decode(decoded?.account_id));
+
+        let accounts: string[] = [];
+        const userNameLength = this.authUser?.loginId?.length as number;
+        for(let i = 0; i < accountIds.length; i++) {
+            let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
+            let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
+            let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
+            let accountId = decryptedValue?.substring(userNameLength)
+            accounts.push(accountId);
+        }
+        return accounts;
     }
 }

@@ -1,0 +1,1 @@
+/opt/mssql-tools/bin/sqlcmd  -U sa -P Pa{}w0rd2019 -i ./AddClientScriptRelease.sql

@@ -1,9 +1,6 @@
 import { CustomerModel } from "../models/login";
 
 export interface IEnergyData {
-    connectDatabase() : Promise<void>;
-    disconnectDatabase() : Promise<void>;
-    getCollections(): Promise<string[]>;
 
     loadCustomer(customer: any): Promise<boolean>;
 
