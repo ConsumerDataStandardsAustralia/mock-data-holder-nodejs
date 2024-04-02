@@ -2,7 +2,6 @@ import { CustomerModel } from "../models/login";
 
 export interface IBankingData {
 
-
     getBankingProductDetails(productId: string): Promise<any>;
 
     getAllBankingProducts(queryParameters: any): Promise<any>;
