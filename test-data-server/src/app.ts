@@ -6,7 +6,9 @@ import {
     IUserService,
     cdrEndpointValidator,
     cdrScopeValidator,
-    cdrResourceValidator
+    cdrResourceValidator,
+    DefaultBankingEndpoints,
+    DefaultEnergyEndpoints
 } from "@cds-au/holder-sdk"
 
 import bodyParser from 'body-parser';
@@ -63,7 +65,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 const router = exp.Router();
 
-const sampleEndpoints = [...endpoints] as EndpointConfig[];
+const sampleEndpoints = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints] as EndpointConfig[];
 const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
 const rCert = readFileSync(certFile, 'utf8');
