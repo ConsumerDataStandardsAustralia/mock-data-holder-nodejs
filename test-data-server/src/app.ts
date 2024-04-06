@@ -917,149 +917,114 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 /******************* BANKING DATA  *********************************/
 
 // anything /energy/accounts/<something-else> needs  to be routed like this 
-// router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
+router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
 
-//     try {
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
+    try {
 
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         var excludes = ["directDebits", "payees", "payments"];
-//         if (excludes.indexOf(req.params?.accountId) == -1) {
-//             // if (accountIsValid(req.params?.accountId) == false) {
-//             //     res.status(404).json('Not Found');
-//             //     return;
-//             // }
-//             let result = await dbService.getAccountDetail(userId, req.params?.accountId)
-//             if (result == null) {
-//                 res.sendStatus(404);
-//             } else {
-//                 result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//                 res.send(result);
-//             }
-//         }
-//         if (req.params?.accountId == "directDebits") {
-//             let result = await dbService.getDirectDebitsForAccount(userId, req.params?.accountId, req.query)
-//             if (result == null) {
-//                 res.sendStatus(404);
-//             } else {
-//                 res.send(result);
-//             }
-//         }
+        console.log(`Received request on ${port} for ${req.url}`);
+        var excludes = ["directDebits", "payees", "payments"];
+        if (excludes.indexOf(req.params?.accountId) == -1) {
+            let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params?.accountId)
+            if (result == null) {
+                res.sendStatus(404);
+            } else {
+                result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+                res.send(result);
+            }
+        }
+        if (req.params?.accountId == "directDebits") {
+            let result = await dbService.getDirectDebitsForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
+            if (result == null) {
+                res.sendStatus(404);
+            } else {
+                res.send(result);
+            }
+        }
 
-//         // if (req.params?.accountId == "payees") {
-//         //     let result = await dbService.getPayeeDetail(userId)
-//         //     if (result == null) {
-//         //         res.sendStatus(404);
-//         //     } else {
-//         //         res.send(result);
-//         //     }
-//         // }
+        // if (req.params?.accountId == "payees") {
+        //     let result = await dbService.getPayeeDetail(userId)
+        //     if (result == null) {
+        //         res.sendStatus(404);
+        //     } else {
+        //         res.send(result);
+        //     }
+        // }
 
-//         if (req.params?.accountId == "payments") {
-//             let result = await dbService.getScheduledPaymentsForAccount(userId, req.params?.accountId, req.query)
-//             if (result == null) {
-//                 res.sendStatus(404);
-//             } else {
-//                 res.send(result);
-//             }
-//         }
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
-// })
+        if (req.params?.accountId == "payments") {
+            let result = await dbService.getScheduledPaymentsForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
+            if (result == null) {
+                res.sendStatus(404);
+            } else {
+                res.send(result);
+            }
+        }
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+})
 
-// // this endpoint does NOT require authentication
-// app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         let q = req.query as object;
-//         let result = await dbService.getAllBankingProducts(q);
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         }
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+// this endpoint does NOT require authentication
+app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        let q = req.query as object;
+        let result = await dbService.getAllBankingProducts(q);
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        }
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
 
-// app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let result = await dbService.getBankingProductDetails(req.params.productId)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         }
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let result = await dbService.getBankingProductDetails(req.params.productId)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        }
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
 
 
-// app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getAccounts(userId, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let temp = req.headers?.authorization as string;
 
-// });
+        let result = await dbService.getAccounts(authService()?.authUser?.customerId as string, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
 
 // // anything /energy/accounts/<something-else> needs  to be routed like this 
 // router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
 //     console.log(`Received request on ${port} for ${req.url}....routing`);
 //     try {
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
 
 //         console.log(`Received request on ${port} for ${req.url}`);
 //         var excludes = ["direct-debits", "balances"];
@@ -1068,7 +1033,7 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 //                 res.status(404).json('Not Found');
 //                 return;
 //             }
-//             let result = await dbService.getAccountDetail(userId, req.params?.accountId)
+//             let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params?.accountId)
 //             if (result == null) {
 //                 res.sendStatus(404);
 //             } else {
@@ -1077,7 +1042,7 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 //             }
 //         }
 //         if (req.params?.accountId == "direct-debits") {
-//             let result = await dbService.getBulkDirectDebits(userId, req.query)
+//             let result = await dbService.getBulkDirectDebits(authService()?.authUser?.customerId as string, req.query)
 //             if (result == null) {
 //                 res.sendStatus(404);
 //             } else {
@@ -1086,7 +1051,7 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 //         }
 
 //         if (req.params?.accountId == "balances") {
-//             let result = await dbService.getBulkBalances(userId, req.query)
+//             let result = await dbService.getBulkBalances(authService()?.authUser?.customerId as string, req.query)
 //             if (result == null) {
 //                 res.sendStatus(404);
 //             } else {
@@ -1100,139 +1065,87 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 //     }
 // })
 
-// app.get(`${basePath}/banking/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getAccountDetail(userId, req.params.accountId);
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.get(`${basePath}/banking/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params.accountId);
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
 
-// app.get(`${basePath}/banking/accounts/:accountId/balance`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getAccountBalance(userId, req.params.accountId)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.get(`${basePath}/banking/accounts/:accountId/balance`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// });
+        let result = await dbService.getAccountBalance(authService()?.authUser?.customerId as string, req.params.accountId)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// app.get(`${basePath}/banking/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getBulkBalances(userId, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+});
 
-// });
+app.get(`${basePath}/banking/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getBalancesForSpecificAccounts(userId, req.body?.data?.accountIds, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+        let result = await dbService.getBulkBalances(authService()?.authUser?.customerId as string, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
+
+app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+
+        let result = await dbService.getBalancesForSpecificAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
 
 // app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Request, res: Response, next: NextFunction) => {
 //     console.log(`Received request on ${port} for ${req.url}`);
 //     try {
 //         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         let q = req.query as object;
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getTransationsForAccount(userId, req.params.accountId, q)
+
+//         let result = await dbService.getTransationsForAccount(authService()?.authUser?.customerId as string, req.params.accountId)
 //         if (result == null) {
 //             res.sendStatus(404);
 //         } else {
@@ -1246,268 +1159,176 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 
 // });
 
-// app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getTransactionDetail(userId, req.params.accountId, req.params.transactionId)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// });
+        let result = await dbService.getTransactionDetail(authService()?.authUser?.customerId as string, req.params.accountId, req.params.transactionId)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// app.get(`${basePath}/banking/payees/`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getPayees(userId, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+});
 
-// });
+app.get(`${basePath}/banking/payees/`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// app.get(`${basePath}/banking/payees/:payeeId`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getPayeeDetail(userId, req.params.payeeId)
-//         if (result == null) {
-//             res.status(404).json('Not Found');
-//             return;
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+        let result = await dbService.getPayees(authService()?.authUser?.customerId as string, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
 
-// app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getBulkScheduledPayments(userId, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.get(`${basePath}/banking/payees/:payeeId`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// });
+        let result = await dbService.getPayeeDetail(authService()?.authUser?.customerId as string, req.params.payeeId)
+        if (result == null) {
+            res.status(404).json('Not Found');
+            return;
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getScheduledPaymentsForAccountList(userId, req.body?.data?.accountIds, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+});
 
-// });
+app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// app.get(`${basePath}/banking/accounts/:accountId/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getScheduledPaymentsForAccount(userId, req.params.accountId, req.query)
-//         if (result == null) {
-//             res.status(404).json('Not Found');
-//             return;
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+        let result = await dbService.getBulkScheduledPayments(authService()?.authUser?.customerId as string, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
 
-// app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getDirectDebitsForAccount(userId, req.params.accountId, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// });
+        let result = await dbService.getScheduledPaymentsForAccountList(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// app.get(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getBulkDirectDebits(userId, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+});
 
-// });
+app.get(`${basePath}/banking/accounts/:accountId/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-// app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         let temp = req.headers?.authorization as string;
-//         let tokenIsValid = await authService.verifyAccessToken(temp)
-//         if (tokenIsValid == false) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let userId = getUserId(req);
-//         if (userId == undefined) {
-//             res.status(401).json('Not authorized');
-//             return;
-//         }
-//         let result = await dbService.getDirectDebitsForAccountList(userId, req.body?.data?.accountIds, req.query)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+        let result = await dbService.getScheduledPaymentsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
+        if (result == null) {
+            res.status(404).json('Not Found');
+            return;
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
+
+app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+
+        let result = await dbService.getDirectDebitsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+app.get(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        let result = await dbService.getBulkDirectDebits(authService()?.authUser?.customerId as string, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+
+        let result = await dbService.getDirectDebitsForAccountList(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
 
 // Get the information required by the Auth server to displaythe login screen
 app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
