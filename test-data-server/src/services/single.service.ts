@@ -1,6 +1,6 @@
 import { LinksPaginated, MetaPaginated } from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountDetailV3, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
+import { EnergyAccountDetailV2, EnergyAccountListResponseV2, EnergyAccountV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { Service } from "typedi";
@@ -562,12 +562,12 @@ export class SingleData implements IDatabase {
         return derData;
     }
 
-    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined> {
+    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV2 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.accounts.find((x: any) => x.account.accountId == accountId);
-        return acc?.account as EnergyAccountDetailV3;
+        return acc?.account as EnergyAccountDetailV2;
     }
 
     async getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail> {
@@ -585,10 +585,10 @@ export class SingleData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccount[]> {
+    async getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccountV2[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let accList: EnergyAccount[] = [];
+        let accList: EnergyAccountV2[] = [];
         let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV2[];
         let openStatus = query["open-status"];
 
@@ -605,13 +605,13 @@ export class SingleData implements IDatabase {
                                 nickname: acc.account?.plans[i]?.nickname,
                                 servicePointIds: []
                             }
-                            if (acc.account?.openStatus == null || acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
+                            if (acc.account?.openStatus == "OPEN")
                                 newPlan.planOverview = acc.account?.plans[i]?.planOverview;
                             if (acc.account?.plans[i]?.servicePointIds)
                                 newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
                             planList.push(newPlan);
                         }
-                        let newAccount: EnergyAccount = {
+                        let newAccount: EnergyAccountV2 = {
                             plans: planList,
                             accountNumber: acc.account?.accountNumber,
                             accountId: acc.account?.accountId,
