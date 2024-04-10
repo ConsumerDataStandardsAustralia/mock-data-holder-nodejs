@@ -21,7 +21,7 @@ import { DsbCdrUser } from './models/user';
 import { authService, cdrAuthorization } from './modules/auth';
 import { ResponseErrorListV2 } from 'consumer-data-standards/common';
 import {
-    EnergyAccountV2, EnergyAccountDetailResponseV2, EnergyAccountListResponseV2, EnergyBalanceListResponse,
+    EnergyAccountV2, EnergyAccountListResponseV2, EnergyBalanceListResponse,
     EnergyBalanceResponse, EnergyBillingListResponse, EnergyBillingTransactionV2, EnergyConcession,
     EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord,
     EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan,

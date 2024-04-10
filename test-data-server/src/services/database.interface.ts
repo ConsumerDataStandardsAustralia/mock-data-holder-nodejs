@@ -1,4 +1,4 @@
-import { EnergyAccountV2, EnergyAccountBaseV2, EnergyAccountDetailV3, EnergyBillingTransaction, EnergyBillingTransactionV2, EnergyConcession, EnergyDerDetailResponse, EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetail, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead, EnergyAccountDetailV2 } from "consumer-data-standards/energy";
+import { EnergyAccountV2, EnergyAccountBaseV2, EnergyAccountDetailV3, EnergyBillingTransaction, EnergyBillingTransactionV2, EnergyConcession, EnergyDerDetailResponse, EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetail, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead, EnergyAccountDetailV2, EnergyBillingTransactionV3 } from "consumer-data-standards/energy";
 import { CustomerModel } from "../models/login";
 
 export interface IDatabase {
@@ -12,7 +12,7 @@ export interface IDatabase {
 
     getServicePoints(customerId: string): Promise<EnergyServicePoint[]>;
 
-    getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV2 | undefined>;
+    getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined>;
   
     getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<EnergyInvoice[]>;
 
@@ -34,9 +34,9 @@ export interface IDatabase {
 
     getCustomerDetails(customerId: string): Promise<any>;
 
-    getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV3[]>;
 
-    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV3[]>;
 
     getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined>;
 
@@ -48,7 +48,7 @@ export interface IDatabase {
 
     getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]>;
 
-    getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV3[]>;
 
     getBulkBalancesForUser(customerId: string): Promise<any[]>;
 
