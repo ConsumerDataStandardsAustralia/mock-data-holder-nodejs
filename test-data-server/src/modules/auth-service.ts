@@ -126,6 +126,7 @@ export class AuthService implements IAuthService {
                 encodeUserId: decoded?.sub,
                 encodedAccounts: decoded?.account_id,
                 accountsEnergy: undefined,
+                accountsBanking: undefined,
                 scopes_supported: decoded?.scope
             }
             // Once the customerId (here: userId) has been the account ids can be decrypted.
@@ -134,11 +135,11 @@ export class AuthService implements IAuthService {
             let accountIds: string[] = this.decryptAccountArray(token);
             let servicePointIds: string[] = [];
             this.authUser.accountsEnergy = accountIds;
-            let spList: EnergyServicePoint[]  = (await this.dbService.getServicePoints(customerId));
-            spList.forEach((sp: EnergyServicePoint) => {
-                servicePointIds.push(sp.servicePointId)
-                
-            });
+            this.authUser.accountsBanking = accountIds;
+            let spList: string[]  = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+            this.authUser.energyServicePoints = spList;
+            let payeeList: string[]  = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+            this.authUser.bankingPayees = payeeList;
             this.authUser.energyServicePoints = servicePointIds;
             return this.authUser;
         } catch(ex) {

@@ -36,4 +36,6 @@ export interface IBankingData {
 
     getPayeeDetail(customerId: string, payeeId: string): Promise<any>;
 
+    getPayeesForCustomer(customerId: string): Promise<string[] | undefined>
+
 }

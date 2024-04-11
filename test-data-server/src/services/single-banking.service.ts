@@ -5,7 +5,7 @@ import * as mongoDB from "mongodb";
 import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2, BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, Links, LinksPaginated, Meta, MetaPaginated, ResponseBankingAccountListV2 } from "consumer-data-standards/banking";
 
 @Service()
-export class BankingDataSingle implements IBankingData {
+export class BankingDataSingle  {
 
     public collections: mongoDB.Collection[] = [];
     private client: mongoDB.MongoClient;
