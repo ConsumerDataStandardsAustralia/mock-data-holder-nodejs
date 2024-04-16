@@ -605,7 +605,7 @@ export class SingleData implements IDatabase {
                                 nickname: acc.account?.plans[i]?.nickname,
                                 servicePointIds: []
                             }
-                            if (acc.account?.openStatus == "OPEN")
+                            if (acc.account?.plans[i]?.planOverview)
                                 newPlan.planOverview = acc.account?.plans[i]?.planOverview;
                             if (acc.account?.plans[i]?.servicePointIds)
                                 newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
