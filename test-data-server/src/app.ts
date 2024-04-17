@@ -926,7 +926,7 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
     try {
 
         console.log(`Received request on ${port} for ${req.url}`);
-        var excludes = ["directDebits", "payees", "payments"];
+        var excludes = ["direct-debits",  "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
             let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params?.accountId)
             if (result == null) {
@@ -936,8 +936,8 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
                 res.send(result);
             }
         }
-        if (req.params?.accountId == "directDebits") {
-            let result = await dbService.getDirectDebitsForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
+        if (req.params?.accountId == "balances") {
+            let result = await dbService.getBulkBalances(authService()?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -945,17 +945,8 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
             }
         }
 
-        // if (req.params?.accountId == "payees") {
-        //     let result = await dbService.getPayeeDetail(userId)
-        //     if (result == null) {
-        //         res.sendStatus(404);
-        //     } else {
-        //         res.send(result);
-        //     }
-        // }
-
-        if (req.params?.accountId == "payments") {
-            let result = await dbService.getScheduledPaymentsForAccount(authService()?.authUser?.customerId as string, req.params?.accountId, req.query)
+        if (req.params?.accountId == "direct-debits") {
+            let result = await dbService.getBulkDirectDebits(authService()?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
             } else {
@@ -1004,7 +995,6 @@ app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Res
 
 });
 
-
 app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
@@ -1024,50 +1014,6 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
     }
 
 });
-
-// // anything /energy/accounts/<something-else> needs  to be routed like this 
-// router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
-//     console.log(`Received request on ${port} for ${req.url}....routing`);
-//     try {
-
-//         console.log(`Received request on ${port} for ${req.url}`);
-//         var excludes = ["direct-debits", "balances"];
-//         if (excludes.indexOf(req.params?.accountId) == -1) {
-//             if (accountIsValid(req.params?.accountId) == false) {
-//                 res.status(404).json('Not Found');
-//                 return;
-//             }
-//             let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params?.accountId)
-//             if (result == null) {
-//                 res.sendStatus(404);
-//             } else {
-//                 result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//                 res.send(result);
-//             }
-//         }
-//         if (req.params?.accountId == "direct-debits") {
-//             let result = await dbService.getBulkDirectDebits(authService()?.authUser?.customerId as string, req.query)
-//             if (result == null) {
-//                 res.sendStatus(404);
-//             } else {
-//                 res.send(result);
-//             }
-//         }
-
-//         if (req.params?.accountId == "balances") {
-//             let result = await dbService.getBulkBalances(authService()?.authUser?.customerId as string, req.query)
-//             if (result == null) {
-//                 res.sendStatus(404);
-//             } else {
-//                 res.send(result);
-//             }
-//         }
-
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
-// })
 
 app.get(`${basePath}/banking/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
@@ -1144,24 +1090,24 @@ app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Resp
 
 });
 
-// app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Request, res: Response, next: NextFunction) => {
-//     console.log(`Received request on ${port} for ${req.url}`);
-//     try {
-//         console.log(`Received request on ${port} for ${req.url}`);
+app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
 
-//         let result = await dbService.getTransationsForAccount(authService()?.authUser?.customerId as string, req.params.accountId)
-//         if (result == null) {
-//             res.sendStatus(404);
-//         } else {
-//             result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-//             res.send(result);
-//         } 
-//     } catch (e) {
-//         console.log('Error:', e);
-//         res.sendStatus(500);
-//     }
+        let result = await dbService.getTransationsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
+        if (result == null) {
+            res.sendStatus(404);
+        } else {
+            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            res.send(result);
+        } 
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
 
-// });
+});
 
 app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
@@ -1238,7 +1184,7 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
         res.sendStatus(500);
     }
 
-});
+ });
 
 app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
@@ -1285,23 +1231,6 @@ app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Req
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getDirectDebitsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-
-});
-
-app.get(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res: Response, next: NextFunction) => {
-    console.log(`Received request on ${port} for ${req.url}`);
-    try {
-        let result = await dbService.getBulkDirectDebits(authService()?.authUser?.customerId as string, req.query)
         if (result == null) {
             res.sendStatus(404);
         } else {
