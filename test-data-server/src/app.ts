@@ -21,13 +21,14 @@ import { DsbCdrUser } from './models/user';
 import { authService, cdrAuthorization } from './modules/auth';
 import { ResponseErrorListV2 } from 'consumer-data-standards/common';
 import {
-    EnergyAccount, EnergyAccountDetailResponse, EnergyAccountListResponse, EnergyBalanceListResponse,
+    EnergyAccountV2, EnergyAccountListResponseV2, EnergyBalanceListResponse,
     EnergyBalanceResponse, EnergyBillingListResponse, EnergyBillingTransactionV2, EnergyConcession,
     EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord,
     EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan,
     EnergyPlanDetailV2, EnergyPlanListResponse, EnergyPlanResponse, EnergyServicePoint, EnergyServicePointDetail,
     EnergyServicePointDetailResponse, EnergyServicePointListResponse, EnergyUsageListResponse,
-    EnergyUsageRead, EnergyInvoice
+    EnergyUsageRead, EnergyInvoice,
+    EnergyAccountDetailResponseV3
 } from 'consumer-data-standards/energy';
 import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 
@@ -158,11 +159,12 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
             if (data == null) {
                 res.sendStatus(404);
             } else {
-                let resp: EnergyAccountDetailResponse = {
+                let resp: EnergyAccountDetailResponseV3 = {
                     data: data,
                     links: {
                         self: req.protocol + '://' + req.get('host') + req.originalUrl
-                    }
+                    },
+                    meta: {}
                 }
                 res.send(resp);
                 return;
@@ -347,7 +349,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
 app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result: EnergyAccount[] = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
+        let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -362,7 +364,8 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
                 return;
             }
             else {
-                let listResponse: EnergyAccountListResponse = {
+                // TODO there is a bug in the schema definitions. Once that is resolved revert to the use of type , eg EnergyListResponseV2
+                let listResponse: any = {
                     links: getLinksPaginated(req, req.query, result.length),
                     meta: getMetaPaginated(req.query, result.length),
                     data: {

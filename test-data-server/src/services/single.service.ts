@@ -1,13 +1,13 @@
-import { LinksPaginated, MetaPaginated } from "consumer-data-standards/banking";
+
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccount, EnergyAccountDetailV2, EnergyAccountDetailV3, EnergyAccountListResponseV2, EnergyBalanceListResponse, EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession, EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord, EnergyInvoice, EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan, EnergyPlanDetailV2, EnergyServicePoint, EnergyServicePointDetail, EnergyServicePointListResponse, EnergyUsageListResponse, EnergyUsageRead, Links, Meta } from "consumer-data-standards/energy";
+import { EnergyAccountDetailV3, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
+    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV2, 
+    EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead} from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { IDatabase } from "./database.interface";
 import { Service } from "typedi";
 import { AccountModel, CustomerModel } from "../models/login";
 import { QueryRange } from "../models/query-range";
-import { Query } from "mongoose";
-import { paginateData } from "../utils/paginate-data";
 
 @Service()
 export class SingleData implements IDatabase {
@@ -176,11 +176,11 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]> {
+    async getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV3[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let retArray: EnergyBillingTransactionV2[] = [];
+        let retArray: EnergyBillingTransactionV3[] = [];
         if (cust != null) {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
             cust?.energy?.accounts.forEach((acc: any) => {
@@ -313,18 +313,18 @@ export class SingleData implements IDatabase {
         return spList;
     }
 
-    async getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV2[]> {
+    async getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV3[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
 
         let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
-        let filteredBilling: EnergyBillingTransactionV2[] = [];
+        let filteredBilling: EnergyBillingTransactionV3[] = [];
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 var idx = accountIds?.indexOf(acc.account.accountId)
                 if (idx > -1) {
                     if (acc?.transactions != null) {
-                        acc?.transactions.forEach((tr: EnergyBillingTransactionV2) => {
+                        acc?.transactions.forEach((tr: EnergyBillingTransactionV3) => {
                             if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
                                 {
                                     filteredBilling.push(tr);
@@ -499,16 +499,16 @@ export class SingleData implements IDatabase {
         throw new Error("Method not implemented.");
     }
 
-    async getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV2[]> {
+    async getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV3[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let transactions: EnergyBillingTransactionV2[] = [];
+        let transactions: EnergyBillingTransactionV3[] = [];
         if (cust != null) {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
-                        acc?.transactions.forEach((tr: EnergyBillingTransactionV2) => {
+                        acc?.transactions.forEach((tr: EnergyBillingTransactionV3) => {
                             if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
                                 transactions.push(tr);
                             }
@@ -585,11 +585,11 @@ export class SingleData implements IDatabase {
         return ret.insertedId != null
 
     }
-    async getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccount[]> {
+    async getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccountV2[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let accList: EnergyAccount[] = [];
-        let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV2[];
+        let accList: EnergyAccountV2[] = [];
+        let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV3[];
         let openStatus = query["open-status"];
 
         if (accDetailList != null) {
@@ -605,13 +605,13 @@ export class SingleData implements IDatabase {
                                 nickname: acc.account?.plans[i]?.nickname,
                                 servicePointIds: []
                             }
-                            if (acc.account?.openStatus == null || acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
+                            if (acc.account?.plans[i]?.planOverview)
                                 newPlan.planOverview = acc.account?.plans[i]?.planOverview;
                             if (acc.account?.plans[i]?.servicePointIds)
                                 newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
                             planList.push(newPlan);
                         }
-                        let newAccount: EnergyAccount = {
+                        let newAccount: EnergyAccountV2 = {
                             plans: planList,
                             accountNumber: acc.account?.accountNumber,
                             accountId: acc.account?.accountId,
