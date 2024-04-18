@@ -8,6 +8,6 @@ export interface IAuthData {
 
     getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
 
-    getLoginInformation(sectors: string[]): Promise<CustomerModel[] | undefined>;
+    getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined>;
 
 }

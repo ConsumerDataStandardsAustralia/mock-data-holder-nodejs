@@ -33,6 +33,7 @@ import {
 import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
+import { BankingAccountDetailV3, ResponseBankingAccountByIdV2 } from 'consumer-data-standards/banking';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -923,17 +924,60 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 // anything /energy/accounts/<something-else> needs  to be routed like this 
 router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
 
+    // try {
+    //     console.log(`Received request on ${port} for ${req.url}`);
+    //     let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
+    //     if (result == null) {
+    //         res.sendStatus(404);
+    //         return;
+    //     } else {
+
+    //         let paginatedData = paginateData(result, req.query);
+    //         // check if this is an error object
+    //         if (paginatedData?.errors != null) {
+    //             res.statusCode = 422;
+    //             // In this case paginatedData is actually an error object
+    //             res.send(paginatedData);
+    //             return;
+    //         }
+    //         else {
+    //             // TODO there is a bug in the schema definitions. Once that is resolved revert to the use of type , eg EnergyListResponseV2
+    //             let listResponse: any = {
+    //                 links: getLinksPaginated(req, req.query, result.length),
+    //                 meta: getMetaPaginated(req.query, result.length),
+    //                 data: {
+    //                     accounts: paginatedData
+    //                 }
+    //             }
+    //             res.send(listResponse);
+    //             return;
+    //         }
+    //     }
+    // } catch (e) {
+    //     console.log('Error:', e);
+    //     res.sendStatus(500);
+    // }
+
+
+
     try {
 
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["direct-debits",  "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params?.accountId)
-            if (result == null) {
+            let data: BankingAccountDetailV3 | null = await dbService.getAccountDetail(authService()?.authUser?.customerId as string,req.params.accountId)
+            if (data == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+                let result: ResponseBankingAccountByIdV2 = {
+                    data: data,
+                    links: {
+                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                    }
+                }
                 res.send(result);
+                return;
             }
         }
         if (req.params?.accountId == "balances") {
