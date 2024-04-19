@@ -33,7 +33,7 @@ import {
 import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
-import { BankingAccountDetailV3, ResponseBankingAccountByIdV2 } from 'consumer-data-standards/banking';
+import { BankingAccountDetailV3, BankingBalance, BankingProductDetailV4, BankingProductV4, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -923,49 +923,11 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 
 // anything /energy/accounts/<something-else> needs  to be routed like this 
 router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
-
-    // try {
-    //     console.log(`Received request on ${port} for ${req.url}`);
-    //     let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsEnergy as string[], req.query);
-    //     if (result == null) {
-    //         res.sendStatus(404);
-    //         return;
-    //     } else {
-
-    //         let paginatedData = paginateData(result, req.query);
-    //         // check if this is an error object
-    //         if (paginatedData?.errors != null) {
-    //             res.statusCode = 422;
-    //             // In this case paginatedData is actually an error object
-    //             res.send(paginatedData);
-    //             return;
-    //         }
-    //         else {
-    //             // TODO there is a bug in the schema definitions. Once that is resolved revert to the use of type , eg EnergyListResponseV2
-    //             let listResponse: any = {
-    //                 links: getLinksPaginated(req, req.query, result.length),
-    //                 meta: getMetaPaginated(req.query, result.length),
-    //                 data: {
-    //                     accounts: paginatedData
-    //                 }
-    //             }
-    //             res.send(listResponse);
-    //             return;
-    //         }
-    //     }
-    // } catch (e) {
-    //     console.log('Error:', e);
-    //     res.sendStatus(500);
-    // }
-
-
-
     try {
-
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["direct-debits",  "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let data: BankingAccountDetailV3 | null = await dbService.getAccountDetail(authService()?.authUser?.customerId as string,req.params.accountId)
+            let data: BankingAccountDetailV3 | undefined = await dbService.getAccountDetail(authService()?.authUser?.customerId as string,req.params.accountId)
             if (data == null) {
                 res.sendStatus(404);
                 return;
@@ -984,8 +946,27 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
             let result = await dbService.getBulkBalances(authService()?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                res.send(result);
+            let paginatedData = paginateData(result, req.query);
+            // check if this is an error object
+            if (paginatedData?.errors != null) {
+                res.statusCode = 422;
+                // In this case paginatedData is actually an error object
+                res.send(paginatedData);
+                return;
+            }
+            else {
+                let listResponse: ResponseBankingAccountsBalanceList = {
+                    links: getLinksPaginated(req, req.query, result.length),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        balances: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
+            }
             }
         }
 
@@ -993,8 +974,27 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
             let result = await dbService.getBulkDirectDebits(authService()?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
+                return;
             } else {
-                res.send(result);
+            let paginatedData = paginateData(result, req.query);
+            // check if this is an error object
+            if (paginatedData?.errors != null) {
+                res.statusCode = 422;
+                // In this case paginatedData is actually an error object
+                res.send(paginatedData);
+                return;
+            }
+            else {
+                let listResponse: ResponseBankingDirectDebitAuthorisationList = {
+                    links: getLinksPaginated(req, req.query, result.length),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        directDebitAuthorisations: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
+            }
             }
         }
     } catch (e) {
@@ -1011,9 +1011,29 @@ app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, nex
         let result = await dbService.getAllBankingProducts(q);
         if (result == null) {
             res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+            return;
+        } 
+        else
+        {
+            let paginatedData = paginateData(result, req.query);
+            // check if this is an error object
+            if (paginatedData?.errors != null) {
+                res.statusCode = 422;
+                // In this case paginatedData is actually an error object
+                res.send(paginatedData);
+                return;
+            }
+            else {
+                let listResponse: ResponseBankingProductListV2 = {
+                    links: getLinksPaginated(req, req.query, result.length),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        products: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
+            }
         }
     } catch (e) {
         console.log('Error:', e);
@@ -1025,12 +1045,19 @@ app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, nex
 app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getBankingProductDetails(req.params.productId)
-        if (result == null) {
+        let data = await dbService.getBankingProductDetails(req.params.productId)
+        if (data == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            let result: ResponseBankingProductByIdV4 = {
+                data: data,
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                }
+            }
             res.send(result);
+            return;
         }
     } catch (e) {
         console.log('Error:', e);
@@ -1043,15 +1070,26 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
     console.log(`Received request on ${port} for ${req.url}`);
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let temp = req.headers?.authorization as string;
-
-        let result = await dbService.getAccounts(authService()?.authUser?.customerId as string, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        let result = await dbService.getAccounts(authService()?.authUser?.customerId as string, authService()?.authUser?.accountsBanking as string[], req.query)
+        let paginatedData = paginateData(result, req.query);
+        // check if this is an error object
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingAccountListV2 = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    accounts: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1059,36 +1097,26 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
 
 });
 
-app.get(`${basePath}/banking/accounts/:accountId`, async (req: Request, res: Response, next: NextFunction) => {
-    console.log(`Received request on ${port} for ${req.url}`);
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getAccountDetail(authService()?.authUser?.customerId as string, req.params.accountId);
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-
-});
 
 app.get(`${basePath}/banking/accounts/:accountId/balance`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getAccountBalance(authService()?.authUser?.customerId as string, req.params.accountId)
-        if (result == null) {
+        let data = await dbService.getAccountBalance(authService()?.authUser?.customerId as string, req.params.accountId)
+        if (data == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            let result: ResponseBankingAccountsBalanceById = {
+                data: data,
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                }
+            }
             res.send(result);
-        } 
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1096,24 +1124,6 @@ app.get(`${basePath}/banking/accounts/:accountId/balance`, async (req: Request, 
 
 });
 
-app.get(`${basePath}/banking/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
-    console.log(`Received request on ${port} for ${req.url}`);
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-
-        let result = await dbService.getBulkBalances(authService()?.authUser?.customerId as string, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-
-});
 
 app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
@@ -1121,12 +1131,30 @@ app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Resp
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getBalancesForSpecificAccounts(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
-        if (result == null) {
+         if (result == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+            let paginatedData = paginateData(result, req.query);
+            // check if this is an error object
+            if (paginatedData?.errors != null) {
+                res.statusCode = 422;
+                // In this case paginatedData is actually an error object
+                res.send(paginatedData);
+                return;
+            }
+            else {
+                let listResponse: ResponseBankingAccountsBalanceList = {
+                    links: getLinksPaginated(req, req.query, result.length),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        balances: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
+            }
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1142,9 +1170,27 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
         let result = await dbService.getTransationsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
         if (result == null) {
             res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
+        } else
+        {
+            let paginatedData = paginateData(result, req.query);
+            // check if this is an error object
+            if (paginatedData?.errors != null) {
+                res.statusCode = 422;
+                // In this case paginatedData is actually an error object
+                res.send(paginatedData);
+                return;
+            }
+            else {
+                let listResponse: ResponseBankingTransactionList = {
+                    links: getLinksPaginated(req, req.query, result.length),
+                    meta: getMetaPaginated(req.query, result.length),
+                    data: {
+                        transactions: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
+            }
         } 
     } catch (e) {
         console.log('Error:', e);
@@ -1158,13 +1204,22 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, a
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getTransactionDetail(authService()?.authUser?.customerId as string, req.params.accountId, req.params.transactionId)
-        if (result == null) {
+        let data = await dbService.getTransactionDetail(authService()?.authUser?.customerId as string, req.params.accountId, req.params.transactionId)
+        if (data == null) {
             res.sendStatus(404);
+            return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            // TODO the ResponseBankingTransactionById does not reference BankingTransactionDetail
+            // Once this has been fixed in the typedefs the 
+            let result: any = {
+                data: data,
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                }
+            }
             res.send(result);
-        } 
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1178,12 +1233,25 @@ app.get(`${basePath}/banking/payees/`, async (req: Request, res: Response, next:
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getPayees(authService()?.authUser?.customerId as string, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        let paginatedData = paginateData(result, req.query);
+        // check if this is an error object
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingPayeeListV2 = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    payees: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1196,14 +1264,20 @@ app.get(`${basePath}/banking/payees/:payeeId`, async (req: Request, res: Respons
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getPayeeDetail(authService()?.authUser?.customerId as string, req.params.payeeId)
-        if (result == null) {
-            res.status(404).json('Not Found');
+        let data = await dbService.getPayeeDetail(authService()?.authUser?.customerId as string, req.params.payeeId)
+        if (data == null) {
+            res.sendStatus(404);
             return;
         } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
+            let result: ResponseBankingPayeeByIdV2 = {
+                data: data,
+                links: {
+                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+                }
+            }
             res.send(result);
-        } 
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1217,12 +1291,25 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getBulkScheduledPayments(authService()?.authUser?.customerId as string, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        // check if this is an error object
+        let paginatedData = paginateData(result, req.query);
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingScheduledPaymentsListV2 = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    scheduledPayments: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1236,12 +1323,25 @@ app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Res
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getScheduledPaymentsForAccountList(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        // check if this is an error object
+        let paginatedData = paginateData(result, req.query);
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingScheduledPaymentsListV2 = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    scheduledPayments: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1255,13 +1355,25 @@ app.get(`${basePath}/banking/accounts/:accountId/payments/scheduled`, async (req
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getScheduledPaymentsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
-        if (result == null) {
-            res.status(404).json('Not Found');
+        // check if this is an error object
+        let paginatedData = paginateData(result, req.query);
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
             return;
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        }
+        else {
+            let listResponse: ResponseBankingScheduledPaymentsListV2 = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    scheduledPayments: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1275,12 +1387,25 @@ app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Req
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getDirectDebitsForAccount(authService()?.authUser?.customerId as string, req.params.accountId, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        // check if this is an error object
+        let paginatedData = paginateData(result, req.query);
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingDirectDebitAuthorisationList = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    directDebitAuthorisations: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1294,12 +1419,25 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getDirectDebitsForAccountList(authService()?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
-        if (result == null) {
-            res.sendStatus(404);
-        } else {
-            result.links.self = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.send(result);
-        } 
+        // check if this is an error object
+        let paginatedData = paginateData(result, req.query);
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingDirectDebitAuthorisationList = {
+                links: getLinksPaginated(req, req.query, result.length),
+                meta: getMetaPaginated(req.query, result.length),
+                data: {
+                    directDebitAuthorisations: paginatedData
+                }
+            }
+            res.send(listResponse);
+            return;
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
