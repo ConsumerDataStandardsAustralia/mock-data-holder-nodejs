@@ -299,27 +299,36 @@ export class SingleData implements IDatabase {
         return ret;
     }
     async getBulkDirectDebits(customerId: string, query: any): Promise<BankingDirectDebit[]> {
-        let ret: any = {};
-        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
-        let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingDirectDebit[] = [];
-        if (customer?.banking?.directDebits == null) {
-            ret.data = { directDebitAuthorisations: retArray };
-        } else { 
-            ret.data = { directDebitAuthorisations: customer?.banking?.directDebits };
-        }
 
-        let l: LinksPaginated = {
-            self: ""
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let openStatus = query["open-status"];
+        let category: string | null = null;
+        let isowned: boolean | null = null;
+        if (query["product-category"] != null) {
+            category = query["product-category"].toUpperCase();
         }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
+        if (query["is-owned"] != null) {
+            isowned = query["is-owned"] === "true";
         }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        let retArray: BankingDirectDebit[] = [];
+        customer?.banking?.directDebits.forEach((debit: BankingDirectDebit) => {
+            let acc : any = customer?.banking?.accounts.find((x:any) => x.account.accountId == debit.accountId);
+            if (   ( acc != null)
+                && (category == null || acc.account.productCategory == category)
+                && (openStatus == null || acc.account.openStatus == openStatus)
+                    // condition 4
+                &&    (
+                        (isowned == null)
+                            ||
+                        (acc.account.isOwned == isowned)
+                        ||
+                        (acc.account.isOwned == null && isowned == true)
+                        )
+            )
+                retArray.push(debit)
+        })
+        return retArray;
     }
 
     async getScheduledPaymentsForAccount(customerId: string, accountId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
