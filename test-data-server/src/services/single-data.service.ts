@@ -153,33 +153,37 @@ export class SingleData implements IDatabase {
         });
         return transaction;
     }
+    async getBulkBalances(customerId: string, query: any): Promise<BankingBalance[]> {
 
-    async getBulkBalances(customerId: string, queryParameters: any): Promise<BankingBalance[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
         let customer = await this.getCustomer(allDataCollection, customerId);
+        let openStatus = query["open-status"];
+        let category: string | null = null;
+        let isowned: boolean | null = null;
+        if (query["product-category"] != null) {
+            category = query["product-category"].toUpperCase();
+        }
+        if (query["is-owned"] != null) {
+            isowned = query["is-owned"] === "true";
+        }
         let retArray: BankingBalance[] = [];
-        if (customer?.banking?.accounts == null) {
-            ret.data = { balances: retArray };
-        } else { 
-            customer.banking.accounts.forEach((acc:any) => {
-                if (acc?.balance != null)
-                    retArray.push(acc.balance)
-            });  
-            ret.data = { balances: retArray };
-        }
+        customer?.banking?.accounts.forEach((acc: any) => {
+            let account : BankingAccountDetailV3 = acc.account;
+            if ((category == null || account.productCategory == category)
+                && (openStatus == null || account.openStatus == openStatus)
+                    // condition 4
+                &&    (
+                        (isowned == null)
+                            ||
+                        (acc.account?.isOwned == isowned)
+                        ||
+                        (acc.account?.isOwned == null && isowned == true)
+                        )
+            )
+                retArray.push(acc.balance)
+        })
 
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return retArray;
     }
     async getAccountBalance(customerId: string, accountId: string): Promise<BankingBalance | undefined> {
         let ret: any = {};
@@ -202,7 +206,7 @@ export class SingleData implements IDatabase {
         ret.meta = m;
         return ret;
     }
-    async getBalancesForSpecificAccounts(customerId: string, accountIds: string[], queryParameters: any): Promise<BankingBalance[]> {
+    async getBalancesForSpecificAccounts(customerId: string, accountIds: string[], query: any): Promise<BankingBalance[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
  
@@ -235,7 +239,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
     
-    async getDirectDebitsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<BankingDirectDebit[]> {
+    async getDirectDebitsForAccount(customerId: string, accountId: string, query: any): Promise<BankingDirectDebit[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
@@ -262,7 +266,7 @@ export class SingleData implements IDatabase {
         ret.meta = m;
         return ret;
     }
-    async getDirectDebitsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<BankingDirectDebit[]> {
+    async getDirectDebitsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingDirectDebit[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
  
@@ -294,7 +298,7 @@ export class SingleData implements IDatabase {
         ret.meta = m;
         return ret;
     }
-    async getBulkDirectDebits(customerId: string, queryParameters: any): Promise<BankingDirectDebit[]> {
+    async getBulkDirectDebits(customerId: string, query: any): Promise<BankingDirectDebit[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
  
@@ -318,7 +322,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getScheduledPaymentsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<BankingScheduledPaymentV2[]> {
+    async getScheduledPaymentsForAccount(customerId: string, accountId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
@@ -346,7 +350,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], queryParameters: any): Promise<BankingScheduledPaymentV2[]> {
+    async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingScheduledPaymentV2[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
  
@@ -379,7 +383,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getBulkScheduledPayments(customerId: string, queryParameters: any): Promise<BankingScheduledPaymentV2[]> {
+    async getBulkScheduledPayments(customerId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
  
@@ -403,7 +407,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getPayees(customerId: string, queryParameters: any): Promise<BankingPayeeV2[]> {
+    async getPayees(customerId: string, query: any): Promise<BankingPayeeV2[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
@@ -466,7 +470,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getAllBankingProducts(queryParameters: any): Promise<BankingProductV4[]> {
+    async getAllBankingProducts(query: any): Promise<BankingProductV4[]> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getProducts(allData, undefined);
