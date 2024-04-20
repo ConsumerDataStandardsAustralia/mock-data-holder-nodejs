@@ -103,65 +103,57 @@ export class SingleData implements IDatabase {
         let acc: any = cust?.banking.accounts.find((x: any) => x.account.accountId == accountId);
         return acc?.account as BankingAccountDetailV3;
     }
-    async getTransationsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<BankingTransaction[]> {
-        let ret: any = {};
+    async getTransationsForAccount(customerId: string, accountId: string, query: any): Promise<BankingTransaction[]> {
+        let account: any;
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-
+        let retArray : BankingTransaction[] = [];
+        let mSecInDay = 86400000;
+        let minAmount: number | null = null;
+        let maxAmount: number | null = null;
         let customer = await this.getCustomer(allDataCollection, customerId);
-        //let retArray: BankingAccountV2[] = [];
-        if (customer?.banking?.accounts == null) {
-            ret.data = {};
-        } else {
-            let accounts = customer?.banking?.accounts.filter((x: any) => {
-                if (x.account.accountId == accountId)
-                    return x;
+        let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
+        if (query["oldest-time"] == null)
+            range.startRange = range.endRange - 90*mSecInDay;
+        if (query["min-amount"] != null)
+            minAmount = parseFloat(query["min-amount"])
+        if (query["max-amount"] != null)
+            maxAmount = parseFloat(query["max-amount"])        
+        account = customer?.banking?.accounts.find((x: any) => {
+            if (x.account.accountId == accountId)
+                return x;
+        })
+        //customer?.banking?.accounts.forEach((acc: any) => {
+            account?.transactions.filter((tr: BankingTransactionDetail) => {
+                let refDate = range.startRange;
+                if (tr.executionDateTime != null)
+                    refDate = Date.parse(tr.executionDateTime);
+                if (tr.valueDateTime != null)
+                    refDate = Date.parse(tr.valueDateTime); 
+                if (tr.postingDateTime != null)
+                    refDate = Date.parse(tr.postingDateTime);
+               
+                if ((isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                    && (minAmount == null || parseFloat(tr.amount) >= minAmount)
+                    && (maxAmount == null || parseFloat(tr.amount) <= maxAmount))
+                    retArray.push(tr)
             })
-            let data = { };
-            ret.data = data;
-            ret.data.transactions = accounts[0]?.transactions;
-        }
-
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return retArray;
     }
     async getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetail | undefined> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-
         let customer = await this.getCustomer(allDataCollection, customerId);
-        //let retArray: BankingAccountV2[] = [];
-        if (customer?.banking?.accounts == null) {
-            ret.data = {};
-        } else {
-            let account = customer?.banking?.accounts.find((x: any) => {
-                if (x?.account?.accountId == accountId)
-                    return x;
-            });
+        let account = customer?.banking?.accounts.find((x: any) => {
+            if (x?.account?.accountId == accountId)
+                return x;
+        });
 
-            let transaction = account?.transactions.find((x: any) => {
-                if (x?.transactionId == transactionId)
-                    return x;
-            });
-  
-            ret.data = transaction;
-        }
-
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta= {}
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        let transaction = account?.transactions.find((x: any) => {
+            if (x?.transactionId == transactionId)
+                return x;
+        });
+        return transaction;
     }
+
     async getBulkBalances(customerId: string, queryParameters: any): Promise<BankingBalance[]> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
