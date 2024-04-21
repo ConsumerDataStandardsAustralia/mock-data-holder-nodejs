@@ -1,17 +1,12 @@
 import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2, 
     BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, 
     BankingTransaction, 
-    BankingTransactionDetail, 
-    LinksPaginated, MetaPaginated } from "consumer-data-standards/banking";
+    BankingTransactionDetail} from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import { EnergyAccountDetailV3, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
     EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV2, 
-    EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead,
-    Links,
-    Meta} from "consumer-data-standards/energy";
+    EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead} from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
-import { IEnergyData } from "./database-energy.interface";
-import { Service } from "typedi";
 import { AccountModel, CustomerModel } from "../models/login";
 import { QueryRange } from "../models/query-range";
 import { IDatabase } from "./database.interface";
@@ -190,113 +185,50 @@ export class SingleData implements IDatabase {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
  
         let customer = await this.getCustomer(allDataCollection, customerId);
-
-        if (customer?.banking?.accounts == null) {
-            ret.data = { };
-        } else { 
-
-            let accounts =  customer?.banking?.accounts.find((x:any) => x.account?.accountId == accountId)
-            ret.data = accounts?.balance;
-        }
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta= {}
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        let accounts =  customer?.banking?.accounts.find((x:any) => x.account?.accountId == accountId)
+        return accounts?.balance;
     }
-    async getBalancesForSpecificAccounts(customerId: string, accountIds: string[], query: any): Promise<BankingBalance[]> {
-        let ret: any = {};
-        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
-        let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingBalance[] = [];
-        if (customer?.banking?.accounts == null) {
-            ret.data = { balances: retArray };
-        } else { 
-            let accounts: any[] = [];
-            accountIds.forEach((id: string) => {
-                accounts = customer?.banking?.accounts.filter((x: any) => {
-                    if (x.account?.accountId == id && x?.balance != null) {
-                        retArray.push(x.balance);
-                    }
-                        
-                })
-            })
-            ret.data = { balances: retArray };
-        }
 
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
+    async getBalancesForSpecificAccounts(customerId: string, accountIds: string[], query: any): Promise<BankingBalance[]> {
+        let ret: BankingBalance[] = [];
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+        let customer = await this.getCustomer(allDataCollection, customerId);
+        let accounts: any[] = [];
+        accountIds.forEach((id: string) => {
+            accounts = customer?.banking?.accounts.filter((x: any) => {
+                if (x.account?.accountId == id && x?.balance != null) {
+                    ret.push(x.balance);
+                }
+                    
+            })
+        })
         return ret;
     }
     
     async getDirectDebitsForAccount(customerId: string, accountId: string, query: any): Promise<BankingDirectDebit[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-
         let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingDirectDebit[] = [];
-        if (customer?.banking?.directDebits == null) {
-            ret.data = { directDebitAuthorisations: retArray };
-        } else {
-            let debits = customer?.banking?.directDebits.filter((x: any) => {
-                if (x.accountId == accountId)
-                    return x;
-            })
-  
-            ret.data = { directDebitAuthorisations: debits };
-        }
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
+        let ret: BankingDirectDebit[] = [];
+        ret = customer?.banking?.directDebits.filter((x: any) => {
+            if (x.accountId == accountId)
+                return x;
+        })
         return ret;
     }
+    
     async getDirectDebitsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingDirectDebit[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
         let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingDirectDebit[] = [];
-        if (customer?.banking?.directDebits == null) {
-            ret.data = { directDebitAuthorisations: retArray};
-        } else { 
-            let debits: any[] = [];
-            accountIds.forEach((id: string) => {
-                debits = customer?.banking?.directDebits.filter((x: any) => {
-                    if (x?.accountId == id) {
-                        retArray.push(x);
-                    }
-                        
-                })
+        let debits: BankingDirectDebit[] = [];
+        accountIds.forEach((id: string) => {
+            customer?.banking?.directDebits.forEach((x: any) => {
+                if (x?.accountId == id) {
+                    debits.push(x);
+                }
+                    
             })
-            ret.data = { directDebitAuthorisations: retArray };
-        }
-
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        })
+        return debits;
     }
     async getBulkDirectDebits(customerId: string, query: any): Promise<BankingDirectDebit[]> {
 
@@ -347,116 +279,86 @@ export class SingleData implements IDatabase {
   
             ret.data = { scheduledPayments: payments };
         }
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
         return ret;
     }
 
     async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingScheduledPaymentV2[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
+     
         let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingScheduledPaymentV2[] = [];
-        if (customer?.banking?.payments == null) {
-            ret.data = { scheduledPayments: retArray};
-        } else { 
-            let payments: any[] = [];
+
+            let payments: BankingScheduledPaymentV2[] = [];
             accountIds.forEach((id: string) => {
-                payments = customer?.banking?.payments.filter((x: any) => {
+                customer?.banking?.payments.forEach((x: any) => {
                     if (x.from?.accountId == id) {
-                        retArray.push(x);
+                        payments.push(x);
                     }
                         
                 })
             })
-            ret.data = { scheduledPayments: retArray };
-        }
-
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        return payments;
     }
 
     async getBulkScheduledPayments(customerId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
-        let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingScheduledPaymentV2[] = [];
-        if (customer?.banking?.payments == null) {
-            ret.data = { scheduledPayments: retArray };
-        } else {     
-            ret.data = { scheduledPayments: customer?.banking?.payments };
+        let customer = await this.getCustomer(allDataCollection, customerId); 
+        let openStatus = query["open-status"];
+        let category: string | null = null;
+        let isowned: boolean | null = null;
+        if (query["product-category"] != null) {
+            category = query["product-category"].toUpperCase();
+        }
+        if (query["is-owned"] != null) {
+            isowned = query["is-owned"] === "true";
         }
 
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        let payments: BankingScheduledPaymentV2[] = [];
+        customer?.banking?.payments.forEach((debit: BankingScheduledPaymentV2) => {
+            let acc : any = customer?.banking?.accounts.find((x:any) => x.account.accountId == debit.from.accountId);
+            if (   ( acc != null)
+                && (category == null || acc.account.productCategory == category)
+                && (openStatus == null || acc.account.openStatus == openStatus || openStatus == "ALL")
+                    // condition 4
+                &&    (
+                        (isowned == null)
+                            ||
+                        (acc.account.isOwned == isowned)
+                        ||
+                        (acc.account.isOwned == null && isowned == true)
+                        )
+            )
+            payments.push(debit)
+        })
+        return payments;
     }
 
     async getPayees(customerId: string, query: any): Promise<BankingPayeeV2[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-
         let customer = await this.getCustomer(allDataCollection, customerId);
-        let retArray: BankingPayeeV2[] = [];
-        if (customer?.banking?.payees == null) {
-            ret.data = { payees: retArray };
-        } else {
-            customer?.banking?.payees.forEach((p: BankingPayeeDetailV2) => {
+        let payees: BankingPayeeV2[] = [];
+        let payeeType = "ALL";
+        if (query["type"] != null) {
+            payeeType = query["type"].toUpperCase();
+        }
+        customer?.banking?.payees.forEach((p: BankingPayeeDetailV2) => {
+            if (p.type == payeeType || payeeType == "ALL" || payeeType == null){
                 let payee: BankingPayeeV2 = {
                     nickname: p.nickname,
                     payeeId: p.payeeId,
                     type: p.type
                 } ;
                 if (p.creationDate != null ) payee.creationDate = p.creationDate;
-                if (p.description != null ) payee.description = p.description;
-
-                retArray.push(payee);      
-            });       
-            ret.data = { payees: retArray };
-        }
-
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+                if (p.description != null ) payee.description = p.description; 
+                payees.push(payee); 
+            }
+     
+        });       
+        return payees;
     }
 
     async getPayeeDetail(customerId: string, payeeId: string): Promise<BankingPayeeDetailV2 | undefined> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-
         let customer = await this.getCustomer(allDataCollection, customerId);
-        //let retArray: BankingAccountV2[] = [];
         if (customer?.banking?.payees == null) {
             return undefined;
         } else {
@@ -465,80 +367,44 @@ export class SingleData implements IDatabase {
                     return x;
             })
             if (payees?.length > 0)
-                ret.data = payees[0];
+                return payees[0];
             else
                 return undefined;
         }
-
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta= {}
-        ret.links = l;
-        ret.meta = m;
-        return ret;
     }
 
     async getAllBankingProducts(query: any): Promise<BankingProductV4[]> {
-        let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getProducts(allData, undefined);
-
-        let retArray: any[] = [];
-        if (allPlans == null) {
-            ret.data = { products: retArray };
-        } else {
-            await allPlans.forEach((p: BankingProductDetailV4) => {
-                let product: BankingProductV4 = {
-                    brand: p.brand,
-                    description: p.description,
-                    isTailored: p.isTailored,
-                    lastUpdated: p.lastUpdated,
-                    name: p.name,
-                    productCategory: p.productCategory,
-                    productId: p.productId
-                } ;
-                if (p.additionalInformation != null ) product.additionalInformation = p.additionalInformation;
-                if (p.effectiveFrom != null ) product.effectiveFrom = p.effectiveFrom;
-                if (p.effectiveTo != null ) product.effectiveFrom = p.effectiveTo;
-                if (p.brandName != null ) product.brandName = p.brandName;
-                if (p.applicationUri != null) product.applicationUri = p.applicationUri;
-                if (p.cardArt != null) product.cardArt = p.cardArt;
-                retArray.push(product);      
-            });       
-            ret.data = { products: retArray };
-        }
-
-        let l: LinksPaginated = {
-            self: ""
-        }
-        let m: MetaPaginated = {
-            totalPages: 0,
-            totalRecords: 0
-        }
-        ret.links = l;
-        ret.meta = m;
-        return ret;
+        let products: BankingProductV4[] = [];
+        await allPlans.forEach((p: BankingProductDetailV4) => {
+            let product: BankingProductV4 = {
+                brand: p.brand,
+                description: p.description,
+                isTailored: p.isTailored,
+                lastUpdated: p.lastUpdated,
+                name: p.name,
+                productCategory: p.productCategory,
+                productId: p.productId
+            } ;
+            if (p.additionalInformation != null ) product.additionalInformation = p.additionalInformation;
+            if (p.effectiveFrom != null ) product.effectiveFrom = p.effectiveFrom;
+            if (p.effectiveTo != null ) product.effectiveFrom = p.effectiveTo;
+            if (p.brandName != null ) product.brandName = p.brandName;
+            if (p.applicationUri != null) product.applicationUri = p.applicationUri;
+            if (p.cardArt != null) product.cardArt = p.cardArt;
+            products.push(product);      
+        });       
+        return products;
     }
 
     async getBankingProductDetails(productId: string): Promise<BankingProductDetailV4 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        // const query = { productId: productId };
         let product: any = await this.getProducts(allData, productId);
-
         if (product == null || product.length == 0)
             return undefined;
-
         ret.data = product[0];
-        let l: Links = {
-            self: ""
-        }
-        let m: Meta = {
-
-        }
-        ret.links = l;
-        ret.meta = m;
         return ret;
     }
 
