@@ -401,11 +401,10 @@ export class SingleData implements IDatabase {
     async getBankingProductDetails(productId: string): Promise<BankingProductDetailV4 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        let product: any = await this.getProducts(allData, productId);
-        if (product == null || product.length == 0)
+        let products: BankingProductDetailV4[] = await this.getProducts(allData, productId);
+        if (products == null || products.length == 0)
             return undefined;
-        ret.data = product[0];
-        return ret;
+        return products[0];
     }
 
     async getProducts(allDataCollection: mongoDB.Collection, productId: string | undefined): Promise<any> {

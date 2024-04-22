@@ -19,9 +19,8 @@ import { readFileSync } from 'fs';
 import * as https from 'https'
 import { DsbCdrUser } from './models/user';
 import { authService, cdrAuthorization } from './modules/auth';
-import { ResponseErrorListV2 } from 'consumer-data-standards/common';
 import {
-    EnergyAccountV2, EnergyAccountListResponseV2, EnergyBalanceListResponse,
+    EnergyAccountV2,  EnergyBalanceListResponse,
     EnergyBalanceResponse, EnergyBillingListResponse, EnergyBillingTransactionV2, EnergyConcession,
     EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord,
     EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan,
@@ -33,7 +32,7 @@ import {
 import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
-import { BankingAccountDetailV3, BankingBalance, BankingProductDetailV4, BankingProductV4, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
+import { BankingAccountDetailV3, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -67,7 +66,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 const router = exp.Router();
 
-const sampleEndpoints = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints] as EndpointConfig[];
+const sampleEndpoints = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...endpoints] as EndpointConfig[];
 const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
 const rCert = readFileSync(certFile, 'utf8');
@@ -77,7 +76,7 @@ let endpointValidatorOptions: CdrConfig = {
     endpoints: sampleEndpoints 
 }
 
-let headerValidatorOptions: CdrConfig = {
+let headerValidatorOptions: CdrConfig =  {
     endpoints: sampleEndpoints
 }
 
