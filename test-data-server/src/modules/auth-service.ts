@@ -133,14 +133,13 @@ export class AuthService implements IAuthService {
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
             let accountIds: string[] = this.decryptAccountArray(token);
-            let servicePointIds: string[] = [];
+            //let servicePointIds: string[] = [];
             this.authUser.accountsEnergy = accountIds;
             this.authUser.accountsBanking = accountIds;
-            let spList: string[]  = await this.dbService.getServicePointsForCustomer(customerId) as string[];
-            this.authUser.energyServicePoints = spList;
-            let payeeList: string[]  = await this.dbService.getPayeesForCustomer(customerId)  as string[];
-            this.authUser.bankingPayees = payeeList;
-            this.authUser.energyServicePoints = servicePointIds;
+            this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+           //let payeeList: string[]  = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+            this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+            //this.authUser.energyServicePoints = servicePointIds;
             return this.authUser;
         } catch(ex) {
             console.log(JSON.stringify(ex))

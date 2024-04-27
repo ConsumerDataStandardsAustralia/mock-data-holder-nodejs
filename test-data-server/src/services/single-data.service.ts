@@ -913,7 +913,7 @@ export class SingleData implements IDatabase {
         if (cust != null) {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
-                    ret.data.balance = acc.balance
+                    ret = acc.balance
                 }
             })
         }
@@ -1058,7 +1058,7 @@ export class SingleData implements IDatabase {
         let cust: any = await this.getCustomer(allData, customerId);
         let allPoints: any = cust?.energy.servicePoints;
         allPoints.forEach((sp: any) => {
-            ret.push(sp.servicePointId)
+            ret.push(sp.servicePoint.servicePointId)
         })
         return ret;
     }

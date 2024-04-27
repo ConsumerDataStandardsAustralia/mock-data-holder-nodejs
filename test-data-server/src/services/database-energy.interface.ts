@@ -4,11 +4,6 @@ import { EnergyAccountV2, EnergyServicePoint, EnergyAccountDetailV3, EnergyInvoi
 import { CustomerModel } from "../models/login";
 
 export interface IEnergyData {
-    connectDatabase() : Promise<void>;
-    disconnectDatabase() : Promise<void>;
-    getCollections(): Promise<string[]>;
-
-    loadCustomer(customer: any): Promise<boolean>;
 
     getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccountV2[]>;
 
