@@ -85,9 +85,6 @@ async function processSingleFiles(singleDataFilePath: string): Promise<boolean> 
             continue;
         }
             
-        // if (defaultColName.toLowerCase() != collectionName)
-        //     continue;
-        // delete existing collection
         await dbService.deleteCollection(collectionName);
 
         var filePath = path.join(singleDataFilePath, file);

@@ -1,6 +1,5 @@
 /* Created for testing purposes. 
     In order to test generated data from test cli the postman collections from dsb-postman can be used
-
     This will create a Postman environment file with ids
 */
 
@@ -138,16 +137,7 @@ holders?.forEach((h: any) => {
 
 
 let retObj: any = {
-    "name": `${envName}`,
-   
-    // "accessToken": "",
-    // "primaryDataHolderUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
-    // "secondaryDataHolderUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
-    // "authenticatedResourceUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
-    // "unauthenticatedResourceUrl": "https://mtls-gateway:8082/resource/cds-au/v1",
-    // "x-fapi-interaction-id": "2a5a065b-d991-41de-b303-2aad52caea79",
-    // "x-fapi-customer-ip-address": "127.0.0.1",
-    // "x-cds-client-headers": "Q29uc3VtZXIgRGF0YSBSaWdodA=="
+    "name": `${envName}`
 }
 
 let commonValues = [];
