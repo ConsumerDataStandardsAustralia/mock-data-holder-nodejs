@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "tsc && node ./dist/create-seed-data.js",
-    "build": "tsc && cp ./data/* ./dist/data/",
+    "build": "tsc && cp ./src/data/* ./dist/data/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon"
   },

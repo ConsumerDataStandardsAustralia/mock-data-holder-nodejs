@@ -1,0 +1,14 @@
+{
+	"id": "fd1e81cb-2122-434e-85ca-a58a2821a1dc",
+	"name": "DSB Test Data Server - TEST",
+	"values": [
+		{
+			"key": "primaryDataHolderUrl",
+			"value": "https://mtls-gateway:8082/resource/cds-au/v1"
+		},
+		{
+			"key": "secondaryDataHolderUrl",
+			"value": "https://mtls-gateway:8082/resource/cds-au/v1"
+		}
+	]
+}
