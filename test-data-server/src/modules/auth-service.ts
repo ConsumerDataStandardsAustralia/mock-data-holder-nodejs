@@ -126,20 +126,17 @@ export class AuthService implements IAuthService {
                 encodeUserId: decoded?.sub,
                 encodedAccounts: decoded?.account_id,
                 accountsEnergy: undefined,
+                accountsBanking: undefined,
                 scopes_supported: decoded?.scope
             }
             // Once the customerId (here: userId) has been the account ids can be decrypted.
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
             let accountIds: string[] = this.decryptAccountArray(token);
-            let servicePointIds: string[] = [];
             this.authUser.accountsEnergy = accountIds;
-            let spList: EnergyServicePoint[]  = (await this.dbService.getServicePoints(customerId));
-            spList.forEach((sp: EnergyServicePoint) => {
-                servicePointIds.push(sp.servicePointId)
-                
-            });
-            this.authUser.energyServicePoints = servicePointIds;
+            this.authUser.accountsBanking = accountIds;
+            this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+            this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
             return this.authUser;
         } catch(ex) {
             console.log(JSON.stringify(ex))

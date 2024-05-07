@@ -77,11 +77,14 @@ async function processSingleFiles(singleDataFilePath: string): Promise<boolean> 
     let cnt = singleDataFiles.length;
     for (let i = 0; i < cnt; i++) {
         console.log("Processing data file: " + singleDataFiles[i]);
+        
         let file = singleDataFiles[i];
         var collectionName = file.split('.').slice(0, -1).join('.').toLowerCase();
-        if (holderId == null && defaultColName.toLowerCase() != collectionName)
+        if (process.env.SINGLE_DATA_DOCUMENT != null && process.env.SINGLE_DATA_DOCUMENT.toLowerCase() != collectionName && holderId == null && defaultColName.toLowerCase() != collectionName) {
+            console.log("Abandoning load of: " + collectionName);
             continue;
-        // delete existing collection
+        }
+            
         await dbService.deleteCollection(collectionName);
 
         var filePath = path.join(singleDataFilePath, file);

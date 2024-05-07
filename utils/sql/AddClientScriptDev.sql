@@ -5,7 +5,7 @@ DECLARE @OrganisationId NVARCHAR(450) = N'5242a9d7-4c5d-43c7-a78a-844e352c7593'
 DECLARE @LegalEntityId NVARCHAR(450) = N'8ecd3c03-1638-4936-97c3-76d2f3ac9d0d'
 DECLARE @LegalEntityName NVARCHAR(450) = N'DSB Data Recipient'
 DECLARE @BrandId NVARCHAR(450) = N'67e23b31-f5a4-4f5b-b8ec-95869292026c'
-DECLARE @BrandName NVARCHAR(450) = N'DSB Energy Provider'
+DECLARE @BrandName NVARCHAR(450) = N'DSB Data Provider'
 DECLARE @SoftwareId NVARCHAR(450) = N'36094666-7e37-4717-8ab0-0c3d3485f56e'
 DECLARE @SoftwareName NVARCHAR(450) = N'DSB Test Software'
 DECLARE @DataRecipientBaseUri NVARCHAR(450) = N'https://localhost:9001'
@@ -41,7 +41,7 @@ VALUES
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
-      (@ClientId, 'scope', 'profile openid cdr:registration common:customer.basic:read common:customer.detail:read bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:payees:read bank:regular_payments:read energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:electricity.der:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read');
+      (@ClientId, 'scope', 'openid profile common:customer.basic:read common:customer.detail:read cdr:registration energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read energy:electricity.der:read bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read');
 INSERT INTO [dbo].[ClientClaims]
       ([ClientId],[Type],[Value])
 VALUES
