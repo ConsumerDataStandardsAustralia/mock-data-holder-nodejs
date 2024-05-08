@@ -142,7 +142,7 @@ We welcome contributions from the community! If you'd like to contribute to this
 
 ### Note:
 
-1. Please ensure your contributions align with our project's objectives and [guidelines](https://www.notion.so/Contribution-Guidelines-8b99d030fea946668fbc75444197e68b?pvs=21).
+1. Please ensure your contributions align with our project's objectives and [guidelines](https://d61cds.notion.site/Contribution-Guidelines-8b99d030fea946668fbc75444197e68b?pvs=4).
 
 ## Using Postman to call the Data holder APIs
 
@@ -151,7 +151,7 @@ Our Postman collection includes pre-configured environments and requests that mi
 
 ## Reporting Issues
 
-Encountered an issue? We're here to help. Please visit our [issue reporting guidelines](https://www.notion.so/Issue-Reporting-Guidelines-71a329a0658c4b69a232eab95822509b?pvs=21) for submitting an issue.
+Encountered an issue? We're here to help. Please visit our [issue reporting guidelines](https://d61cds.notion.site/Issue-Reporting-Guidelines-71a329a0658c4b69a232eab95822509b?pvs=4) for submitting an issue.
 
 ## Stay Updated
 
