@@ -8,3 +8,4 @@ DNS.1               = localhost
 DNS.2               = authserver.mock
 DNS.3               = cdr-auth-server
 DNS.4				= tls-gateway
+DNS.5               = ec2-3-25-176-50.ap-southeast-2.compute.amazonaws.com
