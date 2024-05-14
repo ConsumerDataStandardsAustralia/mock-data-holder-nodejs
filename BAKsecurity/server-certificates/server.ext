@@ -1,0 +1,15 @@
+authorityKeyIdentifier=keyid,issuer
+basicConstraints    = CA:FALSE
+keyUsage            = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage    = critical, serverAuth
+subjectAltName      = @alt_names
+[alt_names]
+DNS.1               = localhost
+DNS.2               = mtls-gateway
+DNS.3				= tls-gateway
+DNS.4				= mock-register
+DNS.4				= mock-data-recipient
+DNS.4				= cdr-auth-server
+DNS.4				= authserver-ui
+DNS.4				= mock-data-holder
+DNS.5               = ec2-3-25-176-50.ap-southeast-2.compute.amazonaws.com
