@@ -181,7 +181,7 @@ INSERT INTO [dbo].[SoftwareProducts]
       ,[BrandName]
       ,[BrandStatus])
 VALUES
-      (@NodeSoftwareId
+      (@JavaSoftwareId
            , @JavaSoftwareName
            , @JavaSoftwareName
            , @LogoUri

@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/mssql/server:2019-latest AS build
 
 ENV ACCEPT_EULA=Y
-ENV sa_password=Pa{}w0rd2019
+ENV MSSQL_SA_PASSWORD=Pa{}w0rd2019
 
 USER root
 COPY --chown=mssql ./utils/sql/AddClientScriptRelease.sql /tmp
@@ -13,6 +13,7 @@ RUN apt-get -y install -y netcat
 RUN apt-get -y install vim
 
 COPY ./utils/sql/sshd_config /etc/ssh
+
 RUN service ssh stop
 RUN service ssh start
 

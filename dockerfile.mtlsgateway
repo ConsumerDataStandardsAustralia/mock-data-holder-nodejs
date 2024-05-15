@@ -5,5 +5,5 @@ FROM consumerdatastandardsaustralia/mtls-gateway:0.1 AS build
 WORKDIR /app
 
 COPY ./configs/mtls-gateway/gateway-config.json /app/gateway-mtls/
-COPY ./security/mtls-gateway/mtls-server.pfx /app/gateway-mtls/Certificates
+COPY ./configs/certificates/server.pfx /app/gateway-mtls/Certificates/server.pfx 
 

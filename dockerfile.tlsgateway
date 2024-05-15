@@ -4,4 +4,4 @@ FROM consumerdatastandardsaustralia/tls-gateway:0.1 AS build
 WORKDIR /app
 
 COPY ./configs/tls-gateway/gateway-config.json /app/gateway-tls/
-COPY ./security/tls-gateway/tls-server.pfx /app/gateway-tls/Certificates
+COPY ./configs/certificates/server.pfx /app/gateway-tls/Certificates/server.pfx

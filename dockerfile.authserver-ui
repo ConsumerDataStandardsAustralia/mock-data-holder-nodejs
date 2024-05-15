@@ -2,8 +2,8 @@ FROM consumerdatastandardsaustralia/authserver-ui:0.5
 
 COPY ./test-data-server/resources/cdr-logo.png /usr/share/nginx/html
 
-COPY ./security/cdr-auth-server/mtls/ca.crt /usr/local/share/ca-certificates/ca.crt
-COPY ./security/cdr-auth-server/nginx/nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY ./configs/certificates/ca.crt /usr/local/share/ca-certificates/ca.crt
+COPY ./configs/auth-server/nginx/nginx.conf /etc/nginx/conf.d/nginx.conf
 
-COPY ./security/cdr-auth-server/nginx/ssl/authserver-ui.crt /etc/nginx/ssl/authserver-ui.crt
-COPY ./security/cdr-auth-server/nginx/ssl/authserver-ui.key /etc/nginx/ssl/authserver-ui.key
+COPY ./configs/certificates/authserver-ui.crt /etc/nginx/ssl/authserver-ui.crt
+COPY ./configs/certificates/authserver-ui.key /etc/nginx/ssl/authserver-ui.key

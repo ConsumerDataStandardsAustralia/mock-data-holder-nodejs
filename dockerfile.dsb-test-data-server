@@ -31,11 +31,12 @@ RUN npm install
 
 # Bundle app source
 COPY ./test-data-server/ .
-COPY ./security/mock-data-holder/ ./security
+COPY ./configs/certificates/server.pem ./security/mock-data-holder/tls/mock-data-holder.pem
+COPY ./configs/certificates/server.key ./security/mock-data-holder/tls/mock-data-holder.key
 
 RUN npm run build:prod
 
-COPY ./security/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
+COPY ./configs/certificates/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 
 RUN apt-get update
