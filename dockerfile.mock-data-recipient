@@ -2,4 +2,5 @@ FROM consumerdataright/mock-data-recipient AS build
 
 
 COPY ./configs/adr/appsettings.Release.json /app/web/appsettings.Release.json
-COPY ./configs/certificates/client.pfx /app/web/Certificates/client.pfx
+COPY ./configs/certificates/client.pfx /app/web/Certificates/client1.pfx
+COPY ./configs/certificates/server.pfx /app/web/Certificates/server1.pfx

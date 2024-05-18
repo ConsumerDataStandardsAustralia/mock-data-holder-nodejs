@@ -1,37 +1,37 @@
 version: '3.8'
 name: dsb-data
 services:
-  # mock-register:
-  #   container_name: mock-register
-  #   image: consumerdataright/mock-register
-  #   ports: 
-  #     - "7000:7000"
-  #     - "7001:7001"
-  #     - "7006:7006"
-  #   extra_hosts:
-  #     - "mock-data-holder:host-gateway"
-  #     - "mock-data-recipient:host-gateway"  
-  #     - "authserver-ui:host-gateway" 
-  #     - "cdr-auth-server:host-gateway"            
-  #     - "tls-gateway:host-gateway" 
-  #     - "mtls-gateway:host-gateway"          
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
-  #   healthcheck:
-  #     test: wget --no-check-certificate --no-verbose --spider https://localhost:7006/health || exit 1
-  #     timeout: 5s
-  #     interval: 5s
-  #     retries: 50      
-  #   depends_on:
-  #     mssql:
-  #       condition: service_healthy
+  mock-register:
+    container_name: mock-register
+    image: consumerdataright/mock-register
+    ports: 
+      - "7000:7000"
+      - "7001:7001"
+      - "7006:7006"
+    extra_hosts:
+      - "mock-data-holder:host-gateway"
+      - "mock-data-recipient:host-gateway"  
+      - "authserver-ui:host-gateway" 
+      - "cdr-auth-server:host-gateway"            
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"          
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    healthcheck:
+      test: wget --no-check-certificate --no-verbose --spider https://localhost:7006/health || exit 1
+      timeout: 5s
+      interval: 5s
+      retries: 50      
+    depends_on:
+      mssql:
+        condition: service_healthy
 
   mock-data-recipient:
     container_name: mock-data-recipient
-    image: consumerdatastandardsaustralia/mock-data-recipient:aws02
-    build:
-      context: . 
-      dockerfile: dockerfile.mock-data-recipient
+    image: consumerdatastandardsaustralia/mock-data-recipient:aws01
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.mock-data-recipient
     ports: 
       - "9001:9001"
     environment:
@@ -52,117 +52,120 @@ services:
       mssql:
         condition: service_healthy
     
-  # cdr-auth-server:
-  #   container_name: cdr-auth-server
-  #   image: consumerdatastandardsaustralia/cdr-auth-server:aws01
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.cdr-auth-server 
-  #   ports: 
-  #     - "8001:8001"
-  #     - "8080:8080"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
-  #   extra_hosts:
-  #     - "mssql:host-gateway"
-  #     - "mock-data-holder:host-gateway"
-  #     - "mock-register:host-gateway"  
-  #     - "mock-data-recipient:host-gateway"     
-  #     - "authserver-ui:host-gateway" 
-  #     - "tls-gateway:host-gateway" 
-  #     - "mtls-gateway:host-gateway"   
-  #   healthcheck:
-  #     test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/health || exit 1
-  #     timeout: 5s
-  #     interval: 5s
-  #     retries: 50            
-  #   depends_on:
-  #     mssql:
-  #       condition: service_healthy        
+  cdr-auth-server:
+    container_name: cdr-auth-server
+    image: consumerdatastandardsaustralia/cdr-auth-server:aws01
+    build:
+      context: . 
+      dockerfile: dockerfile.cdr-auth-server 
+    ports: 
+      - "8001:8001"
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+    extra_hosts:
+      - "mssql:host-gateway"
+      - "mock-data-holder:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-recipient:host-gateway"     
+      - "authserver-ui:host-gateway" 
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"   
+    healthcheck:
+      test: wget --no-check-certificate --no-verbose --spider https://localhost:8001/health || exit 1
+      timeout: 5s
+      interval: 5s
+      retries: 50            
+    depends_on:
+      mssql:
+        condition: service_healthy        
 
-  # authserver-ui:
-  #   container_name: authserver-ui
-  #   image: consumerdatastandardsaustralia/authserver-ui:aws01
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.authserver-ui
-  #   ports: 
-  #     - "3000:3000"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
-  #     - REACT_APP_DEFAULT_USER_NAME_TEXT=Doe.John
-  #     - REACT_APP_CDR_POLICY_LINK=https://cdr-policy
-  #     - REACT_APP_CDR_FAQ_LINK=https://www.cdr.gov.au
-  #   extra_hosts:
-  #     - "mssql:host-gateway"
-  #     - "mock-data-holder:host-gateway"
-  #     - "mock-register:host-gateway"  
-  #     - "mock-data-recipient:host-gateway"    
-  #     - "cdr-auth-server:host-gateway"
-  #     - "tls-gateway:host-gateway" 
-  #     - "mtls-gateway:host-gateway"                      
+  authserver-ui:
+    container_name: authserver-ui
+    image: consumerdatastandardsaustralia/authserver-ui:aws01
+    build:
+      context: . 
+      dockerfile: dockerfile.authserver-ui
+    ports: 
+      - "3000:3000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
+      - REACT_APP_DEFAULT_USER_NAME_TEXT=Doe.John
+      - REACT_APP_CDR_POLICY_LINK=https://cdr-policy
+      - REACT_APP_CDR_FAQ_LINK=https://www.cdr.gov.au
+    extra_hosts:
+      - "mssql:host-gateway"
+      - "mock-data-holder:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-recipient:host-gateway"    
+      - "cdr-auth-server:host-gateway"
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"  
+    depends_on:
+      cdr-auth-server:
+        condition: service_healthy                      
 
-  # tls-gateway:
-  #   container_name: tls-gateway
-  #   image: consumerdatastandardsaustralia/tls-gateway:aws01
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.tlsgateway  
-  #   extra_hosts:
-  #     - "mock-data-recipient:host-gateway"
-  #     - "mock-register:host-gateway"  
-  #     - "mock-data-holder:host-gateway" 
-  #     - "cdr-auth-server:host-gateway" 
-  #     - "authserver-ui:host-gateway"   
-  #     - "mtls-gateway:host-gateway"               
-  #   ports: 
-  #     - "8081:8081"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
+  tls-gateway:
+    container_name: tls-gateway
+    image: consumerdatastandardsaustralia/tls-gateway:aws01
+    build:
+      context: . 
+      dockerfile: dockerfile.tlsgateway  
+    extra_hosts:
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway" 
+      - "authserver-ui:host-gateway"   
+      - "mtls-gateway:host-gateway"               
+    ports: 
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
      
-  # mtls-gateway:
-  #   container_name: mtls-gateway
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.mtlsgateway  
-  #   image: consumerdatastandardsaustralia/mtls-gateway:aws01
-  #   ports: 
-  #     - "8082:8082"
-  #   extra_hosts:
-  #     - "mock-data-recipient:host-gateway"
-  #     - "mock-register:host-gateway"  
-  #     - "mock-data-holder:host-gateway" 
-  #     - "cdr-auth-server:host-gateway"    
-  #     - "authserver-ui:host-gateway"   
-  #     - "tls-gateway:host-gateway" 
-  #     - "mtls-gateway:host-gateway"   
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Release
+  mtls-gateway:
+    container_name: mtls-gateway
+    build:
+      context: . 
+      dockerfile: dockerfile.mtlsgateway  
+    image: consumerdatastandardsaustralia/mtls-gateway:aws01
+    ports: 
+      - "8082:8082"
+    extra_hosts:
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway"    
+      - "authserver-ui:host-gateway"   
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"   
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Release
 
-  # mock-data-holder:
-  #   container_name: mock-data-holder
-  #   image: consumerdatastandardsaustralia/nodejs-data-holder:aws01
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.dsb-test-data-server    
-  #   restart: unless-stopped
-  #   env_file: .env.docker
-  #   extra_hosts:
-  #     - "mock-data-recipient:host-gateway"
-  #     - "mock-register:host-gateway"  
-  #     - "mock-data-holder:host-gateway" 
-  #     - "cdr-auth-server:host-gateway" 
-  #     - "authserver-ui:host-gateway"
-  #     - "mongodb:host-gateway"    
-  #     - "tls-gateway:host-gateway" 
-  #     - "mtls-gateway:host-gateway"  
-  #   depends_on:
-  #      mssql:
-  #         condition: service_healthy  
-  #      cdr-auth-server: 
-  #         condition: service_healthy      
-  #   ports:
-  #     - "3005:3005"
+  mock-data-holder:
+    container_name: mock-data-holder
+    image: consumerdatastandardsaustralia/nodejs-data-holder:aws01
+    build:
+      context: . 
+      dockerfile: dockerfile.dsb-test-data-server    
+    restart: unless-stopped
+    env_file: .env.docker
+    extra_hosts:
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway" 
+      - "authserver-ui:host-gateway"
+      - "mongodb:host-gateway"    
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"  
+    depends_on:
+       mssql:
+          condition: service_healthy  
+       cdr-auth-server: 
+          condition: service_healthy      
+    ports:
+      - "3005:3005"
   
   mssql:
     container_name: mssql
@@ -183,40 +186,40 @@ services:
       interval: 10s
       retries: 10 
   
-  # db-init:
-  #   container_name: db-init
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.dbinit
-  #   image: mcr.microsoft.com/mssql/server:2019-latest
-  #   environment:
-  #     - ACCEPT_EULA=Y
-  #     - MSSQL_SA_PASSWORD=Pa{}w0rd2019
-  #   network_mode: service:mssql
-  #   command: bash -c 'until /opt/mssql-tools/bin/sqlcmd -U sa -P Pa{}w0rd2019 -i /tmp/AddClientScriptRelease.sql; do echo retry && sleep 1; done'
-  #   depends_on:
-  #     cdr-auth-server:
-  #       condition: service_healthy  
+  db-init:
+    container_name: db-init
+    build:
+      context: . 
+      dockerfile: dockerfile.dbinit
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Pa{}w0rd2019
+    network_mode: service:mssql
+    command: bash -c 'until /opt/mssql-tools/bin/sqlcmd -U sa -P Pa{}w0rd2019 -i /tmp/AddClientScriptRelease.sql; do echo retry && sleep 1; done'
+    depends_on:
+      cdr-auth-server:
+        condition: service_healthy  
 
-  # mongodb:
-  #   image: mongo:6.0
-  #   container_name: mongodb
-  #   restart: unless-stopped
-  #   env_file: .env.docker
-  #   volumes:     
-  #     - dbdata:/usr/local/var/mongodb
-  #   ports:
-  #     - "27017:27017"
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:     
+      - dbdata:/usr/local/var/mongodb
+    ports:
+      - "27017:27017"
 
-  # dsb-data-loader:
-  #   # build:
-  #   #   context: .
-  #   #   dockerfile: dockerfile.dsb-data-loader
-  #   container_name: dsb-data-loader
-  #   image: consumerdatastandardsaustralia/dsb-data-loader:0.1
-  #   env_file: .env.docker
-  #   depends_on:
-  #     - mongodb
+  dsb-data-loader:
+    # build:
+    #   context: .
+    #   dockerfile: dockerfile.dsb-data-loader
+    container_name: dsb-data-loader
+    image: consumerdatastandardsaustralia/dsb-data-loader:0.1
+    env_file: .env.docker
+    depends_on:
+      - mongodb
 
 volumes:
   dbdata:
