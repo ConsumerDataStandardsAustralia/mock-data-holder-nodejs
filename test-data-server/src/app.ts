@@ -67,8 +67,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const router = exp.Router();
 
 const sampleEndpoints = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...endpoints] as EndpointConfig[];
-const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
-const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
+const certFile = path.join(__dirname, '/security', process.env.CERT_FILE as string)
+const keyFile = path.join(__dirname, '/security', process.env.CERT_KEY_FILE as string)
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
 
