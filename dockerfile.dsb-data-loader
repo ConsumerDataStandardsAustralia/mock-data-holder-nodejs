@@ -15,7 +15,7 @@ RUN npm install
 
 # Bundle app source
 COPY ./load-test-data/ .
-COPY ./utils/sql/AddClientScriptRelease.sql .
+#COPY ./utils/sql/AddClientScriptRelease.sql .
 
 RUN npm run build
 

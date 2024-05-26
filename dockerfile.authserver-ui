@@ -1,9 +1,9 @@
-FROM consumerdatastandardsaustralia/authserver-ui:0.5
+FROM consumerdatastandardsaustralia/authserver-ui:aws01
 
 COPY ./test-data-server/resources/cdr-logo.png /usr/share/nginx/html
 
 COPY ./configs/certificates/ca.crt /usr/local/share/ca-certificates/ca.crt
 COPY ./configs/auth-server/nginx/nginx.conf /etc/nginx/conf.d/nginx.conf
 
-COPY ./configs/certificates/ca.crt /etc/nginx/ssl/ca.crt
-COPY ./configs/certificates/ca.key /etc/nginx/ssl/ca.key
+COPY ./configs/certificates/authserver-ui.pem /etc/nginx/ssl/authserver-ui.pem
+COPY ./configs/certificates/authserver-ui.key /etc/nginx/ssl/authserver-ui.key

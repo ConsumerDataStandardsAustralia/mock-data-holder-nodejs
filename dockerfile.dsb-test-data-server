@@ -31,8 +31,8 @@ RUN npm install
 
 # Bundle app source
 COPY ./test-data-server/ .
-COPY ./configs/certificates/server.pem ./security/mock-data-holder/tls/mock-data-holder.pem
-COPY ./configs/certificates/server.key ./security/mock-data-holder/tls/mock-data-holder.key
+COPY ./configs/certificates/dsb-server.pem ./test-data-server/certificates/dsb-server.pem
+COPY ./configs/certificates/dsb-server.key ./test-data-server/certificates/dsb-server.key
 
 RUN npm run build:prod
 
