@@ -20030,7 +20030,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "b37ba06f-e4f9-4746-996b-9b564ee0dd37",
                           "commissioningDate": "2023-03-31T01:42:01.661Z",
                           "connectionIdentifier": 25,
                           "count": 1,
@@ -20070,7 +20069,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "1897dd06-aad1-47b3-853b-15da5c5d0f3f",
                           "commissioningDate": "2022-12-29T11:19:24.114Z",
                           "connectionIdentifier": 81,
                           "count": 1,
@@ -21053,7 +21051,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "7ab7376b-3001-4bbd-bbf3-2e4f659b5d14",
                           "commissioningDate": "2022-06-23T21:53:33.971Z",
                           "connectionIdentifier": 133,
                           "count": 1,
@@ -21113,7 +21110,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "375ea89c-3b9e-4b40-bab4-d0ac7107c199",
                           "commissioningDate": "2023-12-23T13:04:56.457Z",
                           "connectionIdentifier": 155,
                           "count": 1,
@@ -22103,7 +22099,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "b5171fb0-b895-4931-a485-154d02c65476",
                           "commissioningDate": "2023-04-23T09:43:22.171Z",
                           "connectionIdentifier": 104,
                           "count": 1,
@@ -22153,7 +22148,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "fdc5c16e-9001-4748-847d-a9111fc16b53",
                           "commissioningDate": "2023-01-11T14:19:11.055Z",
                           "connectionIdentifier": 28,
                           "count": 1,
@@ -22183,7 +22177,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "9b9ddb8c-1d05-465d-bb7e-fdb2b1ed129f",
                           "commissioningDate": "2023-12-22T20:21:17.628Z",
                           "connectionIdentifier": 162,
                           "count": 1,
@@ -22223,7 +22216,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "9f02818b-fcfc-4b9a-b1e4-6732b69f662d",
                           "commissioningDate": "2022-08-03T05:44:00.774Z",
                           "connectionIdentifier": 91,
                           "count": 1,
@@ -22263,7 +22255,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "6b72a538-a0f3-41d0-aca4-f5d7bcfab0d2",
                           "commissioningDate": "2023-02-06T19:54:22.522Z",
                           "connectionIdentifier": 39,
                           "count": 1,
@@ -23254,7 +23245,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "69ffca53-584a-4b50-99f5-1084f25f0014",
                           "commissioningDate": "2022-10-30T02:55:45.151Z",
                           "connectionIdentifier": 150,
                           "count": 1,
@@ -24241,7 +24231,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "7cf482de-f88c-456a-bb8c-f60e88771804",
                           "commissioningDate": "2022-12-02T14:17:57.742Z",
                           "connectionIdentifier": 71,
                           "count": 1,
@@ -25217,7 +25206,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "4a349ae1-17c8-4c02-9974-9469844cdaff",
                           "commissioningDate": "2023-06-09T23:02:52.506Z",
                           "connectionIdentifier": 149,
                           "count": 1,
@@ -25237,7 +25225,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "c23ed466-a285-42c5-abc5-6cef8f098f5a",
                           "commissioningDate": "2023-08-21T08:19:03.850Z",
                           "connectionIdentifier": 90,
                           "count": 1,
@@ -25287,7 +25274,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "1f4d9959-6062-434f-9658-330def2274a3",
                           "commissioningDate": "2023-08-25T20:32:33.453Z",
                           "connectionIdentifier": 156,
                           "count": 1,
@@ -26263,7 +26249,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "45eea91a-3347-4bdd-945f-6466e40f7e1d",
                           "commissioningDate": "2024-01-01T15:53:20.020Z",
                           "connectionIdentifier": 45,
                           "count": 1,
@@ -26303,7 +26288,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "f1a8cbda-52d5-41f2-9795-356f34973a93",
                           "commissioningDate": "2023-12-30T04:58:26.052Z",
                           "connectionIdentifier": 83,
                           "count": 1,
@@ -27290,7 +27274,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "d1480a91-96ff-4592-aa17-72f9146e4675",
                           "commissioningDate": "2023-11-17T22:55:58.273Z",
                           "connectionIdentifier": 98,
                           "count": 1,
@@ -27350,7 +27333,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "58a70cd3-d76a-4d5e-8ded-3fec499f2c30",
                           "commissioningDate": "2022-10-25T11:47:38.304Z",
                           "connectionIdentifier": 31,
                           "count": 1,
@@ -28307,7 +28289,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "b86cb27e-ec4f-402b-9971-3f0204ef3223",
                           "commissioningDate": "2023-08-09T22:24:04.581Z",
                           "connectionIdentifier": 194,
                           "count": 1,
@@ -28337,7 +28318,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "69788dac-1bf5-47a6-ae26-ac08d59ab602",
                           "commissioningDate": "2023-12-20T02:20:58.739Z",
                           "connectionIdentifier": 185,
                           "count": 1,
@@ -29324,7 +29304,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "197ee01c-d2eb-46a2-8150-5f9fdd5a5bd0",
                           "commissioningDate": "2022-08-29T10:03:06.255Z",
                           "connectionIdentifier": 152,
                           "count": 1,
@@ -29374,7 +29353,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "352114ac-8fcf-4b01-8b36-159cc142c8b8",
                           "commissioningDate": "2024-03-31T00:54:07.596Z",
                           "connectionIdentifier": 128,
                           "count": 1,
@@ -40925,7 +40903,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "f15914b4-3f38-438d-87d0-334dfd064ccd",
                           "commissioningDate": "2023-01-20T19:07:21.642Z",
                           "connectionIdentifier": 160,
                           "count": 1,
@@ -40965,7 +40942,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "f56f1102-d906-4cf6-b088-42c47110763d",
                           "commissioningDate": "2023-11-14T05:35:06.789Z",
                           "connectionIdentifier": 22,
                           "count": 1,
@@ -40995,7 +40971,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "b8874997-fa28-4d9f-891f-19708a0ef988",
                           "commissioningDate": "2022-11-12T21:52:10.177Z",
                           "connectionIdentifier": 153,
                           "count": 1,
@@ -41025,7 +41000,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "c7c2f730-3554-4deb-aa55-5f8de3d0dcdc",
                           "commissioningDate": "2023-08-17T21:43:08.171Z",
                           "connectionIdentifier": 73,
                           "count": 1,
@@ -41985,7 +41959,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "d0edcccc-9b06-42f6-9846-8bfb4119e6cb",
                           "commissioningDate": "2022-05-02T08:19:03.392Z",
                           "connectionIdentifier": 111,
                           "count": 1,
@@ -42015,7 +41988,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "f5ae05b0-b751-490a-92bd-8a8d32362b74",
                           "commissioningDate": "2023-07-31T00:35:09.847Z",
                           "connectionIdentifier": 198,
                           "count": 1,
@@ -42080,7 +42052,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "15a32e76-562a-477d-9695-0f57621a180e",
                           "commissioningDate": "2023-01-30T07:25:11.661Z",
                           "connectionIdentifier": 177,
                           "count": 1,
@@ -43047,7 +43018,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "418328ae-efd7-45a6-a93c-e250d81d0dea",
                           "commissioningDate": "2023-07-30T17:28:19.629Z",
                           "connectionIdentifier": 59,
                           "count": 1,
@@ -43112,7 +43082,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "c5b35ee5-217d-4fbd-a2df-f0133154f6a1",
                           "commissioningDate": "2022-09-25T15:23:31.999Z",
                           "connectionIdentifier": 33,
                           "count": 1,
@@ -43152,7 +43121,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "a3f6b78c-fb29-4100-bc5d-641742ae9f96",
                           "commissioningDate": "2023-05-08T01:43:18.834Z",
                           "connectionIdentifier": 118,
                           "count": 1,
@@ -43182,7 +43150,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "89d88ff2-a043-4009-a9c8-8ba603196de6",
                           "commissioningDate": "2023-12-18T09:46:12.736Z",
                           "connectionIdentifier": 153,
                           "count": 1,
@@ -44158,7 +44125,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "969d912e-f596-41e1-a807-c74b7b256e3d",
                           "commissioningDate": "2023-03-12T16:23:50.404Z",
                           "connectionIdentifier": 29,
                           "count": 1,
@@ -44201,7 +44167,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "bf798b32-6fa2-4509-9663-2720fbd62bf1",
                           "commissioningDate": "2022-08-04T10:26:18.327Z",
                           "connectionIdentifier": 132,
                           "count": 1,
@@ -45200,7 +45165,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "c5951cd8-22ff-43d4-8305-841a0fd1c406",
                           "commissioningDate": "2022-05-05T21:03:39.942Z",
                           "connectionIdentifier": 25,
                           "count": 1,
@@ -45240,7 +45204,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "01de51a6-1f68-4467-9a8a-d3bdd396e5b9",
                           "commissioningDate": "2023-08-05T15:22:23.260Z",
                           "connectionIdentifier": 177,
                           "count": 1,
@@ -46226,7 +46189,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "03eb3397-4d4e-4c27-b58f-1ed1d5097141",
                           "commissioningDate": "2022-07-08T22:54:49.486Z",
                           "connectionIdentifier": 187,
                           "count": 1,
@@ -46256,7 +46218,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "97f40a0c-cc72-4ce5-b9cb-e4b79b748db0",
                           "commissioningDate": "2024-02-20T04:17:12.504Z",
                           "connectionIdentifier": 170,
                           "count": 1,
@@ -46296,7 +46257,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "1583973f-c622-4319-bf54-c2f95cc54003",
                           "commissioningDate": "2023-01-19T08:47:15.918Z",
                           "connectionIdentifier": 44,
                           "count": 1,
@@ -47285,7 +47245,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "d9732ef8-0bd5-466c-9344-255a3956c8da",
                           "commissioningDate": "2023-12-15T17:35:37.764Z",
                           "connectionIdentifier": 17,
                           "count": 1,
@@ -47315,7 +47274,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "508880d9-6cb8-4b31-80b3-b0423ecf4c50",
                           "commissioningDate": "2023-01-01T09:21:30.237Z",
                           "connectionIdentifier": 137,
                           "count": 1,
@@ -48281,7 +48239,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "834a17da-1189-42ce-a284-078425796821",
                           "commissioningDate": "2023-12-11T10:21:32.243Z",
                           "connectionIdentifier": 81,
                           "count": 1,
@@ -48311,7 +48268,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "b7dc2aca-8163-4073-b1fe-4f2503a9f57f",
                           "commissioningDate": "2024-01-08T04:18:48.130Z",
                           "connectionIdentifier": 30,
                           "count": 1,
@@ -49271,7 +49227,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "ade03bc8-f071-464c-a9a2-7dfa008334bd",
                           "commissioningDate": "2023-12-04T12:45:23.061Z",
                           "connectionIdentifier": 157,
                           "count": 1,
@@ -49303,7 +49258,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "f15fc997-50a5-4491-87a0-5da582d3b7c4",
                           "commissioningDate": "2022-04-11T22:07:50.155Z",
                           "connectionIdentifier": 17,
                           "count": 1,
@@ -49333,7 +49287,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "56dca0bd-3081-467a-a3cb-90c4c8284790",
                           "commissioningDate": "2024-03-31T03:13:58.981Z",
                           "connectionIdentifier": 135,
                           "count": 1,
@@ -49363,7 +49316,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "58847b15-b506-474f-8a81-d21adf3b0533",
                           "commissioningDate": "2024-02-01T12:30:31.689Z",
                           "connectionIdentifier": 135,
                           "count": 1,
@@ -49403,7 +49355,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "d2127844-56de-4ff5-97e3-072c38618390",
                           "commissioningDate": "2022-05-08T09:20:19.527Z",
                           "connectionIdentifier": 77,
                           "count": 1,
@@ -50374,7 +50325,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "7a6b5dc0-3892-40ee-bb58-a69925b11c58",
                           "commissioningDate": "2022-05-01T00:17:36.657Z",
                           "connectionIdentifier": 87,
                           "count": 1,
@@ -50404,7 +50354,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "477e1286-9f4c-4929-8fcf-9fcc4d2bf3b2",
                           "commissioningDate": "2024-03-19T02:53:35.993Z",
                           "connectionIdentifier": 51,
                           "count": 1,
@@ -50444,7 +50393,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "0111f5ef-cdd5-4af4-a71b-f70128472ffa",
                           "commissioningDate": "2023-03-01T22:25:11.349Z",
                           "connectionIdentifier": 127,
                           "count": 1,
@@ -50484,7 +50432,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "4b4ce979-90e6-47e8-8fc6-40637c5f665a",
                           "commissioningDate": "2024-01-04T01:45:20.247Z",
                           "connectionIdentifier": 55,
                           "count": 1,
@@ -50534,7 +50481,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "ff59e12b-0f16-46d1-8700-10664dabbc32",
                           "commissioningDate": "2022-10-23T23:42:34.514Z",
                           "connectionIdentifier": 200,
                           "count": 1,
@@ -60898,7 +60844,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "731b1d27-9b4d-4952-a2c0-6d3d4ad40357",
                           "commissioningDate": "2023-01-08T23:20:13.053Z",
                           "connectionIdentifier": 177,
                           "count": 1,
@@ -60938,7 +60883,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "2e9751e0-20a2-4345-9c13-9077812861af",
                           "commissioningDate": "2024-01-11T13:54:17.118Z",
                           "connectionIdentifier": 142,
                           "count": 1,
@@ -60992,7 +60936,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "f66c9424-e3d9-4d8c-ada9-9ebd13259106",
                           "commissioningDate": "2023-05-17T16:56:56.579Z",
                           "connectionIdentifier": 25,
                           "count": 1,
@@ -61052,7 +60995,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "ff71c4f9-308d-4999-b318-d301afe65f35",
                           "commissioningDate": "2022-07-13T05:40:43.942Z",
                           "connectionIdentifier": 141,
                           "count": 1,
@@ -62018,7 +61960,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "3367a36a-ce1e-43fc-af29-34f5d0eed0db",
                           "commissioningDate": "2022-07-18T01:36:54.863Z",
                           "connectionIdentifier": 120,
                           "count": 1,
@@ -62997,7 +62938,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "c30d1fb2-7c1d-4873-a0bc-918528422431",
                           "commissioningDate": "2023-10-31T04:44:08.193Z",
                           "connectionIdentifier": 37,
                           "count": 1,
@@ -63037,7 +62977,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "222a271d-0967-4456-b9ed-721e57095fed",
                           "commissioningDate": "2022-07-19T04:09:55.688Z",
                           "connectionIdentifier": 162,
                           "count": 1,
@@ -64023,7 +63962,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "74e06797-b604-4bb4-8d01-6209bdd25ee6",
                           "commissioningDate": "2023-09-02T22:01:54.812Z",
                           "connectionIdentifier": 145,
                           "count": 1,
@@ -64053,7 +63991,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "a1aae49e-6dc4-4749-87e5-cfd38cc24fe2",
                           "commissioningDate": "2022-08-21T22:01:09.957Z",
                           "connectionIdentifier": 167,
                           "count": 1,
@@ -64103,7 +64040,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "99f5c283-ba08-423c-bd6c-bf5c08db7d29",
                           "commissioningDate": "2023-12-18T13:53:19.802Z",
                           "connectionIdentifier": 78,
                           "count": 1,
@@ -64143,7 +64079,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "4bfc60a8-153f-469e-93cd-30ae3153c67d",
                           "commissioningDate": "2022-09-29T00:07:28.711Z",
                           "connectionIdentifier": 104,
                           "count": 1,
@@ -64173,7 +64108,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "b7f89ed4-e4d9-4b38-88e0-bcad854cf527",
                           "commissioningDate": "2023-12-19T08:31:33.642Z",
                           "connectionIdentifier": 161,
                           "count": 1,
@@ -65128,7 +65062,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "49322eae-5274-4404-89e4-2a69795de9da",
                           "commissioningDate": "2024-02-12T07:29:03.984Z",
                           "connectionIdentifier": 192,
                           "count": 1,
@@ -65168,7 +65101,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "bc6336fe-9a9a-4663-bb93-c955ecdb95fd",
                           "commissioningDate": "2024-03-31T11:44:23.845Z",
                           "connectionIdentifier": 112,
                           "count": 1,
@@ -65208,7 +65140,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "aba2f48e-4f3d-4566-b0c0-9f4d8e82ca97",
                           "commissioningDate": "2024-03-17T06:23:56.469Z",
                           "connectionIdentifier": 198,
                           "count": 1,
@@ -65228,7 +65159,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "614bf1e2-9284-41ef-85cd-eee0759ec9d4",
                           "commissioningDate": "2022-06-06T08:32:36.563Z",
                           "connectionIdentifier": 104,
                           "count": 1,
@@ -66213,7 +66143,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "27e29a7a-6e6f-4e55-99cd-78d939aeda65",
                           "commissioningDate": "2022-05-17T08:30:18.633Z",
                           "connectionIdentifier": 121,
                           "count": 1,
@@ -66273,7 +66202,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "2296af8f-c15c-4473-8ffd-69028cb35d7c",
                           "commissioningDate": "2023-08-29T13:16:49.914Z",
                           "connectionIdentifier": 41,
                           "count": 1,
@@ -67252,7 +67180,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "8352e2c2-5d36-4444-acaa-5056e841c019",
                           "commissioningDate": "2023-10-15T11:11:39.498Z",
                           "connectionIdentifier": 192,
                           "count": 1,
@@ -67302,7 +67229,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "6ad18ac4-b892-4027-90cd-58bcb6b77c5c",
                           "commissioningDate": "2022-10-17T13:10:59.832Z",
                           "connectionIdentifier": 176,
                           "count": 1,
@@ -68273,7 +68199,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "fc09b678-a825-445a-ab93-45a61721051a",
                           "commissioningDate": "2022-12-23T00:46:06.564Z",
                           "connectionIdentifier": 137,
                           "count": 1,
@@ -69233,7 +69158,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "9a9fd238-5e1a-4a13-850e-1da6bcece24a",
                           "commissioningDate": "2024-03-16T15:00:13.515Z",
                           "connectionIdentifier": 77,
                           "count": 1,
@@ -69287,7 +69211,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "28d09687-1f17-4b38-9e60-255ff8b269c5",
                           "commissioningDate": "2023-07-03T21:49:56.985Z",
                           "connectionIdentifier": 117,
                           "count": 1,
@@ -70254,7 +70177,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "f9229b2a-21f4-4b32-ad8c-b2f596dc5e0a",
                           "commissioningDate": "2023-03-14T20:47:49.242Z",
                           "connectionIdentifier": 127,
                           "count": 1,
@@ -70294,7 +70216,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "d3449564-7973-43d9-a411-7088236279ae",
                           "commissioningDate": "2022-09-06T19:39:41.576Z",
                           "connectionIdentifier": 145,
                           "count": 1,
@@ -70354,7 +70275,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "ad7aa743-19b7-4a3b-ad51-f5aa235ee6a8",
                           "commissioningDate": "2023-05-30T10:10:47.943Z",
                           "connectionIdentifier": 83,
                           "count": 1,
@@ -70384,7 +70304,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "33cee9b0-e083-4761-b48d-0694cadb070e",
                           "commissioningDate": "2022-08-01T00:07:09.004Z",
                           "connectionIdentifier": 145,
                           "count": 1,
@@ -81053,7 +80972,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "5162d033-340c-4c41-bf85-96c677e86165",
                           "commissioningDate": "2022-08-16T17:04:27.569Z",
                           "connectionIdentifier": 131,
                           "count": 1,
@@ -81073,7 +80991,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "414410ad-b105-4041-b2ff-d3235199ffd9",
                           "commissioningDate": "2022-07-30T07:24:53.739Z",
                           "connectionIdentifier": 100,
                           "count": 1,
@@ -81093,7 +81010,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "08f72d54-4285-4d0d-bab1-970e85e3867d",
                           "commissioningDate": "2022-11-10T16:14:27.104Z",
                           "connectionIdentifier": 45,
                           "count": 1,
@@ -81133,7 +81049,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "6eeb282d-8c5e-4be4-99db-0cb54bfbcc89",
                           "commissioningDate": "2022-12-13T12:12:57.106Z",
                           "connectionIdentifier": 164,
                           "count": 1,
@@ -82123,7 +82038,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "a08fa7d1-52e7-4723-a700-81c7d73b1d51",
                           "commissioningDate": "2024-03-12T20:47:44.259Z",
                           "connectionIdentifier": 175,
                           "count": 1,
@@ -82153,7 +82067,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "0948baee-7265-4ca6-a7a3-3cd74c1d1262",
                           "commissioningDate": "2023-06-02T04:50:50.279Z",
                           "connectionIdentifier": 137,
                           "count": 1,
@@ -83144,7 +83057,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "eefdee57-317b-451a-a179-ad9c81d364e7",
                           "commissioningDate": "2023-03-08T06:46:39.695Z",
                           "connectionIdentifier": 15,
                           "count": 1,
@@ -83194,7 +83106,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "3d963b57-d5d2-4dc2-bbfa-46d5f6ae40f7",
                           "commissioningDate": "2023-05-18T21:00:23.486Z",
                           "connectionIdentifier": 76,
                           "count": 1,
@@ -83215,7 +83126,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "26c13983-ca22-4648-9b52-de885202b877",
                           "commissioningDate": "2022-10-15T15:47:06.514Z",
                           "connectionIdentifier": 55,
                           "count": 1,
@@ -83265,7 +83175,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "939d41ad-87b3-48d9-8b48-bd5a82737d0e",
                           "commissioningDate": "2022-06-29T23:19:21.918Z",
                           "connectionIdentifier": 176,
                           "count": 1,
@@ -83305,7 +83214,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "a5565359-ed02-4105-885f-5905c0579635",
                           "commissioningDate": "2023-06-05T05:46:11.945Z",
                           "connectionIdentifier": 52,
                           "count": 1,
@@ -84292,7 +84200,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "ed24a3da-bb9a-4d0a-92ab-320b6be56b44",
                           "commissioningDate": "2022-10-06T06:49:33.815Z",
                           "connectionIdentifier": 163,
                           "count": 1,
@@ -85258,7 +85165,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "a91c368e-05a4-4000-9586-4935adf89eda",
                           "commissioningDate": "2023-08-26T12:59:26.466Z",
                           "connectionIdentifier": 72,
                           "count": 1,
@@ -86228,7 +86134,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "b8dfd79a-d8c1-40b2-aa2e-59fb71290855",
                           "commissioningDate": "2023-08-04T22:49:56.487Z",
                           "connectionIdentifier": 15,
                           "count": 1,
@@ -87216,7 +87121,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "eaefa61b-ed96-47c0-b83f-7a4dd1ffd700",
                           "commissioningDate": "2023-11-04T21:43:14.318Z",
                           "connectionIdentifier": 169,
                           "count": 1,
@@ -88189,7 +88093,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "34a2fb03-c38a-48c3-88c4-e40695acf308",
                           "commissioningDate": "2022-10-14T13:16:14.767Z",
                           "connectionIdentifier": 146,
                           "count": 1,
@@ -88219,7 +88122,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "95d0ff28-fd7e-4e44-ba61-aeec1fe85a01",
                           "commissioningDate": "2022-08-14T16:39:31.090Z",
                           "connectionIdentifier": 190,
                           "count": 1,
@@ -88249,7 +88151,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "66448bb6-6327-4436-ba92-e9b53d38c55b",
                           "commissioningDate": "2022-06-21T00:35:12.168Z",
                           "connectionIdentifier": 134,
                           "count": 1,
@@ -88303,7 +88204,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "326e8a0d-a643-4303-96f2-1bd54b47ee38",
                           "commissioningDate": "2022-12-16T14:56:49.955Z",
                           "connectionIdentifier": 30,
                           "count": 1,
@@ -89303,7 +89203,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "ca830fb6-9b10-4398-8f6f-ec87542fdb19",
                           "commissioningDate": "2022-06-07T20:18:45.327Z",
                           "connectionIdentifier": 105,
                           "count": 1,
@@ -89353,7 +89252,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "83b399dc-105a-4011-a377-38cbe142e5b3",
                           "commissioningDate": "2023-07-24T22:47:44.202Z",
                           "connectionIdentifier": 138,
                           "count": 1,
@@ -89383,7 +89281,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "0cdaa1f7-99a6-45ac-b268-eb12f68ee584",
                           "commissioningDate": "2022-12-10T05:26:02.041Z",
                           "connectionIdentifier": 44,
                           "count": 1,
@@ -90360,7 +90257,6 @@
                     "der": {
                       "acConnections": [
                         {
-                          "connectionId": "194bdcbe-13d0-4e9e-96a3-8bbc7016d74e",
                           "commissioningDate": "2023-09-29T15:45:43.537Z",
                           "connectionIdentifier": 126,
                           "count": 1,
@@ -90380,7 +90276,6 @@
                           "equipmentType": "OTHER"
                         },
                         {
-                          "connectionId": "cc7a378e-1f7a-46f4-9877-f518b017360a",
                           "commissioningDate": "2023-10-23T18:23:29.877Z",
                           "connectionIdentifier": 131,
                           "count": 1,
