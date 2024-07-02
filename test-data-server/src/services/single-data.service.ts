@@ -50,6 +50,7 @@ export class SingleData implements IDatabase {
                 if ( 
                     // condition 1
                     ((openStatus == null) 
+                        || (openStatus.toUpperCase() == "OPEN" && acc.account?.openStatus == null)
                         || (openStatus.toUpperCase() == "ALL")
                         || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
                     )
