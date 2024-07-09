@@ -28,13 +28,15 @@ export class AuthService implements IAuthService {
     private algorithm = 'AES-256-CBC';
     // This key must be the same on the authorisation server
     private idPermanenceKey = process.env.IDPERMANENCEKEY;
+    private clientId = process.env.CLIENT_ID;
+    private clientSecret = process.env.CLIENT_SECRET;
     private iv = Buffer.alloc(16);
     private dbService: IDatabase;
 
     constructor(dbService: IDatabase) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
-        this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
+        this.introspection_endpoint = process.env.INTROSPECTION;
     }
 
     public async initAuthService(): Promise<boolean> {
@@ -46,7 +48,7 @@ export class AuthService implements IAuthService {
               }
 
             this.tlsThumPrint = this.calculateTLSThumbprint();
-            const url = path.join(process.env.AUTH_SERVER_URL as string, '.well-known/openid-configuration')
+            const url = process.env.AUTH_SERVER_URL + '/.well-known/openid-configuration';
             console.log(`Auth server url: ${url}`);
             const response = await axios.get(url,  config)
             if (!(response.status == 200)) {
@@ -73,7 +75,7 @@ export class AuthService implements IAuthService {
     public async verifyAccessToken(token: string): Promise<boolean> {
         try {
             // no introspective endpoint exists
-            if (this.introspection_endpoint_internal == undefined)
+            if (this.introspection_endpoint == undefined)
                return false;
             let hdrs = {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -85,7 +87,7 @@ export class AuthService implements IAuthService {
                 headers: hdrs
               }
             let postBody = this.buildIntrospecticePostBody(token);
-            const response = await axios.post(this.introspection_endpoint_internal, postBody, config)
+            const response = await axios.post(this.introspection_endpoint, postBody, config)
             if (!(response.status == 200)) {
                 return false;
               }
@@ -150,7 +152,10 @@ export class AuthService implements IAuthService {
     }
 
     private buildIntrospecticePostBody(token: string): any {
-        let postBody: any = {};
+        let postBody: any = {
+            "client_id": this.clientId,
+            "client_secret": this.clientSecret
+        };
         postBody.token = token.replace('Bearer ', '');
         return postBody;
     }
@@ -158,29 +163,30 @@ export class AuthService implements IAuthService {
     private decryptLoginId(token: string) : string {
         let decoded: any = jwtDecode(token);
         let encodedLoginID = decoded?.sub as string;
-        let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-        let buffer = Buffer.from(CryptoUtils.decode(encodedLoginID), 'base64')
-        let login = CryptoUtils.decrypt(encryptionKey, buffer);
-        return login;
+        // let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
+        // let buffer = Buffer.from(CryptoUtils.decode(encodedLoginID), 'base64')
+        // let login = CryptoUtils.decrypt(encryptionKey, buffer);
+        // return login;
+        return encodedLoginID;
     }
 
     private decryptAccountArray(token: string) : string[]{
-        let decoded: any = jwtDecode(token);
-        let accountIds: string [] = [];
-        if (Array.isArray(decoded?.account_id) == true)
-            accountIds = decoded?.account_id as string[];
-        else
-            accountIds.push(CryptoUtils.decode(decoded?.account_id));
+        // let decoded: any = jwtDecode(token);
+        // let accountIds: string [] = [];
+        // if (Array.isArray(decoded?.account_id) == true)
+        //     accountIds = decoded?.account_id as string[];
+        // else
+        //     accountIds.push(CryptoUtils.decode(decoded?.account_id));
 
         let accounts: string[] = [];
-        const userNameLength = this.authUser?.loginId?.length as number;
-        for(let i = 0; i < accountIds.length; i++) {
-            let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-            let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
-            let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
-            let accountId = decryptedValue?.substring(userNameLength)
-            accounts.push(accountId);
-        }
+        // const userNameLength = this.authUser?.loginId?.length as number;
+        // for(let i = 0; i < accountIds.length; i++) {
+        //     let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
+        //     let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
+        //     let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
+        //     let accountId = decryptedValue?.substring(userNameLength)
+        //     accounts.push(accountId);
+        // }
         return accounts;
     }
 }

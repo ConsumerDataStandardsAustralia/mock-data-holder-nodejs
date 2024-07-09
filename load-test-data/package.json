@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
 
-    "start": "rm -r ./dist/* && tsc && cp -r ./input ./dist/input && cd ./dist && node ./app.js",
+    "start": "rm -rf ./dist/* && tsc && cp -r ./input ./dist/input && cd ./dist && node ./app.js",
     "build": "rm -r ./dist/* && tsc && cp -r ./input ./dist/input",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

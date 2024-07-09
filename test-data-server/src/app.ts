@@ -116,17 +116,18 @@ app.use('/', router);
 
 async function initaliseApp() {
     try {
-        const otions = {
-            key: rKey,
-            cert: rCert
-        }
+        // const otions = {
+        //     key: rKey,
+        //     cert: rCert
+        // }
         console.log(`Connecting to database : ${connString}`);
         await dbService.connectDatabase();
         console.log(`Connected.`);
-        https.createServer(otions, app)
-            .listen(port, () => {
-                console.log(`Server started. Listening on port ${port}`);
-            })
+        app.listen(3001, () => console.log('Server started. Listening on http port 3001.'));
+        // https.createServer(otions, app)
+        //     .listen(port, () => {
+        //         console.log(`Server started. Listening on port ${port}`);
+        //     })
     } catch (e: any) {
         console.log(`FATAL: could not start server${e?.message}`);
     }

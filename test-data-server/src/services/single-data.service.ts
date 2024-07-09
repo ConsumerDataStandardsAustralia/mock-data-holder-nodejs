@@ -55,9 +55,9 @@ export class SingleData implements IDatabase {
                         || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
                     )
                     &&
-                    // condition 2
-                    (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1)
-                    &&
+                    // // condition 2
+                    // (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1)
+                    // &&
                     // condition 3
                     (category == null  
                         || (category == acc.account?.productCategory.toUpperCase()))
@@ -447,29 +447,17 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    // Login information
-    async getUserForLoginId(loginId: string, userType: string): Promise<string | undefined> {
-        // split loginId into first and last name
-        var customerId;
-        let arr: string[] = loginId.split('.');
-        if (arr.length < 2)
-            return undefined;
-        let firstName = arr[1];
-        let lastName = arr[0];
+    // Verify subscriber
+    async getUserForLoginId(sub: string, userType: string): Promise<string | undefined> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let allData = await allDataCollection.findOne();
         if (allData?.holders != undefined) {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
-            if (allCustomers.length < 1)
-                return undefined;
-            allCustomers.forEach((c: any) => {
-                if (c?.customer?.person?.firstName.toUpperCase() == firstName.toUpperCase()
-                    && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
-                    customerId = c.customerId;
-                }
-            })
+            if (allCustomers && allCustomers.some((c: any) => c?.customerId == sub)) {
+                return sub;
+            }
         }
-        return customerId;
+        return undefined;
     }
 
     async getCustomer(allDataCollection: mongoDB.Collection, customerId: string): Promise<any> {
