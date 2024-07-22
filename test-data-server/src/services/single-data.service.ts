@@ -55,9 +55,9 @@ export class SingleData implements IDatabase {
                         || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
                     )
                     &&
-                    // // condition 2
-                    // (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1)
-                    // &&
+                    // condition 2
+                    (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1)
+                    &&
                     // condition 3
                     (category == null  
                         || (category == acc.account?.productCategory.toUpperCase()))
@@ -1095,7 +1095,7 @@ export class SingleData implements IDatabase {
 
             allCustomers.forEach((c: any) => {
 
-                let id = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
+                let id = c.customerId;
                 if (id == loginId) {
                     let aModel: CustomerModel = {
                         LoginId: id,

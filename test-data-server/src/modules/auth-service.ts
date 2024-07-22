@@ -171,14 +171,14 @@ export class AuthService implements IAuthService {
     }
 
     private decryptAccountArray(token: string) : string[]{
-        // let decoded: any = jwtDecode(token);
-        // let accountIds: string [] = [];
-        // if (Array.isArray(decoded?.account_id) == true)
-        //     accountIds = decoded?.account_id as string[];
-        // else
-        //     accountIds.push(CryptoUtils.decode(decoded?.account_id));
+        let decoded: any = jwtDecode(token);
+        let accountIds: string [] = [];
+        if (Array.isArray(decoded?.account_id) == true)
+            accountIds = decoded?.account_id as string[];
+        else
+            accountIds.push(CryptoUtils.decode(decoded?.account_id));
 
-        let accounts: string[] = [];
+        // let accounts: string[] = [];
         // const userNameLength = this.authUser?.loginId?.length as number;
         // for(let i = 0; i < accountIds.length; i++) {
         //     let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
@@ -187,6 +187,8 @@ export class AuthService implements IAuthService {
         //     let accountId = decryptedValue?.substring(userNameLength)
         //     accounts.push(accountId);
         // }
-        return accounts;
+        // return accounts;
+
+        return accountIds;
     }
 }
