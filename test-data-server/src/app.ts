@@ -1,6 +1,6 @@
 import express, { request } from 'express';
 import { NextFunction, Request, Response } from 'express';
-import endpoints from '/Users/tomasschier/code/_git/consumer-data-standards/dsb-test-data/test-data-server/data/endpoints.json';
+import endpoints from '../data/endpoints.json'
 import {
     CdrConfig, cdrHeaderValidator,
     IUserService,
