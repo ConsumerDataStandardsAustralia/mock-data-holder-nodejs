@@ -3,8 +3,9 @@ import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirect
     BankingTransaction, 
     BankingTransactionDetail} from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccountDetailV3, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
+import { EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
     EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV2, 
+    EnergyPlanDetailV3, 
     EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead} from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { AccountModel, CustomerModel } from "../models/login";
@@ -672,16 +673,17 @@ export class SingleData implements IDatabase {
         }
         return retArray;
     }
-    async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null> {
+    async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV3 | null> {
 
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         const query = { planId: planId };
-        let plans: EnergyPlanDetailV2[] = await this.getPlans(allData, query);
+        let plans: EnergyPlanDetailV3[] = await this.getPlans(allData, query);
         if (plans.length > 0)
             return plans[0];
         else
             return null;
     }
+
     async getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
@@ -988,12 +990,12 @@ export class SingleData implements IDatabase {
         return derData;
     }
 
-    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined> {
+    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV4 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.accounts.find((x: any) => x.account.accountId == accountId);
-        return acc?.account as EnergyAccountDetailV3;
+        return acc?.account as EnergyAccountDetailV4;
     }
 
     async getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail> {

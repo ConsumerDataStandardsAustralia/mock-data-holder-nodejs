@@ -1,14 +1,15 @@
 import express, { request } from 'express';
 import { NextFunction, Request, Response } from 'express';
-import endpoints from '../data/endpoints.json';
+import endpoints from '/Users/tomasschier/code/_git/consumer-data-standards/dsb-test-data/test-data-server/data/endpoints.json';
 import {
-    EndpointConfig, CdrConfig, cdrHeaderValidator,
+    CdrConfig, cdrHeaderValidator,
     IUserService,
     cdrEndpointValidator,
     cdrScopeValidator,
     cdrResourceValidator,
     DefaultBankingEndpoints,
-    DefaultEnergyEndpoints
+    DefaultEnergyEndpoints,
+    EndpointConfig
 } from "@cds-au/holder-sdk"
 
 import bodyParser from 'body-parser';
@@ -27,7 +28,10 @@ import {
     EnergyPlanDetailV2, EnergyPlanListResponse, EnergyPlanResponse, EnergyServicePoint, EnergyServicePointDetail,
     EnergyServicePointDetailResponse, EnergyServicePointListResponse, EnergyUsageListResponse,
     EnergyUsageRead, EnergyInvoice,
-    EnergyAccountDetailResponseV3
+    EnergyAccountDetailResponseV3,
+    EnergyPlanDetailV3,
+    EnergyPlanResponseV2,
+    EnergyPlanResponseV3
 } from 'consumer-data-standards/energy';
 import { buildErrorMessageForServicePoint, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
@@ -66,17 +70,18 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 const router = exp.Router();
 
-const sampleEndpoints = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...endpoints] as EndpointConfig[];
+const sampleEndpoints = [...endpoints] as EndpointConfig[];
+
 const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
 
-let endpointValidatorOptions: CdrConfig = {
-    endpoints: sampleEndpoints 
+const endpointValidatorOptions: CdrConfig = {
+    endpoints:  sampleEndpoints
 }
 
-let headerValidatorOptions: CdrConfig =  {
+const headerValidatorOptions: CdrConfig =  {
     endpoints: sampleEndpoints
 }
 
@@ -456,12 +461,12 @@ app.get(`${basePath}/common/customer`, async (req: Request, res: Response, next:
 app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let data: EnergyPlanDetailV2 | null = await dbService.getEnergyPlanDetails(req.params.planId)
+        let data: EnergyPlanDetailV3 | null = await dbService.getEnergyPlanDetails(req.params.planId)
         if (data == null) {
             res.sendStatus(404);
             return;
         } else {
-            let result: EnergyPlanResponse = {
+            let result: EnergyPlanResponseV3 = {
                 data: data,
                 links: {
                     self: req.protocol + '://' + req.get('host') + req.originalUrl

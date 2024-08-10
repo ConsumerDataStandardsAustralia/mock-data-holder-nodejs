@@ -1,6 +1,6 @@
-import { EnergyAccountV2, EnergyServicePoint, EnergyAccountDetailV3, EnergyInvoice, EnergyUsageRead, EnergyDerRecord, 
+import { EnergyAccountV2, EnergyServicePoint, EnergyAccountDetailV4, EnergyInvoice, EnergyUsageRead, EnergyDerRecord, 
     EnergyServicePointDetail, EnergyBillingTransactionV2, EnergyConcession, EnergyPaymentSchedule, 
-    EnergyPlanDetailV2, EnergyPlan } from "consumer-data-standards/energy";
+    EnergyPlanDetailV3, EnergyPlan } from "consumer-data-standards/energy";
 import { CustomerModel } from "../models/login";
 
 export interface IEnergyData {
@@ -9,7 +9,7 @@ export interface IEnergyData {
 
     getServicePoints(customerId: string): Promise<EnergyServicePoint[]>;
 
-    getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined>;
+    getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV4 | undefined>;
   
     getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<EnergyInvoice[]>;
 
@@ -39,7 +39,7 @@ export interface IEnergyData {
 
     getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]>;
 
-    getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null>;
+    getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV3 | null>;
     
     getEnergyAllPlans(query: any): Promise<EnergyPlan[]>;
 
