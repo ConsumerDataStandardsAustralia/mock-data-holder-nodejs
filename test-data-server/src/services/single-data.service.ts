@@ -692,11 +692,12 @@ export class SingleData implements IDatabase {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.concessions != null) {
-                        concessions?.push(acc?.concessions);
+                        concessions?.push(...acc?.concessions);
                     }
                 }
             })
         }
+        console.log(JSON.stringify(concessions));
         return concessions;
     }
     async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]> {
