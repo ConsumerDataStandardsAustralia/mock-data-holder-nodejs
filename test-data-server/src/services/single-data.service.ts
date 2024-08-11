@@ -266,22 +266,20 @@ export class SingleData implements IDatabase {
     }
 
     async getScheduledPaymentsForAccount(customerId: string, accountId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
-        let ret: any = {};
+        //let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
         let customer = await this.getCustomer(allDataCollection, customerId);
         let retArray: BankingScheduledPaymentV2[] = [];
-        if (customer?.banking?.payments == null) {
-            ret.data = { scheduledPayments: retArray };
-        } else {
+        if (customer?.banking?.payments != null) {
             let payments = customer?.banking?.payments.filter((x: any) => {
                 if (x.from.accountId == accountId)
                     return x;
             })
   
-            ret.data = { scheduledPayments: payments };
+            retArray =  payments;
         }
-        return ret;
+        return retArray;
     }
 
     async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingScheduledPaymentV2[]> {

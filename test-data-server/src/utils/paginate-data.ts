@@ -67,7 +67,7 @@ export function getLinksPaginated(req: Request, query: any, count: number): Link
         self: req.protocol + '://' + req.get('host') + req.originalUrl
     }
     // not the last page
-    if (query["page"] != null && page < pages){
+    if (page < pages){
         lp.next = req.protocol + '://' + req.get('host') + next;
         lp.last = req.protocol + '://' + req.get('host') + last
     }
