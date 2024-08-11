@@ -37,6 +37,9 @@ export interface IBankingData {
 
     getPayeeDetail(customerId: string, payeeId: string): Promise<BankingPayeeDetailV2 | undefined>;
 
-    getPayeesForCustomer(customerId: string): Promise<string[] | undefined>
+    getPayeesForCustomer(customerId: string): Promise<string[] | undefined>;
+
+    // This method is used when the server is run without authentication and a user is set in the env file
+    getAllBankingAccountsForCustomer(customerId: string) : Promise<BankingAccountV2[]> | undefined;
 
 }

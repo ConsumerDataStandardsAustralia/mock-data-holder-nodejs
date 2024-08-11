@@ -1155,6 +1155,68 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
+    async getAllEnergyAccountsForCustomer(customerId: string) : Promise<EnergyAccountV2[]> {
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let accList: EnergyAccountV2[] = [];
+        let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV3[];
+
+        if (accDetailList != null) {
+            accDetailList.forEach((acc: any) => {
+                let cnt = acc?.account?.plans?.length;
+                let planList: any[] = [];
+                for (let i = 0; i < cnt; i++) {
+
+                    let newPlan: any = {
+                        nickname: acc.account?.plans[i]?.nickname,
+                        servicePointIds: []
+                    }
+                    if (acc.account?.plans[i]?.planOverview)
+                        newPlan.planOverview = acc.account?.plans[i]?.planOverview;
+                    if (acc.account?.plans[i]?.servicePointIds)
+                        newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
+                    planList.push(newPlan);
+                }
+                let newAccount: EnergyAccountV2 = {
+                    plans: planList,
+                    accountNumber: acc.account?.accountNumber,
+                    accountId: acc.account?.accountId,
+                    displayName: acc.account?.displayName,
+                    openStatus: acc.account?.openStatus,
+                    creationDate: acc.account?.creationDate as string
+                }
+                accList.push(newAccount);
+                })
+            }
+        return accList;
+    }
+
+    async getAllBankingAccountsForCustomer(customerId: string) : Promise<BankingAccountV2[]> {
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let accList: BankingAccountV2[] = [];
+        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV3[];
+        if (accDetailList != null) {
+            accDetailList.forEach((acc: any) => {
+
+                            let newAccount: BankingAccountV2 = {
+
+                                accountId: acc.account?.accountId,
+                                creationDate: acc.account?.creationDate as string,
+                                displayName: acc.account?.displayName,
+                                openStatus: acc.account?.openStatus,
+                                isOwned: acc.account?.isOwned,
+                                accountOwnership: acc.account?.accountOwnership,
+                                maskedNumber: acc.account?.maskedNumber,
+                                productCategory: acc.account?.productCategory,
+                                productName: acc.account?.productName
+                            }
+                            accList.push(newAccount);
+                        })
+        }
+        return accList;
+    }
+
 }
 
 

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build && cd ./dist/src && node ./app.js",
     "build": "tsc && cp -r ../security ./dist/src/  && cp -r ./data ./dist && cp ../.env ./dist/src",
-    "build:prod": "tsc && cp -r ./security ./dist/src/  && cp -r ./data ./dist",
+    "build:prod": "tsc && cp -r ./data ./dist && cp ./.env* ./dist/src",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon"
   },

@@ -58,4 +58,7 @@ export interface IEnergyData {
     getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined>;
 
     getServicePointsForCustomer(customerId: string): Promise<string[] | undefined>
+
+    // This method is used when the server is run without authentication and a user is set in the env file
+    getAllEnergyAccountsForCustomer(customerId: string) : Promise<EnergyAccountV2[]> | undefined;
 }
