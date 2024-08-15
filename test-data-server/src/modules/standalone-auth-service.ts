@@ -1,20 +1,14 @@
-import path from "path";
+
 import { DsbCdrUser } from "../models/user";
-import * as https from 'https'
-import { readFileSync } from "fs";
-import { Introspection } from "../models/introspection";
-import { JwkKey } from "../models/jwt-key";
-import axios, { Axios, AxiosRequestConfig } from "axios";
 import jwtDecode from "jwt-decode";
 import { IDatabase } from "../services/database.interface";
-import { CryptoUtils } from "../utils/crypto-utils";
 import { IAuthService } from "./auth-service.interface";
-import { EnergyServicePoint } from "consumer-data-standards/energy";
 
 
 export class StandAloneAuthService implements IAuthService {
     authUser: DsbCdrUser | undefined;
-
+    
+    allScopes: string = 'openid profile energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:electricity.der:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read openid profile bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read openid profile common:customer.basic:read common:customer.detail:read cdr:registration'
     private dbService: IDatabase;
 
     constructor(dbService: IDatabase) {
@@ -25,14 +19,14 @@ export class StandAloneAuthService implements IAuthService {
         return true
     }
     
-    public async verifyAccessToken(token: string): Promise<boolean> {
+    public async verifyAccessToken(token?: string): Promise<boolean> {
         this.authUser = await this.buildUser(token);
         return true;
     }
 
-    private async buildUser(token: string) : Promise<DsbCdrUser | undefined> {
+    private async buildUser(token?: string) : Promise<DsbCdrUser | undefined> {
         // First the JWT access token must be decoded and the signature verified
-        let decoded: any = jwtDecode(token);
+        
         try {
                 
             // Since this is running without authorisation a user is set in the environment file
@@ -62,7 +56,7 @@ export class StandAloneAuthService implements IAuthService {
                 encodedAccounts: [],
                 accountsEnergy: energyAccounts,
                 accountsBanking: bankingAccounts,
-                scopes_supported: decoded?.scope
+                scopes_supported: this.getScopes(token)
             }
             this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
             this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
@@ -71,5 +65,16 @@ export class StandAloneAuthService implements IAuthService {
             console.log(JSON.stringify(ex))
             return undefined;
         }
+    }
+
+    private getScopes(token?: string): string[] {
+        let scopes: string [] = [];   
+        if (token != null) {
+            let decoded: any = jwtDecode(token);
+            scopes = decoded?.scope
+        } else {
+            scopes = this.allScopes.split(' ')
+        }      
+        return scopes;
     }
 }

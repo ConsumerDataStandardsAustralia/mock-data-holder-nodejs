@@ -8,8 +8,6 @@ import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
 import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 import { DsbEndpoint } from "../models/dsb-endpoints";
 import { IAuthService } from "./auth-service.interface";
-import { IDatabase } from "../services/database.interface";
-import { StandAloneAuthService } from "./standalone-auth-service";
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
 var svc: IAuthService;

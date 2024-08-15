@@ -91,7 +91,7 @@ export function getMetaPaginated(query: any | undefined, count: number): MetaPag
     return mp;
 }
 
-export function buildErrorMessageForServicePoint(servicePointId: string, errorTitle: string, dataSetName: string): ResponseErrorListV2 {
+export function buildErrorMessageForServicePoint(servicePointId: string, errorTitle: string): ResponseErrorListV2 {
     var retVal: ResponseErrorListV2 = {
         errors: [
         ]
@@ -100,11 +100,86 @@ export function buildErrorMessageForServicePoint(servicePointId: string, errorTi
     let errorDetail = '';
     if (errorTitle.toLowerCase() == "invalid service point") {
         errorCode = 'urn:au-cds:error:cds-energy:Authorisation/InvalidServicePoint';
-        errorDetail = 'This service point is invalid for the accounts consent has been given for.';
+        errorDetail = 'Invalid ID';
     }
     if (errorTitle.toLowerCase() == "unavailable service point") {
         errorCode = 'urn:au-cds:error:cds-energy:Authorisation/UnavailableServicePoint';
-        errorDetail = `This service point does contain any data for ${dataSetName}`;
+        errorDetail = `${servicePointId}`;
+    }
+    let error = {
+        code: errorCode,
+        title: errorTitle,
+        detail: errorDetail
+    }
+    retVal.errors.push(error);
+    return retVal;
+}
+
+export function buildErrorMessageForBankAccount(accountId: string, errorTitle: string): ResponseErrorListV2 {
+    var retVal: ResponseErrorListV2 = {
+        errors: [
+        ]
+    };
+    let errorCode = '';
+    let errorDetail = '';
+    if (errorTitle.toLowerCase() == "invalid bank account") {
+        errorCode = 'urn:au-cds:error:cds-banking:Authorisation/InvalidBankingAccount';
+        errorDetail = 'Invalid ID';
+    }
+    if (errorTitle.toLowerCase() == "unavailable bank account") {
+        errorCode = 'urn:au-cds:error:cds-banking:Authorisation/UnavailableBankingAccount';
+        errorDetail = `${accountId}`;
+    }
+    let error = {
+        code: errorCode,
+        title: errorTitle,
+        detail: errorDetail
+    }
+    retVal.errors.push(error);
+    return retVal;
+}
+
+export function buildErrorMessageForEnergyAccount(accountId: string, errorTitle: string): ResponseErrorListV2 {
+    var retVal: ResponseErrorListV2 = {
+        errors: [
+        ]
+    };
+    let errorCode = '';
+    let errorDetail = '';
+    if (errorTitle.toLowerCase() == "invalid energy account") {
+        errorCode = 'urn:au-cds:error:cds-energy:Authorisation/InvalidEnergyAccount';
+        errorDetail = 'Invalid ID';
+    }
+    if (errorTitle.toLowerCase() == "unavailable bank account") {
+        errorCode = 'urn:au-cds:error:cds-energy:Authorisation/UnavailableEnergyAccount';
+        errorDetail = `${accountId}`;
+    }
+    let error = {
+        code: errorCode,
+        title: errorTitle,
+        detail: errorDetail
+    }
+    retVal.errors.push(error);
+    return retVal;
+}
+
+export function buildErrorMessageResource(resourceId: string, errorTitle: string): ResponseErrorListV2 {
+    var retVal: ResponseErrorListV2 = {
+        errors: [
+        ]
+    };
+    let errorCode = '';
+    let errorDetail = '';
+    if (errorTitle.toLowerCase() == "resource not found") {
+        errorCode = 'urn:au-cds:error:cds-all:Resource/NotFound';
+    }
+    if (errorTitle.toLowerCase() == "invalid resource") {
+        errorCode = 'urn:au-cds:error:cds-all:Resource/Invalid';
+        errorDetail = `${resourceId}`;
+    }
+    if (errorTitle.toLowerCase() == "unavailable resource") {
+        errorCode = 'urn:au-cds:error:cds-all:Resource/Unvailable';
+        errorDetail = `${resourceId}`;
     }
     let error = {
         code: errorCode,

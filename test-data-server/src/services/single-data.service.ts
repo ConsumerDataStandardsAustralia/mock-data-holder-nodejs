@@ -4,8 +4,7 @@ import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirect
     BankingTransactionDetail} from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import { EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
-    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV2, 
-    EnergyPlanDetailV3, 
+    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV3, 
     EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead} from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { AccountModel, CustomerModel } from "../models/login";
@@ -337,7 +336,7 @@ export class SingleData implements IDatabase {
         let customer = await this.getCustomer(allDataCollection, customerId);
         let payees: BankingPayeeV2[] = [];
         let payeeType = "ALL";
-        if (query["type"] != null) {
+        if (query["type"] != undefined ) {
             payeeType = query["type"].toUpperCase();
         }
         customer?.banking?.payees.forEach((p: BankingPayeeDetailV2) => {
