@@ -265,7 +265,6 @@ export class SingleData implements IDatabase {
     }
 
     async getScheduledPaymentsForAccount(customerId: string, accountId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
-        //let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
         let customer = await this.getCustomer(allDataCollection, customerId);
