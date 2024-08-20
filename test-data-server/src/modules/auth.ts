@@ -8,14 +8,13 @@ import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
 import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 import { DsbEndpoint } from "../models/dsb-endpoints";
 import { IAuthService } from "./auth-service.interface";
-import { IDatabase } from "../services/database.interface";
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
 var svc: IAuthService;
 
 
 // TODO need to be incorporated in holder-sdk middleware
-export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | undefined): any {
+export function cdrAuthorization(authService: IAuthService,  options: CdrConfig | undefined): any {
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
         let allEP: EndpointConfig[] = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...DefaultCommonEndpoints];
@@ -23,8 +22,9 @@ export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | und
             endpoints: allEP,
             basePath: options?.basePath
         }
-        svc = new AuthService(dbService);
+        svc = authService;
         let ep = getEndpoint(req, config);
+        console.log("Endpoint is: " + JSON.stringify(ep))
         if (ep == null || ep.authScopesRequired == null) {
             next();
             return;

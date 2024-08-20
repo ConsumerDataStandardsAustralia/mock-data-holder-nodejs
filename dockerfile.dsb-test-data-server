@@ -30,11 +30,13 @@ RUN npm install
 # RUN npm ci --only=production
 
 # Bundle app source
-COPY ./test-data-server/ .
-COPY ./security/mock-data-holder/ ./security
+COPY ./test-data-server/ ./
+COPY ./security/ /security
+COPY ./.env* /
 
-RUN npm run build:prod
+RUN npm run build
 
+#COPY ./security/mock-data-holder/ /app/dist/src/security/mock-data-holder/
 COPY ./security/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 

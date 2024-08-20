@@ -3,8 +3,8 @@ import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirect
     BankingTransaction, 
     BankingTransactionDetail} from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccountDetailV3, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
-    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV2, 
+import { EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
+    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV3, 
     EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead} from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { AccountModel, CustomerModel } from "../models/login";
@@ -265,22 +265,19 @@ export class SingleData implements IDatabase {
     }
 
     async getScheduledPaymentsForAccount(customerId: string, accountId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
-        let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
 
         let customer = await this.getCustomer(allDataCollection, customerId);
         let retArray: BankingScheduledPaymentV2[] = [];
-        if (customer?.banking?.payments == null) {
-            ret.data = { scheduledPayments: retArray };
-        } else {
+        if (customer?.banking?.payments != null) {
             let payments = customer?.banking?.payments.filter((x: any) => {
                 if (x.from.accountId == accountId)
                     return x;
             })
   
-            ret.data = { scheduledPayments: payments };
+            retArray =  payments;
         }
-        return ret;
+        return retArray;
     }
 
     async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingScheduledPaymentV2[]> {
@@ -338,7 +335,7 @@ export class SingleData implements IDatabase {
         let customer = await this.getCustomer(allDataCollection, customerId);
         let payees: BankingPayeeV2[] = [];
         let payeeType = "ALL";
-        if (query["type"] != null) {
+        if (query["type"] != undefined ) {
             payeeType = query["type"].toUpperCase();
         }
         customer?.banking?.payees.forEach((p: BankingPayeeDetailV2) => {
@@ -672,16 +669,17 @@ export class SingleData implements IDatabase {
         }
         return retArray;
     }
-    async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV2 | null> {
+    async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV3 | null> {
 
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         const query = { planId: planId };
-        let plans: EnergyPlanDetailV2[] = await this.getPlans(allData, query);
+        let plans: EnergyPlanDetailV3[] = await this.getPlans(allData, query);
         if (plans.length > 0)
             return plans[0];
         else
             return null;
     }
+
     async getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
@@ -690,11 +688,12 @@ export class SingleData implements IDatabase {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.concessions != null) {
-                        concessions?.push(acc?.concessions);
+                        concessions?.push(...acc?.concessions);
                     }
                 }
             })
         }
+        console.log(JSON.stringify(concessions));
         return concessions;
     }
     async getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]> {
@@ -988,12 +987,12 @@ export class SingleData implements IDatabase {
         return derData;
     }
 
-    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV3 | undefined> {
+    async getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV4 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.accounts.find((x: any) => x.account.accountId == accountId);
-        return acc?.account as EnergyAccountDetailV3;
+        return acc?.account as EnergyAccountDetailV4;
     }
 
     async getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail> {
@@ -1151,6 +1150,68 @@ export class SingleData implements IDatabase {
         let cust: any = await this.getCustomer(allData, customerId);
 
         return ret;
+    }
+
+    async getAllEnergyAccountsForCustomer(customerId: string) : Promise<EnergyAccountV2[]> {
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let accList: EnergyAccountV2[] = [];
+        let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV3[];
+
+        if (accDetailList != null) {
+            accDetailList.forEach((acc: any) => {
+                let cnt = acc?.account?.plans?.length;
+                let planList: any[] = [];
+                for (let i = 0; i < cnt; i++) {
+
+                    let newPlan: any = {
+                        nickname: acc.account?.plans[i]?.nickname,
+                        servicePointIds: []
+                    }
+                    if (acc.account?.plans[i]?.planOverview)
+                        newPlan.planOverview = acc.account?.plans[i]?.planOverview;
+                    if (acc.account?.plans[i]?.servicePointIds)
+                        newPlan.servicePointIds = acc.account?.plans[i]?.servicePointIds
+                    planList.push(newPlan);
+                }
+                let newAccount: EnergyAccountV2 = {
+                    plans: planList,
+                    accountNumber: acc.account?.accountNumber,
+                    accountId: acc.account?.accountId,
+                    displayName: acc.account?.displayName,
+                    openStatus: acc.account?.openStatus,
+                    creationDate: acc.account?.creationDate as string
+                }
+                accList.push(newAccount);
+                })
+            }
+        return accList;
+    }
+
+    async getAllBankingAccountsForCustomer(customerId: string) : Promise<BankingAccountV2[]> {
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let accList: BankingAccountV2[] = [];
+        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV3[];
+        if (accDetailList != null) {
+            accDetailList.forEach((acc: any) => {
+
+                            let newAccount: BankingAccountV2 = {
+
+                                accountId: acc.account?.accountId,
+                                creationDate: acc.account?.creationDate as string,
+                                displayName: acc.account?.displayName,
+                                openStatus: acc.account?.openStatus,
+                                isOwned: acc.account?.isOwned,
+                                accountOwnership: acc.account?.accountOwnership,
+                                maskedNumber: acc.account?.maskedNumber,
+                                productCategory: acc.account?.productCategory,
+                                productName: acc.account?.productName
+                            }
+                            accList.push(newAccount);
+                        })
+        }
+        return accList;
     }
 
 }

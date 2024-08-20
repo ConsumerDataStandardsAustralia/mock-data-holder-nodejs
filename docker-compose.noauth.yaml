@@ -1,0 +1,41 @@
+version: '3.8'
+name: dsb-data
+services:
+  mock-data-holder:
+    container_name: mock-data-holder
+    image: consumerdatastandardsaustralia/nodejs-data-holder:0.2
+    # build:
+    #   context: . 
+    #   dockerfile: dockerfile.dsb-test-data-server    
+    restart: unless-stopped
+    env_file: .env.noauth
+    extra_hosts:
+      - "mongodb:host-gateway"        
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongodb
+  
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:     
+      - dbdata:/usr/local/var/mongodb
+    ports:
+      - "27017:27017"
+
+  dsb-data-loader:
+    # build:
+    #   context: .
+    #   dockerfile: dockerfile.dsb-data-loader
+    container_name: dsb-data-loader
+    image: consumerdatastandardsaustralia/dsb-data-loader:0.2
+    env_file: .env.docker
+    depends_on:
+      - mongodb
+
+volumes:
+  dbdata:
+  node_modules:    
