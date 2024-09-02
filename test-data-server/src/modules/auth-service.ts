@@ -93,6 +93,10 @@ export class AuthService implements IAuthService {
               }
             else {
                 let intro: Introspection = response.data as Introspection;
+                if (this.authUser) {
+                    this.authUser.accountsEnergy = intro.account_id;
+                    this.authUser.accountsBanking = intro.account_id;
+                }
                 return intro.active;
             }
         } catch (error: any) {
@@ -131,12 +135,6 @@ export class AuthService implements IAuthService {
                 accountsBanking: undefined,
                 scopes_supported: decoded?.scope
             }
-            // Once the customerId (here: userId) has been the account ids can be decrypted.
-            // The parameters here are the decrypted customerId from above and the software_id from the token
-            // The IdPermanence key (private key) is kwown to the DH and the Auth server
-            let accountIds: string[] = this.decryptAccountArray(token);
-            this.authUser.accountsEnergy = accountIds;
-            this.authUser.accountsBanking = accountIds;
             this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
             this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
             return this.authUser;

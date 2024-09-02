@@ -3,4 +3,5 @@ export interface Introspection {
     scope: string | undefined;
     expiry: number | undefined;
     active: boolean;
+    account_id: any | undefined;
 }

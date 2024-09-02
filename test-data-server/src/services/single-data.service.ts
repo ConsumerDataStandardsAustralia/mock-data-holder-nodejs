@@ -1097,11 +1097,7 @@ export class SingleData implements IDatabase {
 
                 let id = c.customerId;
                 if (id == loginId) {
-                    let aModel: CustomerModel = {
-                        LoginId: id,
-                        Accounts: []
-                    };
-                    let accounts: AccountModel[] = [];
+                    const accounts: AccountModel[] = [];
 
                     c?.energy?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {
@@ -1112,10 +1108,7 @@ export class SingleData implements IDatabase {
                         };
                         accounts.push(loginAccount)
                     })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
 
-                    // TODO Once we have the API implemented for Banking, we can uncomment this
                     c?.banking?.accounts.forEach((acc: any) => {
                         let loginAccount: AccountModel = {
                             AccountId: acc?.account?.accountId,
@@ -1125,8 +1118,8 @@ export class SingleData implements IDatabase {
                         };
                         accounts.push(loginAccount)
                     })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
+
+                    loginModel.push({LoginId: id, Accounts: accounts});
                 }
             })
         }
