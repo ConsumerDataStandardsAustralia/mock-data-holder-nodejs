@@ -213,7 +213,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 }
                 else {
                     let listResponse: EnergyInvoiceListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
                         meta: getMetaPaginated(result.length, req.query),
                         data: {
                             invoices: paginatedData
@@ -242,7 +242,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 }
                 else {
                     let listResponse: EnergyBillingListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
                         meta: getMetaPaginated(result.length, req.query),
                         data: {
                             transactions: paginatedData
@@ -271,7 +271,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 }
                 else {
                     let listResponse: EnergyBalanceListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
                         meta: getMetaPaginated(result.length, req.query),
                         data: {
                             balances: paginatedData
@@ -328,7 +328,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 }
                 else {
                     let listResponse: EnergyUsageListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
                         meta: getMetaPaginated(result.length, req.query),
                         data: {
                             reads: paginatedData
@@ -356,7 +356,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 }
                 else {
                     let listResponse: EnergyDerListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
                         meta: getMetaPaginated(result.length, req.query),
                         data: {
                             derRecords: paginatedData
@@ -394,7 +394,7 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
             else {
                 // TODO there is a bug in the schema definitions. Once that is resolved revert to the use of type , eg EnergyListResponseV2
                 let listResponse: any = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         accounts: paginatedData
@@ -430,7 +430,7 @@ app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res
             }
             else {
                 let listResponse: EnergyServicePointListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         servicePoints: paginatedData
@@ -523,7 +523,7 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
             }
             else {
                 let listResponse: EnergyPlanListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         plans: paginatedData
@@ -560,7 +560,7 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
             }
             else {
                 let listResponse: EnergyUsageListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         reads: paginatedData
@@ -629,7 +629,7 @@ app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request
             }
             else {
                 let listResponse: EnergyDerListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         derRecords: paginatedData
@@ -667,7 +667,7 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
             }
             else {
                 let listResponse: EnergyInvoiceListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         invoices: paginatedData
@@ -703,7 +703,7 @@ app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respo
             }
             else {
                 let listResponse: EnergyInvoiceListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         invoices: paginatedData
@@ -740,7 +740,7 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
             }
             else {
                 let listResponse: EnergyBalanceListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         balances: paginatedData
@@ -776,7 +776,7 @@ app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Reque
             }
             else {
                 let listResponse: EnergyUsageListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         reads: paginatedData
@@ -898,7 +898,7 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
             }
             else {
                 let listResponse: EnergyBillingListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         transactions: paginatedData
@@ -934,7 +934,7 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
             }
             else {
                 let listResponse: EnergyBillingListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         transactions: paginatedData
@@ -995,7 +995,7 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
             }
             else {
                 let listResponse: ResponseBankingAccountsBalanceList = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         balances: paginatedData
@@ -1023,7 +1023,7 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
             }
             else {
                 let listResponse: ResponseBankingDirectDebitAuthorisationList = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         directDebitAuthorisations: paginatedData
@@ -1062,7 +1062,7 @@ app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, nex
             }
             else {
                 let listResponse: ResponseBankingProductListV2 = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         products: paginatedData
@@ -1120,7 +1120,7 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
         }
         else {
             let listResponse: ResponseBankingAccountListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     accounts: paginatedData
@@ -1185,7 +1185,7 @@ app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Resp
             }
             else {
                 let listResponse: ResponseBankingAccountsBalanceList = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         balances: paginatedData
@@ -1224,7 +1224,7 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
             }
             else {
                 let listResponse: ResponseBankingTransactionList = {
-                    links: getLinksPaginated(req, req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
                         transactions: paginatedData
@@ -1286,7 +1286,7 @@ app.get(`${basePath}/banking/payees/`, async (req: Request, res: Response, next:
         }
         else {
             let listResponse: ResponseBankingPayeeListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     payees: paginatedData
@@ -1344,7 +1344,7 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
         }
         else {
             let listResponse: ResponseBankingScheduledPaymentsListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     scheduledPayments: paginatedData
@@ -1376,7 +1376,7 @@ app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Res
         }
         else {
             let listResponse: ResponseBankingScheduledPaymentsListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     scheduledPayments: paginatedData
@@ -1408,7 +1408,7 @@ app.get(`${basePath}/banking/accounts/:accountId/payments/scheduled`, async (req
         }
         else {
             let listResponse: ResponseBankingScheduledPaymentsListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     scheduledPayments: paginatedData
@@ -1440,7 +1440,7 @@ app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Req
         }
         else {
             let listResponse: ResponseBankingDirectDebitAuthorisationList = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     directDebitAuthorisations: paginatedData
@@ -1472,7 +1472,7 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
         }
         else {
             let listResponse: ResponseBankingDirectDebitAuthorisationList = {
-                links: getLinksPaginated(req, req.query, result.length),
+                links: getLinksPaginated(req, result.length),
                 meta: getMetaPaginated(result.length, req.query),
                 data: {
                     directDebitAuthorisations: paginatedData
