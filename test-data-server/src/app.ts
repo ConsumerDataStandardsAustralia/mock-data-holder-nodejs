@@ -7,7 +7,12 @@ import {
     cdrEndpointValidator,
     cdrScopeValidator,
     cdrResourceValidator,
-    EndpointConfig
+    EndpointConfig,
+    buildErrorMessage,
+    DsbStandardError,
+    getLinksPaginated,
+    getMetaPaginated,
+    paginateData
 } from "@cds-au/holder-sdk"
 
 import bodyParser from 'body-parser';
@@ -28,17 +33,17 @@ import {
     EnergyUsageRead, EnergyInvoice,
     EnergyAccountDetailResponseV3,
     EnergyPlanDetailV3,
-    EnergyPlanResponseV3
+    EnergyPlanResponseV3,
+    ResponseErrorListV2
 } from 'consumer-data-standards/energy';
-//import { buildErrorMessageForBankAccount, buildErrorMessageForEnergyAccount, buildErrorMessageForServicePoint, buildErrorMessageResource, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
 import { BankingAccountDetailV3, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
 import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 import { AuthService } from './modules/auth-service';
-import { paginateData, getLinksPaginated, getMetaPaginated, buildErrorMessage } from '@cds-au/holder-sdk/dist/src/cdr-utils';
-import { DsbStandardError } from '@cds-au/holder-sdk/dist/src/error-messsage-defintions';
+import moment from 'moment';
+
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -198,6 +203,14 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
             }
         }
         if (req.params?.accountId == "invoices") {
+            let allowedParams: string[] = [
+                "oldest-date", "newest-date", "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result: EnergyInvoice[] = await dbService.getBulkInvoicesForUser(authService?.authUser?.customerId as string, req?.query)
             if (result == null) {
                 res.sendStatus(404);
@@ -226,6 +239,14 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
         }
 
         if (req.params?.accountId == "billing") {
+            let allowedParams: string[] = [
+                "oldest-time", "newest-time", "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result = await dbService.getBulkBilllingForUser(authService?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
@@ -294,6 +315,14 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["usage", "der"];
         if (excludes.indexOf(req.params?.servicePointId) == -1) {
+            let allowedParams: string[] = [
+                "page", "page-size"
+           ]
+           let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+           if (errorList != undefined) {
+               res.status(400).json(errorList);
+               return;
+           } 
             let result: EnergyServicePointDetail = await dbService.getServicePointDetails(authService?.authUser?.customerId as string, req.params?.servicePointId)
             if (result == null) {
                 let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params?.servicePointId}`)
@@ -312,6 +341,14 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
         }
         if (req.params?.servicePointId == "usage") {
             console.log(`Received request on ${port} for ${req.url}`);
+            let allowedParams: string[] = [
+                "oldest-date", "newest-date", "interval-reads", "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            } 
             let result: EnergyUsageRead[] = await dbService.getBulkUsageForUser(authService?.authUser?.customerId as string, req?.query)
             if (result == null) {
                 res.sendStatus(404);
@@ -340,6 +377,15 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
             }
         }
         if (req.params?.servicePointId == "der") {
+            console.log(`Received request on ${port} for ${req.url}`);
+            let allowedParams: string[] = [
+                 "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            } 
             let result: EnergyDerRecord[] = await dbService.getBulkDerForUser(authService?.authUser?.customerId as string)
             if (result == null) {
                 res.sendStatus(404);
@@ -377,6 +423,14 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
 app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size", "open-status"
+       ]
+       let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+       if (errorList != undefined) {
+           res.status(400).json(errorList);
+           return;
+       } 
         let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService?.authUser?.customerId as string, authService?.authUser?.accountsEnergy as string[], req.query);
         if (result == null) {
             res.sendStatus(404);
@@ -414,6 +468,14 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
 app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+       ]
+       let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+       if (errorList != undefined) {
+           res.status(400).json(errorList);
+           return;
+       } 
         let result: EnergyServicePoint[] = await dbService.getServicePoints(authService?.authUser?.customerId as string);
         if (result == null) {
             res.sendStatus(404);
@@ -507,6 +569,14 @@ app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, 
 app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "effective", "fuelType", "updated-since", "type", "brand", "page", "page-size"
+        ]
+        let errorList : ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyPlan[] = await dbService.getEnergyAllPlans(req.query);
         if (result == null) {
             res.sendStatus(404);
@@ -543,6 +613,14 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "interval-reads", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyUsageRead[] = await dbService.getUsageForServicePoint(authService?.authUser?.customerId as string, req.params.servicePointId, req?.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params.servicePointId}`)
@@ -613,6 +691,14 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
 app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+       ]
+       let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+       if (errorList != undefined) {
+           res.status(400).json(errorList);
+           return;
+       } 
         let result: EnergyDerRecord[] = await dbService.getDerForMultipleServicePoints(authService?.authUser?.customerId as string, req.body?.data?.servicePointIds);
         if (result == null) {
             res.sendStatus(404);
@@ -650,6 +736,14 @@ app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request
 app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyInvoice[] = await dbService.getInvoicesForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params?.accountId}`);
@@ -687,6 +781,14 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received POST request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyInvoice[] = await dbService.getInvoicesForMultipleAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
@@ -724,6 +826,14 @@ app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respo
 app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received POST request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+       ]
+       let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+       if (errorList != undefined) {
+           res.status(400).json(errorList);
+           return;
+       } 
         let result: any[] = await dbService.getBalancesForMultipleAccount(authService?.authUser?.customerId as string, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
@@ -760,6 +870,14 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
 app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "interval-reads", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyUsageRead[] = await dbService.getUsageForMultipleServicePoints(authService?.authUser?.customerId as string, req.body?.data?.servicePointIds, req.query)
         if (result == null) {
             res.sendStatus(404);
@@ -881,6 +999,14 @@ app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: R
 app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+       ]
+       let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+       if (errorList != undefined) {
+           res.status(400).json(errorList);
+           return;
+       } 
         let result: EnergyBillingTransactionV2[] = await dbService.getBillingForAccount(authService?.authUser?.customerId as string, req.params?.accountId, req?.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
@@ -918,6 +1044,14 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
 app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-time", "newest-time", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyBillingTransactionV2[] = await dbService.getBillingForMultipleAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
@@ -1532,6 +1666,84 @@ async function isEnergyAccountForUser(customerId: string, accountId: string): Pr
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal
+}
+
+function validateQueryParameters(query: any, allowedParams: string[]): any{
+    if (query == null)
+        return;
+    let errorList: any = {
+        errors: []
+    };
+    for (const property in query) {
+        if (allowedParams.indexOf(property) == -1) {
+          errorList  = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid query parameter parameter: ${property}`, errorList);          
+        }
+      }
+    var pageSize = 25;
+    // check pagination parmeters
+    if (query["page-size"] != null && query["page-size"] != ""){
+        pageSize = parseInt(query["page-size"]);
+        if (isNaN(pageSize)) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid page-size parameter: ${pageSize}`, errorList)
+        }
+        else if (pageSize > 1000) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_PAGE_SIZE, `page-size ${pageSize} exceeds maximum`, errorList)
+        }
+    } 
+    if (query["page"] != null && query["page"] != "") {
+        let page = parseInt(query["page"]);
+        if (isNaN(page)) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid page parameter: ${query["page"]}`, errorList)
+        }      
+    }
+    // check date parameters
+    var formats = [
+        'YYYY-MM-DDTHH:mm:ss.sssssZ',
+        'YYYY-MM-DDTHH:mm:ss.sssZ',
+        'YYYY-MM-DDTHH:mm:ss-HH:mm'
+    ];
+    if(query["updated-since"] != null && query["updated-since"] != "") {
+        let dateString = query["updated-since"];
+        if (moment(dateString, formats, true).isValid() == false){
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid updated-since parameter: ${dateString}`, errorList)          
+        }
+    }
+    if(query["oldest-date"] != null && query["oldest-date"] != "") {
+        let dateString = query["oldest-date"];
+        if (moment(dateString, formats, true).isValid() == false){
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid oldest-date parameter: ${dateString}`, errorList)          
+        }
+    }
+    if(query["newest-date"] != null && query["newest-date"] != "") {
+        let dateString = query["newest-date"];
+        if (moment(dateString, formats, true).isValid() == false){
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid newest-date parameter: ${dateString}`, errorList)          
+        }
+    }
+    if(query["oldest-time"] != null && query["oldest-time"] != "") {
+        let dateString = query["oldest-time"];
+        if (moment(dateString, formats, true).isValid() == false){
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid oldest-time parameter: ${dateString}`, errorList)          
+        }
+    }
+    if(query["newest-time"] != null && query["newest-time"] != "") {
+        let dateString = query["newest-time"];
+        if (moment(dateString, formats, true).isValid() == false){
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid newest-time parameter: ${dateString}`, errorList)          
+        }
+    }
+    // check open-staus
+    if(query["open-status"] != null && query["open-status"] != "") {
+        let validStates: string[] = ["OPEN", "CLOSED", "ALL"]
+        if (validStates.indexOf(query["open-status"]) == -1){
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid open-satus parameter: ${query["open-status"]}`, errorList)          
+        }
+    }
+    if (errorList.errors.length > 0) {
+        return errorList;
+    }
+    else
+        return;
 }
 
 initaliseApp();
