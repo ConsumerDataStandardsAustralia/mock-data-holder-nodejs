@@ -10,6 +10,7 @@ import { IDatabase } from "../services/database.interface";
 import { CryptoUtils } from "../utils/crypto-utils";
 import { IAuthService } from "./auth-service.interface";
 import { EnergyServicePoint } from "consumer-data-standards/energy";
+import e from "express";
 
 
 export class AuthService implements IAuthService {
@@ -17,6 +18,7 @@ export class AuthService implements IAuthService {
     private token_endpoint: string | undefined;
     private introspection_endpoint: string | undefined;
     private introspection_endpoint_internal: string | undefined;
+    private cdr_arrangement_endpoints: string | undefined;
     private jwks_uri: string | undefined;
     private issuer: string | undefined;
 
@@ -37,6 +39,7 @@ export class AuthService implements IAuthService {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
         this.introspection_endpoint = process.env.INTROSPECTION;
+        this.cdr_arrangement_endpoints = process.env.CDR_ARRANGEMENT_ENDPOINTS;
     }
 
     public async initAuthService(): Promise<boolean> {
@@ -93,9 +96,15 @@ export class AuthService implements IAuthService {
               }
             else {
                 let intro: Introspection = response.data as Introspection;
-                if (this.authUser) {
-                    this.authUser.accountsEnergy = intro.account_id;
-                    this.authUser.accountsBanking = intro.account_id;
+                if (this.authUser && intro.cdr_arrangement_id) {
+                    const response = await axios.get(this.cdr_arrangement_endpoints + '/accounts/' + this.authUser.loginId + '/' + intro.cdr_arrangement_id)
+                    if (response.status == 200) {
+                        const accountIds: string[] = response.data
+                        this.authUser.accountsEnergy = accountIds
+                        this.authUser.accountsBanking = accountIds
+                    } else {
+                        console.error('Unsuccessful fetch account IDs response:', response)
+                    }
                 }
                 return intro.active;
             }
