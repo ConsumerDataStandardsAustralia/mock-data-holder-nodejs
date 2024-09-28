@@ -141,7 +141,7 @@ services:
 
   mock-data-holder:
     container_name: mock-data-holder
-    image: consumerdatastandardsaustralia/nodejs-data-holder:0.2
+    image: consumerdatastandardsaustralia/nodejs-data-holder:0.3
     # build:
     #   context: . 
     #   dockerfile: dockerfile.dsb-test-data-server    
