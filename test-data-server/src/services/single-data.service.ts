@@ -503,21 +503,33 @@ export class SingleData implements IDatabase {
 
         let allPlans: any;
         let retPlans = null;
-        var refToDate = Number.MAX_VALUE;
-        var refFromDate = 0;
+        var qryDate = Date.now();
+        // 1 = CURRENT, 2 = FUTURE, 0 = ALL
+        var filterPlans: number = 1;
+
         if (query["effective"] != null && (query["effective"].toUpperCase() == "FUTURE")) {
-            refFromDate = Date.now();
-            refToDate = Number.MAX_VALUE;
+            filterPlans = 2;
         }
-        if (query["effective"] != null && (query["effective"].toUpperCase() == "CURRENT")) {
-            refToDate = Date.now();
+        if (query["effective"] != null && (query["effective"].toUpperCase() == "ALL")) {
+            filterPlans = 0;
         }
+
         // filter out the expired plans
         if (allData?.holders != null) {
             allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans
                 .filter((x: any) => {
-                    var refDate = Date.parse(x.effectiveTo);
-                    if (refDate >= refFromDate && refDate <= refToDate) {
+                    if (filterPlans > 0) {
+                        var recDateTo  = x?.effectiveTo ? Date.parse(x?.effectiveTo) : Number.MAX_VALUE;
+                        var recDateFrom = x?.effectiveFrom ? Date.parse(x?.effectiveFrom) : 0;
+                        // get the current plans
+                        if ((filterPlans) == 1 && (qryDate >= recDateFrom &&  qryDate <= recDateTo)) {
+                            return x;
+                        }
+                        // get the future plans
+                        if ((filterPlans) == 2 && (qryDate < recDateFrom)) {
+                            return x;
+                        }
+                    } else {
                         return x;
                     }
                 });

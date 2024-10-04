@@ -7,7 +7,12 @@ import {
     cdrEndpointValidator,
     cdrScopeValidator,
     cdrResourceValidator,
-    EndpointConfig
+    EndpointConfig,
+    buildErrorMessage,
+    DsbStandardError,
+    getLinksPaginated,
+    getMetaPaginated,
+    paginateData
 } from "@cds-au/holder-sdk"
 
 import bodyParser from 'body-parser';
@@ -17,9 +22,9 @@ import path from 'path';
 import { readFileSync } from 'fs';
 import * as https from 'https'
 import { DsbCdrUser } from './models/user';
-import {cdrAuthorization } from './modules/auth';
+import { cdrAuthorization } from './modules/auth';
 import {
-    EnergyAccountV2,  EnergyBalanceListResponse,
+    EnergyAccountV2, EnergyBalanceListResponse,
     EnergyBalanceResponse, EnergyBillingListResponse, EnergyBillingTransactionV2, EnergyConcession,
     EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord,
     EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan,
@@ -28,15 +33,17 @@ import {
     EnergyUsageRead, EnergyInvoice,
     EnergyAccountDetailResponseV3,
     EnergyPlanDetailV3,
-    EnergyPlanResponseV3
+    EnergyPlanResponseV3,
+    ResponseErrorListV2
 } from 'consumer-data-standards/energy';
-import { buildErrorMessageForBankAccount, buildErrorMessageForEnergyAccount, buildErrorMessageForServicePoint, buildErrorMessageResource, getLinksPaginated, getMetaPaginated, paginateData } from './utils/paginate-data';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
 import { BankingAccountDetailV3, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
 import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 import { AuthService } from './modules/auth-service';
+import moment from 'moment';
+
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -60,10 +67,10 @@ var dbService: IDatabase;
 var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
-if (noAuthServer == "true"){
+if (noAuthServer == "true") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
     authService = new StandAloneAuthService(dbService);
-}   
+}
 else {
     console.log(`Running server with authorisation. Required to go through authorisation process`)
     authService = new AuthService(dbService);
@@ -88,10 +95,10 @@ const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
 
 const endpointValidatorOptions: CdrConfig = {
-    endpoints:  sampleEndpoints
+    endpoints: sampleEndpoints
 }
 
-const headerValidatorOptions: CdrConfig =  {
+const headerValidatorOptions: CdrConfig = {
     endpoints: sampleEndpoints
 }
 
@@ -172,7 +179,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         if ((await isEnergyAccountForUser(authService?.authUser?.customerId as string, req.params.accountId)) == false) {
-            let errorList = buildErrorMessageForEnergyAccount(req.params?.accountId, "Invalid Energy Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params?.accountId}`)
             res.status(404).json(errorList);
             return;
         }
@@ -180,7 +187,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
         if (excludes.indexOf(req.params?.accountId) == -1) {
             let data: any | undefined = await dbService.getEnergyAccountDetails(authService?.authUser?.customerId as string, req.params?.accountId)
             if (data == null) {
-                let errorList = buildErrorMessageForBankAccount(req.params?.accountId, "Unavailable Bank Account");
+                let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_BANK_ACCOUNT, `Unavailable Energy Account: ${req.params?.accountId}`)
                 res.status(404).json(errorList);
                 return;
             } else {
@@ -196,6 +203,14 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
             }
         }
         if (req.params?.accountId == "invoices") {
+            let allowedParams: string[] = [
+                "oldest-date", "newest-date", "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result: EnergyInvoice[] = await dbService.getBulkInvoicesForUser(authService?.authUser?.customerId as string, req?.query)
             if (result == null) {
                 res.sendStatus(404);
@@ -211,8 +226,8 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 }
                 else {
                     let listResponse: EnergyInvoiceListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
-                        meta: getMetaPaginated(req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
                         data: {
                             invoices: paginatedData
                         }
@@ -224,6 +239,14 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
         }
 
         if (req.params?.accountId == "billing") {
+            let allowedParams: string[] = [
+                "oldest-time", "newest-time", "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result = await dbService.getBulkBilllingForUser(authService?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
@@ -240,8 +263,8 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 }
                 else {
                     let listResponse: EnergyBillingListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
-                        meta: getMetaPaginated(req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
                         data: {
                             transactions: paginatedData
                         }
@@ -269,8 +292,8 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 }
                 else {
                     let listResponse: EnergyBalanceListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
-                        meta: getMetaPaginated(req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
                         data: {
                             balances: paginatedData
                         }
@@ -292,9 +315,17 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
         console.log(`Received request on ${port} for ${req.url}`);
         var excludes = ["usage", "der"];
         if (excludes.indexOf(req.params?.servicePointId) == -1) {
+            let allowedParams: string[] = [
+                "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result: EnergyServicePointDetail = await dbService.getServicePointDetails(authService?.authUser?.customerId as string, req.params?.servicePointId)
             if (result == null) {
-                let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Invalid Service Point");
+                let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params?.servicePointId}`)
                 res.status(404).json(errorList);
                 return;
             } else {
@@ -310,6 +341,14 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
         }
         if (req.params?.servicePointId == "usage") {
             console.log(`Received request on ${port} for ${req.url}`);
+            let allowedParams: string[] = [
+                "oldest-date", "newest-date", "interval-reads", "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result: EnergyUsageRead[] = await dbService.getBulkUsageForUser(authService?.authUser?.customerId as string, req?.query)
             if (result == null) {
                 res.sendStatus(404);
@@ -326,8 +365,8 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 }
                 else {
                     let listResponse: EnergyUsageListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
-                        meta: getMetaPaginated(req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
                         data: {
                             reads: paginatedData
                         }
@@ -338,6 +377,15 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
             }
         }
         if (req.params?.servicePointId == "der") {
+            console.log(`Received request on ${port} for ${req.url}`);
+            let allowedParams: string[] = [
+                "page", "page-size"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result: EnergyDerRecord[] = await dbService.getBulkDerForUser(authService?.authUser?.customerId as string)
             if (result == null) {
                 res.sendStatus(404);
@@ -354,8 +402,8 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 }
                 else {
                     let listResponse: EnergyDerListResponse = {
-                        links: getLinksPaginated(req, req.query, result.length),
-                        meta: getMetaPaginated(req.query, result.length),
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
                         data: {
                             derRecords: paginatedData
                         }
@@ -375,6 +423,14 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
 app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size", "open-status"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService?.authUser?.customerId as string, authService?.authUser?.accountsEnergy as string[], req.query);
         if (result == null) {
             res.sendStatus(404);
@@ -392,8 +448,8 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
             else {
                 // TODO there is a bug in the schema definitions. Once that is resolved revert to the use of type , eg EnergyListResponseV2
                 let listResponse: any = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         accounts: paginatedData
                     }
@@ -412,6 +468,14 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
 app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyServicePoint[] = await dbService.getServicePoints(authService?.authUser?.customerId as string);
         if (result == null) {
             res.sendStatus(404);
@@ -428,8 +492,8 @@ app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res
             }
             else {
                 let listResponse: EnergyServicePointListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         servicePoints: paginatedData
                     }
@@ -481,7 +545,7 @@ app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, 
         console.log(`Received request on ${port} for ${req.url}`);
         let data: EnergyPlanDetailV3 | null = await dbService.getEnergyPlanDetails(req.params.planId)
         if (data == null) {
-            let errorList = buildErrorMessageResource(req.params?.planId, "Resource Not Found");
+            let errorList = buildErrorMessage(DsbStandardError.RESOURCE_NOT_FOUND, `Resource Not Found: ${req.params?.planId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -505,6 +569,14 @@ app.get(`${basePath}/energy/plans/:planId`, async (req: Request, res: Response, 
 app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "effective", "fuelType", "updated-since", "type", "brand", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyPlan[] = await dbService.getEnergyAllPlans(req.query);
         if (result == null) {
             res.sendStatus(404);
@@ -521,8 +593,8 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
             }
             else {
                 let listResponse: EnergyPlanListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         plans: paginatedData
                     }
@@ -541,9 +613,17 @@ app.get(`${basePath}/energy/plans/`, async (req: Request, res: Response, next: N
 app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "interval-reads", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyUsageRead[] = await dbService.getUsageForServicePoint(authService?.authUser?.customerId as string, req.params.servicePointId, req?.query)
         if (result == null) {
-            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Invalid Service Point");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params.servicePointId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -558,8 +638,8 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
             }
             else {
                 let listResponse: EnergyUsageListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         reads: paginatedData
                     }
@@ -580,13 +660,13 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
         console.log(`Received request on ${port} for ${req.url}`);
         // find service point in user object, if it is not a service point associated with
         if ((await isServicePointsForUser(authService?.authUser?.customerId as string, req.params.servicePointId)) == false) {
-            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Invalid Service Point");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params.servicePointId}`)
             res.status(404).json(errorList);
             return;
         }
         let data: EnergyDerRecord | undefined = await dbService.getDerForServicePoint(authService?.authUser?.customerId as string, req.params.servicePointId);
         if (data == null) {
-            let errorList = buildErrorMessageForServicePoint(req.params.servicePointId, "Unavailable Service Point");
+            let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_SERVICE_POINT, `Unavailable Service Point: ${req.params.servicePointId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -611,6 +691,14 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
 app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyDerRecord[] = await dbService.getDerForMultipleServicePoints(authService?.authUser?.customerId as string, req.body?.data?.servicePointIds);
         if (result == null) {
             res.sendStatus(404);
@@ -627,8 +715,8 @@ app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request
             }
             else {
                 let listResponse: EnergyDerListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         derRecords: paginatedData
                     }
@@ -648,9 +736,17 @@ app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request
 app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyInvoice[] = await dbService.getInvoicesForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
         if (result == null) {
-            let errorList = buildErrorMessageForEnergyAccount(req.params?.accountId, "Invalid Energy Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params?.accountId}`);
             res.status(404).json(errorList);
             return;
         } else {
@@ -665,8 +761,8 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
             }
             else {
                 let listResponse: EnergyInvoiceListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         invoices: paginatedData
                     }
@@ -685,6 +781,14 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
 app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received POST request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyInvoice[] = await dbService.getInvoicesForMultipleAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
@@ -701,8 +805,8 @@ app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respo
             }
             else {
                 let listResponse: EnergyInvoiceListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         invoices: paginatedData
                     }
@@ -722,6 +826,14 @@ app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respo
 app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received POST request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: any[] = await dbService.getBalancesForMultipleAccount(authService?.authUser?.customerId as string, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
@@ -738,8 +850,8 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
             }
             else {
                 let listResponse: EnergyBalanceListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         balances: paginatedData
                     }
@@ -758,6 +870,14 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
 app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-date", "newest-date", "interval-reads", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyUsageRead[] = await dbService.getUsageForMultipleServicePoints(authService?.authUser?.customerId as string, req.body?.data?.servicePointIds, req.query)
         if (result == null) {
             res.sendStatus(404);
@@ -774,8 +894,8 @@ app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Reque
             }
             else {
                 let listResponse: EnergyUsageListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         reads: paginatedData
                     }
@@ -796,7 +916,7 @@ app.get(`${basePath}/energy/accounts/:accountId/concessions`, async (req: Reques
         console.log(`Received request on ${port} for ${req.url}`);
         let result: EnergyConcession[] | undefined = await dbService.getConcessionsForAccount(authService?.authUser?.customerId as string, req.params?.accountId)
         if (result == null) {
-            let errorList = buildErrorMessageForEnergyAccount(req.params?.accountId, "Invalid Energy Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -825,7 +945,7 @@ app.get(`${basePath}/energy/accounts/:accountId/balance`, async (req: Request, r
         let st = `Received request on ${port} for ${req.url}`;
         let result = await dbService.getBalanceForAccount(authService?.authUser?.customerId as string, req.params?.accountId)
         if (result == null) {
-            let errorList = buildErrorMessageForEnergyAccount(req.params?.accountId, "Invalid Energy Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -853,7 +973,7 @@ app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: R
         console.log(`Received request on ${port} for ${req.url}`);
         let result: EnergyPaymentSchedule[] = await dbService.getPaymentSchedulesForAccount(authService?.authUser?.customerId as string, req.params?.accountId)
         if (result == null) {
-            let errorList = buildErrorMessageForEnergyAccount(req.params?.accountId, "Invalid Energy Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -879,9 +999,17 @@ app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: R
 app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size","newest-time","oldest-time"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyBillingTransactionV2[] = await dbService.getBillingForAccount(authService?.authUser?.customerId as string, req.params?.accountId, req?.query)
         if (result == null) {
-            let errorList = buildErrorMessageForEnergyAccount(req.params?.accountId, "Invalid Energy Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
             return;
         } else {
@@ -896,8 +1024,8 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
             }
             else {
                 let listResponse: EnergyBillingListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         transactions: paginatedData
                     }
@@ -916,6 +1044,14 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
 app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "oldest-time", "newest-time", "page", "page-size"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result: EnergyBillingTransactionV2[] = await dbService.getBillingForMultipleAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
@@ -932,8 +1068,8 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
             }
             else {
                 let listResponse: EnergyBillingListResponse = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         transactions: paginatedData
                     }
@@ -955,15 +1091,15 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         if ((await isBankAccountForUser(authService?.authUser?.customerId as string, req.params.accountId)) == false) {
-            let errorList = buildErrorMessageForBankAccount(req.params?.accountId, "Invalid Bank Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
             return;
         }
-        var excludes = ["direct-debits",  "balances"];
+        var excludes = ["direct-debits", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let data: BankingAccountDetailV3 | undefined = await dbService.getAccountDetail(authService?.authUser?.customerId as string,req.params.accountId)
+            let data: BankingAccountDetailV3 | undefined = await dbService.getAccountDetail(authService?.authUser?.customerId as string, req.params.accountId)
             if (data == null) {
-                let errorList = buildErrorMessageForBankAccount(req.params?.accountId, "Unavailable Bank Account");
+                let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_BANK_ACCOUNT, `Unavailable Bank Account: ${req.params.accountId}`);
                 res.status(404).json(errorList);
                 return;
             } else {
@@ -978,58 +1114,73 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
             }
         }
         if (req.params?.accountId == "balances") {
+            let allowedParams: string[] = [
+                "page", "page-size", "product-category", "product-category", "open-status", "is-owned"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result = await dbService.getBulkBalances(authService?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
             } else {
-            let paginatedData = paginateData(result, req.query);
-            // check if this is an error object
-            if (paginatedData?.errors != null) {
-                res.statusCode = 422;
-                // In this case paginatedData is actually an error object
-                res.send(paginatedData);
-                return;
-            }
-            else {
-                let listResponse: ResponseBankingAccountsBalanceList = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
-                    data: {
-                        balances: paginatedData
-                    }
+                let paginatedData = paginateData(result, req.query);
+                // check if this is an error object
+                if (paginatedData?.errors != null) {
+                    res.statusCode = 422;
+                    // In this case paginatedData is actually an error object
+                    res.send(paginatedData);
+                    return;
                 }
-                res.send(listResponse);
-                return;
-            }
+                else {
+                    let listResponse: ResponseBankingAccountsBalanceList = {
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
+                        data: {
+                            balances: paginatedData
+                        }
+                    }
+                    res.send(listResponse);
+                    return;
+                }
             }
         }
-
         if (req.params?.accountId == "direct-debits") {
+            let allowedParams: string[] = [
+                "page", "page-size", "product-category", "product-category", "open-status", "is-owned"
+            ]
+            let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+            if (errorList != undefined) {
+                res.status(400).json(errorList);
+                return;
+            }
             let result = await dbService.getBulkDirectDebits(authService?.authUser?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
             } else {
-            let paginatedData = paginateData(result, req.query);
-            // check if this is an error object
-            if (paginatedData?.errors != null) {
-                res.statusCode = 422;
-                // In this case paginatedData is actually an error object
-                res.send(paginatedData);
-                return;
-            }
-            else {
-                let listResponse: ResponseBankingDirectDebitAuthorisationList = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
-                    data: {
-                        directDebitAuthorisations: paginatedData
-                    }
+                let paginatedData = paginateData(result, req.query);
+                // check if this is an error object
+                if (paginatedData?.errors != null) {
+                    res.statusCode = 422;
+                    // In this case paginatedData is actually an error object
+                    res.send(paginatedData);
+                    return;
                 }
-                res.send(listResponse);
-                return;
-            }
+                else {
+                    let listResponse: ResponseBankingDirectDebitAuthorisationList = {
+                        links: getLinksPaginated(req, result.length),
+                        meta: getMetaPaginated(result.length, req.query),
+                        data: {
+                            directDebitAuthorisations: paginatedData
+                        }
+                    }
+                    res.send(listResponse);
+                    return;
+                }
             }
         }
     } catch (e) {
@@ -1042,14 +1193,21 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
 app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
+        let allowedParams: string[] = [
+            "page", "page-size", "product-category", "effective", "updated-since", "brand"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let q = req.query as object;
         let result = await dbService.getAllBankingProducts(q);
         if (result == null) {
             res.sendStatus(404);
             return;
-        } 
-        else
-        {
+        }
+        else {
             let paginatedData = paginateData(result, req.query);
             // check if this is an error object
             if (paginatedData?.errors != null) {
@@ -1060,8 +1218,8 @@ app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, nex
             }
             else {
                 let listResponse: ResponseBankingProductListV2 = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         products: paginatedData
                     }
@@ -1082,7 +1240,7 @@ app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Res
         console.log(`Received request on ${port} for ${req.url}`);
         let data = await dbService.getBankingProductDetails(req.params.productId)
         if (data == null) {
-            let errorList = buildErrorMessageResource(req.params?.payeeId, "Resource Not Found");
+            let errorList = buildErrorMessage(DsbStandardError.RESOURCE_NOT_FOUND, `Resource Not Found: ${req.params.productId}`);
             res.status(404).json(errorList);
             return;
         } else {
@@ -1105,10 +1263,18 @@ app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Res
 app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
     try {
-       console.log(`Received request on ${port} for ${req.url}`);
-       let result = await dbService.getAccounts(authService?.authUser?.customerId as string, authService?.authUser?.accountsBanking as string[], req.query)
+        console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size", "product-category", "product-category", "open-status", "is-owned"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
+        let result = await dbService.getAccounts(authService?.authUser?.customerId as string, authService?.authUser?.accountsBanking as string[], req.query)
 
-       let paginatedData = paginateData(result, req.query);
+        let paginatedData = paginateData(result, req.query);
         // check if this is an error object
         if (paginatedData?.errors != null) {
             res.statusCode = 422;
@@ -1118,8 +1284,8 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
         }
         else {
             let listResponse: ResponseBankingAccountListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     accounts: paginatedData
                 }
@@ -1142,7 +1308,7 @@ app.get(`${basePath}/banking/accounts/:accountId/balance`, async (req: Request, 
 
         let data = await dbService.getAccountBalance(authService?.authUser?.customerId as string, req.params.accountId)
         if (data == null) {
-            let errorList = buildErrorMessageForBankAccount(req.params?.accountId, "Invalid Bank Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req?.params?.accountId}`);
             res.status(404).json(errorList);
             return;
         } else {
@@ -1169,7 +1335,7 @@ app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Resp
         console.log(`Received request on ${port} for ${req.url}`);
 
         let result = await dbService.getBalancesForSpecificAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
-         if (result == null) {
+        if (result == null) {
             res.sendStatus(404);
             return;
         } else {
@@ -1183,8 +1349,8 @@ app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Resp
             }
             else {
                 let listResponse: ResponseBankingAccountsBalanceList = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         balances: paginatedData
                     }
@@ -1204,14 +1370,20 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
     console.log(`Received request on ${port} for ${req.url}`);
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-
+        let allowedParams: string[] = [
+            "page", "page-size", "oldest-time", "newest-time", "min-amount", "max-amount"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
         let result = await dbService.getTransationsForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
         if (result == null) {
-            let errorList = buildErrorMessageForBankAccount(req.params?.accountId, "Invalid Bank Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req.params?.accountId}`)
             res.status(404).json(errorList);
             return;
-        } else
-        {
+        } else {
             let paginatedData = paginateData(result, req.query);
             // check if this is an error object
             if (paginatedData?.errors != null) {
@@ -1222,8 +1394,8 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
             }
             else {
                 let listResponse: ResponseBankingTransactionList = {
-                    links: getLinksPaginated(req, req.query, result.length),
-                    meta: getMetaPaginated(req.query, result.length),
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
                     data: {
                         transactions: paginatedData
                     }
@@ -1231,7 +1403,7 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
                 res.send(listResponse);
                 return;
             }
-        } 
+        }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -1246,7 +1418,7 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, a
 
         let data = await dbService.getTransactionDetail(authService?.authUser?.customerId as string, req.params.accountId, req.params.transactionId)
         if (data == null) {
-            let errorList = buildErrorMessageForBankAccount(req.params?.accountId, "Invalid Bank Account");
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req?.params?.accountId}`);
             res.status(404).json(errorList);
             return;
         } else {
@@ -1284,8 +1456,8 @@ app.get(`${basePath}/banking/payees/`, async (req: Request, res: Response, next:
         }
         else {
             let listResponse: ResponseBankingPayeeListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     payees: paginatedData
                 }
@@ -1306,7 +1478,7 @@ app.get(`${basePath}/banking/payees/:payeeId`, async (req: Request, res: Respons
         console.log(`Received request on ${port} for ${req.url}`);
         let data = await dbService.getPayeeDetail(authService?.authUser?.customerId as string, req.params.payeeId)
         if (data == null) {
-            let errorList = buildErrorMessageResource(req.params?.payeeId, "Resource Not Found");
+            let errorList = buildErrorMessage(DsbStandardError.RESOURCE_NOT_FOUND, `Resource Not Found: ${req?.params?.payeeId}`);
             res.status(404).json(errorList);
             return;
         } else {
@@ -1342,8 +1514,8 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
         }
         else {
             let listResponse: ResponseBankingScheduledPaymentsListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     scheduledPayments: paginatedData
                 }
@@ -1356,7 +1528,7 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
         res.sendStatus(500);
     }
 
- });
+});
 
 app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);
@@ -1374,8 +1546,8 @@ app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Res
         }
         else {
             let listResponse: ResponseBankingScheduledPaymentsListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     scheduledPayments: paginatedData
                 }
@@ -1406,8 +1578,8 @@ app.get(`${basePath}/banking/accounts/:accountId/payments/scheduled`, async (req
         }
         else {
             let listResponse: ResponseBankingScheduledPaymentsListV2 = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     scheduledPayments: paginatedData
                 }
@@ -1438,8 +1610,8 @@ app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Req
         }
         else {
             let listResponse: ResponseBankingDirectDebitAuthorisationList = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     directDebitAuthorisations: paginatedData
                 }
@@ -1470,8 +1642,8 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
         }
         else {
             let listResponse: ResponseBankingDirectDebitAuthorisationList = {
-                links: getLinksPaginated(req, req.query, result.length),
-                meta: getMetaPaginated(req.query, result.length),
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
                 data: {
                     directDebitAuthorisations: paginatedData
                 }
@@ -1530,6 +1702,84 @@ async function isEnergyAccountForUser(customerId: string, accountId: string): Pr
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal
+}
+
+function validateQueryParameters(query: any, allowedParams: string[]): any {
+    if (query == null)
+        return;
+    let errorList: any = {
+        errors: []
+    };
+    for (const property in query) {
+        if (allowedParams.indexOf(property) == -1) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid query parameter parameter: ${property}`, errorList);
+        }
+    }
+    var pageSize = 25;
+    // check pagination parmeters
+    if (query["page-size"] != null && query["page-size"] != "") {
+        pageSize = parseInt(query["page-size"]);
+        if (isNaN(pageSize)) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid page-size parameter: ${pageSize}`, errorList)
+        }
+        else if (pageSize > 1000) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_PAGE_SIZE, `page-size ${pageSize} exceeds maximum`, errorList)
+        }
+    }
+    if (query["page"] != null && query["page"] != "") {
+        let page = parseInt(query["page"]);
+        if (isNaN(page)) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid page parameter: ${query["page"]}`, errorList)
+        }
+    }
+    // check date parameters
+    var formats = [
+        'YYYY-MM-DDTHH:mm:ss.sssssZ',
+        'YYYY-MM-DDTHH:mm:ss.sssZ',
+        'YYYY-MM-DDTHH:mm:ss-HH:mm'
+    ];
+    if (query["updated-since"] != null && query["updated-since"] != "") {
+        let dateString = query["updated-since"];
+        if (moment(dateString, formats, true).isValid() == false) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid updated-since parameter: ${dateString}`, errorList)
+        }
+    }
+    if (query["oldest-date"] != null && query["oldest-date"] != "") {
+        let dateString = query["oldest-date"];
+        if (moment(dateString, formats, true).isValid() == false) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid oldest-date parameter: ${dateString}`, errorList)
+        }
+    }
+    if (query["newest-date"] != null && query["newest-date"] != "") {
+        let dateString = query["newest-date"];
+        if (moment(dateString, formats, true).isValid() == false) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid newest-date parameter: ${dateString}`, errorList)
+        }
+    }
+    if (query["oldest-time"] != null && query["oldest-time"] != "") {
+        let dateString = query["oldest-time"];
+        if (moment(dateString, formats, true).isValid() == false) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid oldest-time parameter: ${dateString}`, errorList)
+        }
+    }
+    if (query["newest-time"] != null && query["newest-time"] != "") {
+        let dateString = query["newest-time"];
+        if (moment(dateString, formats, true).isValid() == false) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid newest-time parameter: ${dateString}`, errorList)
+        }
+    }
+    // check open-staus
+    if (query["open-status"] != null && query["open-status"] != "") {
+        let validStates: string[] = ["OPEN", "CLOSED", "ALL"]
+        if (validStates.indexOf(query["open-status"]) == -1) {
+            errorList = buildErrorMessage(DsbStandardError.INVALID_FIELD, `Invalid open-satus parameter: ${query["open-status"]}`, errorList)
+        }
+    }
+    if (errorList.errors.length > 0) {
+        return errorList;
+    }
+    else
+        return;
 }
 
 initaliseApp();
