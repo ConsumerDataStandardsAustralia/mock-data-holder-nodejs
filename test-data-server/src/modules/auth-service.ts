@@ -10,7 +10,6 @@ import { IDatabase } from "../services/database.interface";
 import { CryptoUtils } from "../utils/crypto-utils";
 import { IAuthService } from "./auth-service.interface";
 import { EnergyServicePoint } from "consumer-data-standards/energy";
-import e from "express";
 
 
 export class AuthService implements IAuthService {
