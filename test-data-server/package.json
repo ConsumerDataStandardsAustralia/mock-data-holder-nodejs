@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "npm run build && cd ./dist/src && node ./app.js",
-    "build": "tsc && cp -r ../security ./dist/src/  && cp -r ./data ./dist && cp ../.env ./dist/src",
-    "build:prod": "tsc && cp -r ./data ./dist && cp ./.env* ./dist/src",
+    "build": "tsc && cp -r ../security ./dist/src/  && cp -r ./data ./dist && cp ../.env* ./dist/src",
+    "build:prod": "tsc && cp -r ./data ./dist && cp ./.env ./dist/src/.env",
+    "build:panva": "tsc && cp -r ./data ./dist && cp ./.env.panva ./dist/src/.env",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon"
   },

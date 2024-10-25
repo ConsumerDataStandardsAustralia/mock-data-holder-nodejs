@@ -21,6 +21,7 @@ import cors from 'cors';
 import path from 'path';
 import { readFileSync } from 'fs';
 import * as https from 'https'
+import * as http from 'http'
 import { DsbCdrUser } from './models/user';
 import { cdrAuthorization } from './modules/auth';
 import {
@@ -43,6 +44,7 @@ import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 import { AuthService } from './modules/auth-service';
 import moment from 'moment';
+import { PanvaAuthService } from './modules/panva-service';
 
 
 dotenv.config();
@@ -50,8 +52,9 @@ console.log(JSON.stringify(process.env, null, 2));
 
 const exp = express;
 const app = express();
-const port = `${process.env.APP_LISTENTING_PORT}`;
-const noAuthServer = `${process.env.NO_AUTH_SERVER}`;
+let port = `${process.env.APP_LISTENTING_PORT}`;
+const authServerType = `${process.env.AUTH_SERVER_TYPE}`;
+const useSSL: boolean = `${process.env.USE_SSL}`.toUpperCase() == 'TRUE';
 
 let basePath = '/cds-au/v1';
 
@@ -67,14 +70,20 @@ var dbService: IDatabase;
 var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
-if (noAuthServer == "true") {
+if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
     authService = new StandAloneAuthService(dbService);
 }
+else if (authServerType.toUpperCase() == "PANVA") {
+    console.log(`Running server with authorisation. Required to go through authorisation process`)
+    authService = new PanvaAuthService(dbService);
+}
 else {
     console.log(`Running server with authorisation. Required to go through authorisation process`)
-    authService = new AuthService(dbService);
+    authService = new AuthService(dbService);  
 }
+
+
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
@@ -126,7 +135,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // This is a function which interacts with the Authorisation server developed by the ACCC
-app.use(cdrAuthorization(authService, endpointValidatorOptions));
+app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), "/login-data", "/health"));
 app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data", "/health"));
 app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data", "/health"));
 app.use(unless(cdrScopeValidator(userService), "/login-data", "/jwks", `/health`));
@@ -144,11 +153,20 @@ async function initaliseApp() {
         }
         console.log(`Connecting to database : ${connString}`);
         await dbService.connectDatabase();
+        authService.initAuthService();
         console.log(`Connected.`);
-        https.createServer(otions, app)
+        if (useSSL){
+            let port = `${process.env.APP_LISTENTING_PORT_SSL}`;
+            https.createServer(otions, app)
+                .listen(port, () => {
+                    console.log(`Server started. Listening on port ${port}`);
+                })
+        } else {
+            http.createServer(app)
             .listen(port, () => {
                 console.log(`Server started. Listening on port ${port}`);
-            })
+            })  
+        }
     } catch (e: any) {
         console.log(`FATAL: could not start server${e?.message}`);
     }

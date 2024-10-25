@@ -25,27 +25,27 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         svc = authService;
         let ep = getEndpoint(req, config);
         console.log("Endpoint is: " + JSON.stringify(ep))
-        if (ep == null || ep.authScopesRequired == null) {
-            next();
-            return;
-        }
 
         let accessToken = req.headers.authorization;
         if (accessToken == null) {
-            res.status(404).json('No authorization header provided');
+            res.status(401).json('No authorization header provided');
             return;
         }
         
         // initialise the authService
-        if (await svc.initAuthService() == false) {
-            res.status(500).json('Could not communicate with authorisation server');
-            return;
-        }
+        // if (await svc.initAuthService() == false) {
+        //     res.status(500).json('Could not communicate with authorisation server');
+        //     return;
+        // }
         // validate access token via introspective endpoint
         if (await svc.verifyAccessToken(accessToken) == false) {
-            res.status(404).json('Invalid access token');
+            res.status(401).json('Invalid access token');
             return;
         }
+        // if (ep == null || ep.authScopesRequired == null) {
+        //     next();
+        //     return;
+        // }
         // get service points for user
         
         next();
