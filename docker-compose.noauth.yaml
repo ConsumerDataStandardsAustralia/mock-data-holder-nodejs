@@ -20,7 +20,7 @@ services:
     image: mongo:6.0
     container_name: mongodb
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env.noauth
     volumes:     
       - dbdata:/usr/local/var/mongodb
     ports:
@@ -32,7 +32,7 @@ services:
     #   dockerfile: dockerfile.dsb-data-loader
     container_name: dsb-data-loader
     image: consumerdatastandardsaustralia/dsb-data-loader:0.2
-    env_file: .env.docker
+    env_file: .env.noauth
     depends_on:
       - mongodb
 
