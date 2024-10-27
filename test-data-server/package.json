@@ -5,9 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "npm run build && cd ./dist/src && node ./app.js",
-    "build": "tsc && cp -r ../security ./dist/src/  && cp -r ./data ./dist && cp ../.env* ./dist/src",
-    "build:prod": "tsc && cp -r ./data ./dist && cp ./.env ./dist/src/.env",
-    "build:panva": "tsc && cp -r ./data ./dist && cp ./.env.panva ./dist/src/.env",
+    "build": "tsc  &&  npm run copy-files",
+    "build:docker": "tsc ",
+    "copy-files": "cp ../.env ./dist/src && mkdir -p ./dist/src/security/  && cp -r ../security/mock-data-holder/ ./dist/src/security/mock-data-holder/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon"
   },
@@ -46,7 +46,7 @@
     "mongoose": "^6.8.4",
     "mongoose-paginate-v2": "^1.8.0",
     "openid-client": "^5.4.3",
-    "parse": "^4.0.0",
+    "parse": "^5.3.0",
     "swagger-ui-express": "^5.0.0",
     "typedi": "^0.10.0",
     "uuid": "^9.0.0"

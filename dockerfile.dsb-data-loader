@@ -4,14 +4,9 @@ ENV NODE_ENV=docker
 # Create app directory
 WORKDIR /usr/src/app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY load-test-data/package*.json ./
 
 RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
 
 # Bundle app source
 COPY ./load-test-data/ .
@@ -19,9 +14,10 @@ COPY ./utils/sql/AddClientScriptRelease.sql .
 
 RUN npm run build
 
-RUN apt-get update
-RUN apt-get -y install -y iputils-ping
-RUN apt-get -y install -y ssh
-RUN apt-get -y install vim
+# These can be disabled for ssh debugging purposes
+# RUN apt-get update
+# RUN apt-get -y install -y iputils-ping
+# RUN apt-get -y install -y ssh
+# RUN apt-get -y install vim
 
 CMD [ "node", "dist/app.js"]
