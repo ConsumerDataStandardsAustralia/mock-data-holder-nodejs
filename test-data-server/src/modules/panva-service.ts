@@ -42,13 +42,14 @@ export class PanvaAuthService implements IAuthService {
     public async initAuthService(): Promise<boolean> {
         try {
             console.log('Initialise auth service..');
+        
             // const httpAgent = this.buildHttpsAgent();
             //   let config : AxiosRequestConfig = {
             //     httpsAgent: httpsAgent,
             //   }
 
             this.tlsThumPrint = this.calculateTLSThumbprint();
-            const url = path.join(process.env.AUTH_SERVER_URL as string, '.well-known/openid-configuration')
+            const url = `${process.env.AUTH_SERVER_URL}/.well-known/openid-configuration`
             console.log(`Auth server url: ${url}`);
             const response = await axios.get(url)
             if (!(response.status == 200)) {
