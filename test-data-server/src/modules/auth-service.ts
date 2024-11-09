@@ -46,7 +46,7 @@ export class AuthService implements IAuthService {
               }
 
             this.tlsThumPrint = this.calculateTLSThumbprint();
-            const url = path.join(process.env.AUTH_SERVER_URL as string, '.well-known/openid-configuration')
+            const url = `${process.env.AUTH_SERVER_URL}/.well-known/openid-configuration`;
             console.log(`Auth server url: ${url}`);
             const response = await axios.get(url,  config)
             if (!(response.status == 200)) {
@@ -102,7 +102,7 @@ export class AuthService implements IAuthService {
 
     private buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
-            ca: readFileSync(path.join(__dirname, '../security/cdr-auth-server/mtls', process.env.CA_FILE as string))
+            ca: readFileSync(path.join(__dirname, '../security/mock-data-holder/mtls', process.env.CA_FILE as string))
            })
         return httpsAgent;
     }
