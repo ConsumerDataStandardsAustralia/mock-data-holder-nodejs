@@ -1122,34 +1122,41 @@ export class SingleData implements IDatabase {
                 if (id == loginId) {
                     let aModel: CustomerModel = {
                         LoginId: id,
-                        Accounts: []
+                        Accounts: [],
+                        firstName: c.customer?.person?.firstName,
+                        lastName: c.customer?.person?.lastName,
+                        email: c.customer?.person?.emailAddresses[0]?.address,
+                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber
                     };
                     let accounts: AccountModel[] = [];
 
-                    c?.energy?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: `Energy - ${acc?.account?.displayName}`
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
+                    if (sector?.toUpperCase() == 'ENERGY' || sector == null) {
+                        c?.energy?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: `${acc?.account?.displayName}`
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+                    }
 
-                    // TODO Once we have the API implemented for Banking, we can uncomment this
-                    c?.banking?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: `Banking - ${acc?.account?.displayName}`
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
+                    if (sector?.toUpperCase() == 'BANKING' || sector == null) {
+                        c?.banking?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: `${acc?.account?.displayName}`
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+                    }
                 }
             })
         }
