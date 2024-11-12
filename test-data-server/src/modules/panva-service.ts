@@ -36,7 +36,7 @@ export class PanvaAuthService implements IAuthService {
     constructor(dbService: IDatabase) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
-        //this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
+        this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
     }
 
     public async initAuthService(): Promise<boolean> {
@@ -61,7 +61,7 @@ export class PanvaAuthService implements IAuthService {
                 // set the various endpoints
                 this.token_endpoint = response.data?.token_endpoint;
                 this.introspection_endpoint = response.data?.introspection_endpoint;
-                this.introspection_endpoint_internal = this.introspection_endpoint;
+                //this.introspection_endpoint_internal = this.introspection_endpoint;
                 this.jwks_uri = response.data?.jwks_uri;
                 this.issuer = response.data?.issuer;
                 return true;
@@ -72,6 +72,17 @@ export class PanvaAuthService implements IAuthService {
             console.log('ERROR DETAIL', error?.response?.data);   
             return false;
         }       
+    }
+
+    private async getArrangement(id: string): Promise<any> {
+        let authHeader = this.buildBasicAuthHeader();
+        let config : AxiosRequestConfig = {
+            headers: {'Authorization': `${authHeader}`},
+            params: { arrangement: `${id}` },
+        }
+        const response = await axios.get(this.introspection_endpoint_internal as string, config)
+        // response.data will be a CDrArrangment object as defined in dsb-panva-oidc--provider
+        return response;
     }
     
     public async verifyAccessToken(token: string): Promise<boolean> {
@@ -92,11 +103,12 @@ export class PanvaAuthService implements IAuthService {
               }
             let tokeToBeValidated = token.split(' ')[1];
             let postBody = this.buildIntrospecticePostBody(tokeToBeValidated);
-            const response = await axios.post(this.introspection_endpoint_internal, postBody, config)
+            const response = await axios.post(this.introspection_endpoint as string, postBody, config)
             if (!(response.status == 200)) {
                 return false;
               }
             else {
+                let arr = await this.getArrangement(response?.data?.cdr_arrangement_id);
                 return await this.buildUser(response?.data);
             }
         } catch (error: any) {
