@@ -48,12 +48,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             res.status(401).json('Invalid access token');
             return;
         }
-        // if (ep == null || ep.authScopesRequired == null) {
-        //     next();
-        //     return;
-        // }
-        // get service points for user
-        
+     
         next();
     };
 

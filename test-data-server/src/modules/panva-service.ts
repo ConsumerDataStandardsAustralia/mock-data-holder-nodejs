@@ -12,6 +12,7 @@ import { CryptoUtils } from "../utils/crypto-utils";
 import { IAuthService } from "./auth-service.interface";
 import { EnergyServicePoint } from "consumer-data-standards/energy";
 import { unescape } from "querystring";
+import { CdrArrangement } from "./cdr-arrangement.model";
 
 
 export class PanvaAuthService implements IAuthService {
@@ -61,12 +62,10 @@ export class PanvaAuthService implements IAuthService {
                 // set the various endpoints
                 this.token_endpoint = response.data?.token_endpoint;
                 this.introspection_endpoint = response.data?.introspection_endpoint;
-                //this.introspection_endpoint_internal = this.introspection_endpoint;
                 this.jwks_uri = response.data?.jwks_uri;
                 this.issuer = response.data?.issuer;
                 return true;
             }
-            //return true;
         } catch (error: any) {
             console.log('ERROR: ', error.message);
             console.log('ERROR DETAIL', error?.response?.data);   
@@ -77,10 +76,10 @@ export class PanvaAuthService implements IAuthService {
     private async getArrangement(id: string): Promise<any> {
         let authHeader = this.buildBasicAuthHeader();
         let config : AxiosRequestConfig = {
-            headers: {'Authorization': `${authHeader}`},
-            params: { arrangement: `${id}` },
-        }
-        const response = await axios.get(this.introspection_endpoint_internal as string, config)
+            headers: {'Authorization': `${authHeader}`}
+        };
+        let url: string = this.introspection_endpoint_internal + id
+        const response = await axios.get(url, config)
         // response.data will be a CDrArrangment object as defined in dsb-panva-oidc--provider
         return response;
     }
@@ -95,7 +94,6 @@ export class PanvaAuthService implements IAuthService {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'Authorization': `${authHeader}`
                     } ;
-            //this.authUser = await this.buildUser(token);
             const httpAgent = this.buildHttpAgent();
               let config : AxiosRequestConfig = {
                 //httpAgent: httpAgent,
@@ -108,8 +106,9 @@ export class PanvaAuthService implements IAuthService {
                 return false;
               }
             else {
-                let arr = await this.getArrangement(response?.data?.cdr_arrangement_id);
-                return await this.buildUser(response?.data);
+                let arrangement : any = await this.getArrangement(response?.data?.cdr_arrangement_id);
+                await this.buildUser(arrangement?.data);
+                return true;
             }
         } catch (error: any) {
             console.log('ERROR: ', error.message);
@@ -141,30 +140,24 @@ export class PanvaAuthService implements IAuthService {
         return httpsAgent;
     }
 
-    private async buildUser(introspection: any) : Promise<boolean> {
+    private async buildUser(arrangement: CdrArrangement) : Promise<boolean> {
         try {
                 
-            let loginId = introspection.sub;
+            let loginId = arrangement.loginId;
             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
             if (customerId == undefined)
                return false;
             this.authUser  = {
                 loginId : loginId,
                 customerId: customerId,
-                encodeUserId: introspection.sub,
+                encodeUserId: arrangement.loginId,
                 encodedAccounts: undefined,
-                accountsEnergy: undefined,
-                accountsBanking: undefined,
-                scopes_supported: introspection.scope
+                accountsEnergy: arrangement.consentedAccounts,
+                accountsBanking: arrangement.consentedAccounts,
+                scopes_supported: arrangement.scopes.split(' ')
             }
-            // Once the customerId (here: userId) has been the account ids can be decrypted.
-            // The parameters here are the decrypted customerId from above and the software_id from the token
-            // The IdPermanence key (private key) is kwown to the DH and the Auth server
-            // let accountIds: string[] = this.decryptAccountArray(token);
-            // this.authUser.accountsEnergy = accountIds;
-            // this.authUser.accountsBanking = accountIds;
-            // this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
-            // this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+            this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+            this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
             return true;
         } catch(ex) {
             console.log(JSON.stringify(ex))
