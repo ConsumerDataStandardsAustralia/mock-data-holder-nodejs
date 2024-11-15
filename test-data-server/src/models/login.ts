@@ -12,5 +12,6 @@ export type AccountModel = {
     DisplayName: string,
     ProductName?: string,
     MaskedName?: string,
-    AccountNumber?:string
+    AccountNumber?:string,
+    Sector?: string;
 }

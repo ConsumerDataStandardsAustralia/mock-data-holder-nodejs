@@ -4,5 +4,6 @@ export interface CdrArrangement {
     loginId: string;
     grantId: string;
     scopes: string;
-    consentedAccounts?: string[]
+    consentedEnergyAccounts?: string[];
+    consentedBankingAccounts?: string[]
 }

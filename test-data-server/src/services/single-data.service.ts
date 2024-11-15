@@ -1130,13 +1130,14 @@ export class SingleData implements IDatabase {
                     };
                     let accounts: AccountModel[] = [];
 
-                    if (sector?.toUpperCase() == 'ENERGY' || sector == null) {
+                    if (sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
                         c?.energy?.accounts.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
                                 MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: `${acc?.account?.displayName}`
+                                DisplayName: `${acc?.account?.displayName}`,
+                                Sector: 'ENERGY'
                             };
                             accounts.push(loginAccount)
                         })
@@ -1144,13 +1145,14 @@ export class SingleData implements IDatabase {
                         loginModel.push(aModel);
                     }
 
-                    if (sector?.toUpperCase() == 'BANKING' || sector == null) {
+                    if (sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
                         c?.banking?.accounts.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
                                 MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: `${acc?.account?.displayName}`
+                                DisplayName: `${acc?.account?.displayName}`,
+                                Sector: 'BANKING'
                             };
                             accounts.push(loginAccount)
                         })

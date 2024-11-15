@@ -131,15 +131,17 @@ var userService: IUserService = {
     }
 };
 
+const excludedPaths: string[] = ["/health", "/login-data/all", "/login-data/energy", "/login-data/banking", ]
+
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // This is a function which interacts with the Authorisation server developed by the ACCC
-app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), "/login-data", "/health"));
-app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data", "/health"));
-app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data", "/health"));
-app.use(unless(cdrScopeValidator(userService), "/login-data", "/jwks", `/health`));
-app.use(unless(cdrResourceValidator(userService), "/login-data", "/jwks", `/health`));
+app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), excludedPaths));
+app.use(unless(cdrEndpointValidator(endpointValidatorOptions), excludedPaths));
+app.use(unless(cdrHeaderValidator(headerValidatorOptions), excludedPaths));
+app.use(unless(cdrScopeValidator(userService), excludedPaths));
+app.use(unless(cdrResourceValidator(userService), excludedPaths));
 
 
 app.use('/', router);
@@ -176,8 +178,7 @@ async function initaliseApp() {
 app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let user = authService?.authUser?.loginId;
-        res.send(`Service is running....${user}`);
+        res.send(`Service is running....`);
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -185,9 +186,18 @@ app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // function used to determine if the middleware is to be bypassed for the given 'paths'
-function unless(middleware: any, ...paths: any) {
+function unless(middleware: any, paths: string[]) {
     return function (req: Request, res: Response, next: NextFunction) {
-        const pathCheck = paths.some((path: string) => path == req.path);
+        // Checks whether an element is even
+        let pathCheck = false
+        for (let i=0; i < paths?.length; i++){
+            if (paths[i].toUpperCase() == req.path.toUpperCase())
+            {
+                pathCheck = true;
+                break;
+            }
+            
+        }
         pathCheck ? next() : middleware(req, res, next);
     };
 };
@@ -1677,7 +1687,7 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
 });
 
 // Get the information required by the Auth server to displaythe login screen
-app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
+app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let qry: any = req.query
@@ -1694,6 +1704,18 @@ app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) =
         res.sendStatus(500);
     }
 });
+
+// this endpoint requires authentication
+app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        res.send(`Service is running....`);
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+});
+
 
 async function isServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
     let retVal: boolean = false;

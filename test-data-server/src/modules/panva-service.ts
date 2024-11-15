@@ -17,18 +17,18 @@ import { CdrArrangement } from "./cdr-arrangement.model";
 
 export class PanvaAuthService implements IAuthService {
 
-    private token_endpoint: string | undefined;
     private introspection_endpoint: string | undefined;
     private introspection_endpoint_internal: string | undefined;
-    private jwks_uri: string | undefined;
-    private issuer: string | undefined;
 
 
     authUser: DsbCdrUser| undefined;
     private jwkKeys: JwkKey[] | undefined;
     private tlsThumPrint: string | undefined;
     private jwtEncodingAlgorithm: string;
+    private issuer: string | undefined;
+    private jwks_uri: string | undefined;
     private algorithm = 'AES-256-CBC';
+    private token_endpoint:  string | undefined;
     // This key must be the same on the authorisation server
     private idPermanenceKey = process.env.IDPERMANENCEKEY;
     private iv = Buffer.alloc(16);
@@ -43,7 +43,7 @@ export class PanvaAuthService implements IAuthService {
     public async initAuthService(): Promise<boolean> {
         try {
             console.log('Initialise auth service..');
-        
+            // TODO Https
             // const httpAgent = this.buildHttpsAgent();
             //   let config : AxiosRequestConfig = {
             //     httpsAgent: httpsAgent,
@@ -96,7 +96,6 @@ export class PanvaAuthService implements IAuthService {
                     } ;
             const httpAgent = this.buildHttpAgent();
               let config : AxiosRequestConfig = {
-                //httpAgent: httpAgent,
                 headers: hdrs
               }
             let tokeToBeValidated = token.split(' ')[1];
@@ -117,7 +116,8 @@ export class PanvaAuthService implements IAuthService {
         }
     }
 
-    private buildBasicAuthHeader(): string {
+    // This header is used for introspection calls, using Basic Auth "client_id:secret"
+    private buildBasicAuthHeader(): string {    
         let basic = 'Basic ';
         let authString = `${unescape(process.env.CLIENT_ID ?? '')}:${unescape(process.env.CLIENT_SECRET ?? '')}`;
         let authString64 = Buffer.from(authString).toString('base64url');
@@ -132,7 +132,7 @@ export class PanvaAuthService implements IAuthService {
         return httpsAgent;
     }
 
-
+    // TODO USed with https
     private buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
             ca: readFileSync(path.join(__dirname, '../security/cdr-auth-server/mtls', process.env.CA_FILE as string))
@@ -152,8 +152,8 @@ export class PanvaAuthService implements IAuthService {
                 customerId: customerId,
                 encodeUserId: arrangement.loginId,
                 encodedAccounts: undefined,
-                accountsEnergy: arrangement.consentedAccounts,
-                accountsBanking: arrangement.consentedAccounts,
+                accountsEnergy: arrangement.consentedEnergyAccounts,
+                accountsBanking: arrangement.consentedBankingAccounts,
                 scopes_supported: arrangement.scopes.split(' ')
             }
             this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];

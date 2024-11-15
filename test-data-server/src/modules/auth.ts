@@ -17,19 +17,7 @@ var svc: IAuthService;
 export function cdrAuthorization(authService: IAuthService,  options: CdrConfig | undefined): any {
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
-        let allEP: EndpointConfig[] = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...DefaultCommonEndpoints];
-        let config: CdrConfig = {
-            endpoints: allEP,
-            basePath: options?.basePath
-        }
         svc = authService;
-        let ep = getEndpoint(req, config);
-        console.log("Endpoint is: " + JSON.stringify(ep))
-        if (ep == null || ep.authScopesRequired == null) {
-            next();
-            return;
-        }
-
         // initialise the authService
         if (await svc.initAuthService() == false) {
             res.status(500).json('Could not communicate with authorisation server');
@@ -42,13 +30,11 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             return;
         }
         
-
         // validate access token via introspective endpoint
         if (await svc.verifyAccessToken(accessToken) == false) {
             res.status(401).json('Invalid access token');
             return;
-        }
-     
+        }    
         next();
     };
 
