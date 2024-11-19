@@ -18,6 +18,13 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
         svc = authService;
+        // get the endpoint
+        let ep = getEndpoint(req, options);
+        if (ep?.authScopesRequired == null){
+            next();
+            return;
+        }
+
         // initialise the authService
         if (await svc.initAuthService() == false) {
             res.status(500).json('Could not communicate with authorisation server');

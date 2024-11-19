@@ -152,8 +152,8 @@ export class PanvaAuthService implements IAuthService {
                 customerId: customerId,
                 encodeUserId: arrangement.loginId,
                 encodedAccounts: undefined,
-                accountsEnergy: arrangement.consentedEnergyAccounts,
-                accountsBanking: arrangement.consentedBankingAccounts,
+                accountsEnergy: arrangement.consentedEnergyAccounts?.map(x => x.AccountId),
+                accountsBanking: arrangement.consentedBankingAccounts?.map(x => x.AccountId),
                 scopes_supported: arrangement.scopes.split(' ')
             }
             this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
