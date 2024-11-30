@@ -1106,7 +1106,7 @@ export class SingleData implements IDatabase {
         return retList;
     }
 
-    // get all the logins for the ACCC cdr-auth-server UI
+    // get the login information
     async getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
@@ -1122,34 +1122,43 @@ export class SingleData implements IDatabase {
                 if (id == loginId) {
                     let aModel: CustomerModel = {
                         LoginId: id,
-                        Accounts: []
+                        Accounts: [],
+                        firstName: c.customer?.person?.firstName,
+                        lastName: c.customer?.person?.lastName,
+                        email: c.customer?.person?.emailAddresses[0]?.address,
+                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber
                     };
                     let accounts: AccountModel[] = [];
 
-                    c?.energy?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: `Energy - ${acc?.account?.displayName}`
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
+                    if (sector == null || sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
+                        c?.energy?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: `${acc?.account?.displayName}`,
+                                Sector: 'ENERGY'
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+                    }
 
-                    // TODO Once we have the API implemented for Banking, we can uncomment this
-                    c?.banking?.accounts.forEach((acc: any) => {
-                        let loginAccount: AccountModel = {
-                            AccountId: acc?.account?.accountId,
-                            AccountNumber: acc?.account?.accountNumber,
-                            MaskedName: acc?.account?.maskedNumber,
-                            DisplayName: `Banking - ${acc?.account?.displayName}`
-                        };
-                        accounts.push(loginAccount)
-                    })
-                    aModel.Accounts = accounts;
-                    loginModel.push(aModel);
+                    if (sector == null || sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
+                        c?.banking?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: `${acc?.account?.displayName}`,
+                                Sector: 'BANKING'
+                            };
+                            accounts.push(loginAccount)
+                        })
+                        aModel.Accounts = accounts;
+                        loginModel.push(aModel);
+                    }
                 }
             })
         }
