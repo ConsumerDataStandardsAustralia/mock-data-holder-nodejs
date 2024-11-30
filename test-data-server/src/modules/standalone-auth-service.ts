@@ -25,8 +25,7 @@ export class StandAloneAuthService implements IAuthService {
     }
 
     private async buildUser(token?: string) : Promise<DsbCdrUser | undefined> {
-        // First the JWT access token must be decoded and the signature verified
-        
+        // First the JWT access token must be decoded and the signature verified     
         try {
                 
             // Since this is running without authorisation a user is set in the environment file

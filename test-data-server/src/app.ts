@@ -70,6 +70,7 @@ var dbService: IDatabase;
 var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
+// the auth server type will determine which implementation of IAuthService will be used.
 if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
     authService = new StandAloneAuthService(dbService);
@@ -87,7 +88,7 @@ else {
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
-//const allowedOrigins = corsAllowedOrigin;
+// const allowedOrigins = corsAllowedOrigin;
 const corsOptions: cors.CorsOptions = {
     origin: corsAllowedOrigin
 };
@@ -131,7 +132,7 @@ var userService: IUserService = {
     }
 };
 
-const excludedPaths: string[] = ["/health", "/login-data/all", "/login-data/energy", "/login-data/banking", ]
+const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", ]
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -1692,6 +1693,25 @@ app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFun
         console.log(`Received request on ${port} for ${req.url}`);
         let qry: any = req.query
         let customers = await dbService.getLoginInformation(req.params?.sector, qry["loginId"])
+        if (customers == null) {
+            console.log(`Error: customer not found ${req.params?.loginId}`);
+            res.status(404).json('Not Found');
+            return;
+        }
+        let result = { Customers: customers };
+        res.send(result);
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+});
+
+// Get the information required by the Auth server to displaythe login screen
+app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let qry: any = req.query
+        let customers = await dbService.getLoginInformation('ALL', qry["loginId"])
         if (customers == null) {
             console.log(`Error: customer not found ${req.params?.loginId}`);
             res.status(404).json('Not Found');

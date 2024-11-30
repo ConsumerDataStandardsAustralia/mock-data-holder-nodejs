@@ -1,5 +1,4 @@
 
-import { AuthService } from "./auth-service";
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
 import { CdrConfig, DefaultBankingEndpoints, DefaultCommonEndpoints, DefaultEnergyEndpoints, EndpointConfig } from "@cds-au/holder-sdk";
@@ -31,9 +30,10 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             return;
         }
 
-        let accessToken = req.headers.authorization;
-        if (accessToken == null) {
-            res.status(401).json('No authorization header provided');
+        let accessToken = req.headers?.authorization;
+        // In NO_AUTH_SERVER=false an accessToken may still be provided
+        if (accessToken == null && process.env?.NO_AUTH_SERVER?.toUpperCase() == 'FALSE') {
+            res.status(404).json('No authorization header provided');
             return;
         }
         

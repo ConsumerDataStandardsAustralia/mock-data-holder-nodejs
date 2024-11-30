@@ -1,9 +1,9 @@
 export type CustomerModel = {
     LoginId: string,
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phoneNumber?: string;
     Accounts: AccountModel[]
 }
 

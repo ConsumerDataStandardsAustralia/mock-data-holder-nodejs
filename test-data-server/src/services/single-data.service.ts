@@ -1106,7 +1106,7 @@ export class SingleData implements IDatabase {
         return retList;
     }
 
-    // get all the logins for the ACCC cdr-auth-server UI
+    // get the login information
     async getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined> {
         var loginModel: CustomerModel[] = [];
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
@@ -1130,7 +1130,7 @@ export class SingleData implements IDatabase {
                     };
                     let accounts: AccountModel[] = [];
 
-                    if (sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
+                    if (sector == null || sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
                         c?.energy?.accounts.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
@@ -1145,7 +1145,7 @@ export class SingleData implements IDatabase {
                         loginModel.push(aModel);
                     }
 
-                    if (sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
+                    if (sector == null || sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
                         c?.banking?.accounts.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,

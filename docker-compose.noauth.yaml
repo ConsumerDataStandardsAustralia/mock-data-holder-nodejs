@@ -3,10 +3,10 @@ name: dsb-data
 services:
   mock-data-holder:
     container_name: mock-data-holder
-    image: consumerdatastandardsaustralia/nodejs-data-holder:0.3
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.dsb-test-data-server    
+    image: consumerdatastandardsaustralia/nodejs-data-holder:0.4
+    build:
+      context: . 
+      dockerfile: dockerfile.dsb-test-data-server    
     restart: unless-stopped
     env_file: .env.noauth
     extra_hosts:
@@ -27,9 +27,9 @@ services:
       - "27017:27017"
 
   dsb-data-loader:
-    # build:
-    #   context: .
-    #   dockerfile: dockerfile.dsb-data-loader
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-data-loader
     container_name: dsb-data-loader
     image: consumerdatastandardsaustralia/dsb-data-loader:0.2
     env_file: .env.noauth
