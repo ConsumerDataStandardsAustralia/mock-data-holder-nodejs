@@ -101,8 +101,10 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 
 const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
+const signingPublicKeyFile = path.join(__dirname, '/security/mock-data-holder/public.json')
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
+const publicKey = readFileSync(signingPublicKeyFile, 'utf8');
 
 const endpointValidatorOptions: CdrConfig = {
     endpoints: sampleEndpoints
@@ -132,7 +134,7 @@ var userService: IUserService = {
     }
 };
 
-const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", ]
+const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", "/jwks"]
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -185,6 +187,22 @@ app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
         res.sendStatus(500);
     }
 });
+
+// get the jwks signing key. This is called by the auth server
+app.get(`/jwks`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        res.contentType('application/json')
+        //const jwkFile = path.join(__dirname, '/security/public.json')
+        const jwk = JSON.parse(readFileSync(signingPublicKeyFile, 'utf8'));
+        console.log(jwk);
+        res.send(jwk);
+    } catch(err: any) {
+        console.log(`Could not get Jwk: ${err?.message}`)
+    }
+    
+});
+
 
 // function used to determine if the middleware is to be bypassed for the given 'paths'
 function unless(middleware: any, paths: string[]) {
