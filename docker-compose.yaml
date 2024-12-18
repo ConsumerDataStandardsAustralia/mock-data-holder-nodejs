@@ -141,12 +141,12 @@ services:
 
   mock-data-holder:
     container_name: mock-data-holder
-    image: consumerdatastandardsaustralia/nodejs-data-holder:0.3
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.dsb-test-data-server    
+    image: consumerdatastandardsaustralia/nodejs-data-holder:0.4
+    build:
+      context: . 
+      dockerfile: dockerfile.dsb-test-data-server    
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env.accc
     extra_hosts:
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
@@ -184,19 +184,19 @@ services:
     image: mongo:6.0
     container_name: mongodb
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env.accc
     volumes:     
       - dbdata:/usr/local/var/mongodb
     ports:
       - "27017:27017"
 
   dsb-data-loader:
-    # build:
-    #   context: .
-    #   dockerfile: dockerfile.dsb-data-loader
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-data-loader
     container_name: dsb-data-loader
     image: consumerdatastandardsaustralia/dsb-data-loader:0.2
-    env_file: .env.docker
+    env_file: .env.accc
     depends_on:
       - mongodb
 

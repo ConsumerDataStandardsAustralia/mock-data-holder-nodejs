@@ -21,6 +21,7 @@ import cors from 'cors';
 import path from 'path';
 import { readFileSync } from 'fs';
 import * as https from 'https'
+import * as http from 'http'
 import { DsbCdrUser } from './models/user';
 import { cdrAuthorization } from './modules/auth';
 import {
@@ -50,8 +51,9 @@ console.log(JSON.stringify(process.env, null, 2));
 
 const exp = express;
 const app = express();
-const port = `${process.env.APP_LISTENTING_PORT}`;
-const noAuthServer = `${process.env.NO_AUTH_SERVER}`;
+let port = `${process.env.APP_LISTENTING_PORT}`;
+const authServerType = `${process.env.AUTH_SERVER_TYPE}`;
+const useSSL: boolean = `${process.env.USE_SSL}`.toUpperCase() == 'TRUE';
 
 let basePath = '/cds-au/v1';
 
@@ -67,18 +69,18 @@ var dbService: IDatabase;
 var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
-if (noAuthServer == "true") {
+// the auth server type will determine which implementation of IAuthService will be used.
+if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
     authService = new StandAloneAuthService(dbService);
 }
 else {
     console.log(`Running server with authorisation. Required to go through authorisation process`)
-    authService = new AuthService(dbService);
+    authService = new AuthService(dbService);  
 }
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
-//const allowedOrigins = corsAllowedOrigin;
 const corsOptions: cors.CorsOptions = {
     origin: corsAllowedOrigin
 };
@@ -122,15 +124,17 @@ var userService: IUserService = {
     }
 };
 
+const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", ]
+
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // This is a function which interacts with the Authorisation server developed by the ACCC
-app.use(cdrAuthorization(authService, endpointValidatorOptions));
-app.use(unless(cdrEndpointValidator(endpointValidatorOptions), "/login-data", "/health"));
-app.use(unless(cdrHeaderValidator(headerValidatorOptions), "/login-data", "/health"));
-app.use(unless(cdrScopeValidator(userService), "/login-data", "/jwks", `/health`));
-app.use(unless(cdrResourceValidator(userService), "/login-data", "/jwks", `/health`));
+app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), excludedPaths));
+app.use(unless(cdrEndpointValidator(endpointValidatorOptions), excludedPaths));
+app.use(unless(cdrHeaderValidator(headerValidatorOptions), excludedPaths));
+app.use(unless(cdrScopeValidator(userService), excludedPaths));
+app.use(unless(cdrResourceValidator(userService), excludedPaths));
 
 
 app.use('/', router);
@@ -138,17 +142,26 @@ app.use('/', router);
 
 async function initaliseApp() {
     try {
-        const otions = {
+        const options = {
             key: rKey,
             cert: rCert
         }
         console.log(`Connecting to database : ${connString}`);
         await dbService.connectDatabase();
+        authService.initAuthService();
         console.log(`Connected.`);
-        https.createServer(otions, app)
+        if (useSSL){
+            let port = `${process.env.APP_LISTENTING_PORT_SSL}`;
+            https.createServer(options, app)
+                .listen(port, () => {
+                    console.log(`Server started. Listening on port ${port}`);
+                })
+        } else {
+            http.createServer(app)
             .listen(port, () => {
                 console.log(`Server started. Listening on port ${port}`);
-            })
+            })  
+        }
     } catch (e: any) {
         console.log(`FATAL: could not start server${e?.message}`);
     }
@@ -158,8 +171,7 @@ async function initaliseApp() {
 app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let user = authService?.authUser?.loginId;
-        res.send(`Service is running....${user}`);
+        res.send(`Service is running....`);
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
@@ -167,9 +179,18 @@ app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // function used to determine if the middleware is to be bypassed for the given 'paths'
-function unless(middleware: any, ...paths: any) {
+function unless(middleware: any, paths: string[]) {
     return function (req: Request, res: Response, next: NextFunction) {
-        const pathCheck = paths.some((path: string) => path == req.path);
+        // Checks whether an element is even
+        let pathCheck = false
+        for (let i=0; i < paths?.length; i++){
+            if (paths[i].toUpperCase() == req.path.toUpperCase())
+            {
+                pathCheck = true;
+                break;
+            }
+            
+        }
         pathCheck ? next() : middleware(req, res, next);
     };
 };
@@ -1659,7 +1680,7 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
 });
 
 // Get the information required by the Auth server to displaythe login screen
-app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
+app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let qry: any = req.query
@@ -1676,6 +1697,37 @@ app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) =
         res.sendStatus(500);
     }
 });
+
+// Get the information required by the Auth server to displaythe login screen
+app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let qry: any = req.query
+        let customers = await dbService.getLoginInformation('ALL', qry["loginId"])
+        if (customers == null) {
+            console.log(`Error: customer not found ${req.params?.loginId}`);
+            res.status(404).json('Not Found');
+            return;
+        }
+        let result = { Customers: customers };
+        res.send(result);
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+});
+
+// this endpoint requires authentication
+app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        res.send(`Service is running....`);
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+});
+
 
 async function isServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
     let retVal: boolean = false;

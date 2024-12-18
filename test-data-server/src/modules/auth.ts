@@ -1,5 +1,4 @@
 
-import { AuthService } from "./auth-service";
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
 import { CdrConfig, DefaultBankingEndpoints, DefaultCommonEndpoints, DefaultEnergyEndpoints, EndpointConfig } from "@cds-au/holder-sdk";
@@ -30,24 +29,24 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             return;
         }
 
-        let accessToken = req.headers.authorization;
-        if (accessToken == null) {
-            res.status(404).json('No authorization header provided');
-            return;
-        }
-        
         // initialise the authService
         if (await svc.initAuthService() == false) {
             res.status(500).json('Could not communicate with authorisation server');
             return;
         }
-        // validate access token via introspective endpoint
-        if (await svc.verifyAccessToken(accessToken) == false) {
-            res.status(404).json('Invalid access token');
+
+        let accessToken = req.headers?.authorization;
+        // In NO_AUTH_SERVER=false an accessToken may still be provided
+        if (accessToken == null && process.env?.NO_AUTH_SERVER?.toUpperCase() == 'FALSE') {
+            res.status(404).json('No authorization header provided');
             return;
         }
-        // get service points for user
         
+        // validate access token via introspective endpoint
+        if (await svc.verifyAccessToken(accessToken) == false) {
+            res.status(401).json('Invalid access token');
+            return;
+        }    
         next();
     };
 
