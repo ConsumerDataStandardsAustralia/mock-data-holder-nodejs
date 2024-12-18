@@ -88,7 +88,6 @@ else {
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
-// const allowedOrigins = corsAllowedOrigin;
 const corsOptions: cors.CorsOptions = {
     origin: corsAllowedOrigin
 };
@@ -152,7 +151,7 @@ app.use('/', router);
 
 async function initaliseApp() {
     try {
-        const otions = {
+        const options = {
             key: rKey,
             cert: rCert
         }
@@ -162,7 +161,7 @@ async function initaliseApp() {
         console.log(`Connected.`);
         if (useSSL){
             let port = `${process.env.APP_LISTENTING_PORT_SSL}`;
-            https.createServer(otions, app)
+            https.createServer(options, app)
                 .listen(port, () => {
                     console.log(`Server started. Listening on port ${port}`);
                 })
