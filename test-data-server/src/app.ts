@@ -163,7 +163,7 @@ async function initaliseApp() {
             let port = `${process.env.APP_LISTENTING_PORT_SSL}`;
             https.createServer(options, app)
                 .listen(port, () => {
-                    console.log(`Server started. Listening on port ${port}`);
+                    console.log(`Server started (SSL). Listening on port ${port}`);
                 })
         } else {
             http.createServer(app)
