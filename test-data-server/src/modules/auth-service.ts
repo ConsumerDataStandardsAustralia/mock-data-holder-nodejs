@@ -102,7 +102,7 @@ export class AuthService implements IAuthService {
 
     private buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
-            ca: readFileSync(path.join(__dirname, '../security/mock-data-holder/mtls', process.env.CA_FILE as string))
+            ca: readFileSync(path.join(__dirname, './security/mock-data-holder/mtls', process.env.CA_FILE as string))
            })
         return httpsAgent;
     }

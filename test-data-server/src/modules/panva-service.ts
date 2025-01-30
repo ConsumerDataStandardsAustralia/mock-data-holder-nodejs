@@ -5,12 +5,11 @@ import * as http from 'https'
 import { readFileSync } from "fs";
 import { Introspection } from "../models/introspection";
 import { JwkKey } from "../models/jwt-key";
-import axios, { Axios, AxiosRequestConfig } from "axios";
+import axios, { Axios, AxiosRequestConfig, RawAxiosRequestHeaders } from "axios";
 import jwtDecode from "jwt-decode";
 import { IDatabase } from "../services/database.interface";
 import { CryptoUtils } from "../utils/crypto-utils";
 import { IAuthService } from "./auth-service.interface";
-import { EnergyServicePoint } from "consumer-data-standards/energy";
 import { unescape } from "querystring";
 import { CdrArrangement } from "./cdr-arrangement.model";
 
@@ -18,7 +17,7 @@ import { CdrArrangement } from "./cdr-arrangement.model";
 export class PanvaAuthService implements IAuthService {
 
     private introspection_endpoint: string | undefined;
-    private introspection_endpoint_internal: string | undefined;
+    //private introspection_endpoint_internal: string | undefined;
 
 
     authUser: DsbCdrUser| undefined;
@@ -37,18 +36,11 @@ export class PanvaAuthService implements IAuthService {
     constructor(dbService: IDatabase) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
-        this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
     }
 
     public async initAuthService(): Promise<boolean> {
         try {
             console.log('Initialise auth service..');
-            // TODO Https
-            // const httpAgent = this.buildHttpsAgent();
-            //   let config : AxiosRequestConfig = {
-            //     httpsAgent: httpsAgent,
-            //   }
-
             this.tlsThumPrint = this.calculateTLSThumbprint();
             const url = `${process.env.AUTH_SERVER_URL}/.well-known/openid-configuration`
             console.log(`Auth server url: ${url}`);
@@ -78,8 +70,9 @@ export class PanvaAuthService implements IAuthService {
         let config : AxiosRequestConfig = {
             headers: {'Authorization': `${authHeader}`}
         };
-        let url: string = this.introspection_endpoint_internal + id
-        const response = await axios.get(url, config)
+        //let url = new URL(`${process.env.AUTH_SERVER_URL}/cdrarrangement`);
+        let urlStr = `${process.env.AUTH_SERVER_URL}/arrangement/${id}`
+        const response = await axios.get(urlStr, config)
         // response.data will be a CDrArrangment object as defined in dsb-panva-oidc--provider
         return response;
     }
@@ -87,20 +80,25 @@ export class PanvaAuthService implements IAuthService {
     public async verifyAccessToken(token: string): Promise<boolean> {
         try {
             // no introspective endpoint exists
-            if (this.introspection_endpoint_internal == undefined)
+            if (this.introspection_endpoint == undefined)
                return false;
             let authHeader = this.buildBasicAuthHeader();
             let hdrs = {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'Authorization': `${authHeader}`
-                    } ;
-            const httpAgent = this.buildHttpAgent();
+                    } as RawAxiosRequestHeaders;
               let config : AxiosRequestConfig = {
-                headers: hdrs
+                headers: hdrs,
+                method: 'POST'
               }
+            console.log(`Token reponse is ${token}`)
             let tokeToBeValidated = token.split(' ')[1];
-            let postBody = this.buildIntrospecticePostBody(tokeToBeValidated);
-            const response = await axios.post(this.introspection_endpoint as string, postBody, config)
+            //et postBody = this.buildIntrospecticePostBody(tokeToBeValidated);
+            const postBody: any = {
+                token: tokeToBeValidated
+            }
+            console.log(`Token to be validated is ${JSON.stringify(postBody)}`)
+            const response = await axios.post(this.introspection_endpoint, postBody, config)
             if (!(response.status == 200)) {
                 return false;
               }
@@ -119,8 +117,10 @@ export class PanvaAuthService implements IAuthService {
     // This header is used for introspection calls, using Basic Auth "client_id:secret"
     private buildBasicAuthHeader(): string {    
         let basic = 'Basic ';
+        console.log(`Building auth string from clientId: ${process.env.CLIENT_ID} and clientSecret: ${process.env.CLIENT_SECRET}`)
         let authString = `${unescape(process.env.CLIENT_ID ?? '')}:${unescape(process.env.CLIENT_SECRET ?? '')}`;
         let authString64 = Buffer.from(authString).toString('base64url');
+        console.log(`Auth string: ${basic}${authString64}`)
         return `${basic}${authString64}`
         
     }

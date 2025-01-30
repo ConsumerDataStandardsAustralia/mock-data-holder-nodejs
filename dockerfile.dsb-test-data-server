@@ -9,7 +9,7 @@ COPY ./test-data-server/. .
 RUN npm install
 
 # Bundle app source
-# COPY ./test-data-server/ ./
+COPY ./test-data-server/ .
 COPY ./security/ /app
 
 RUN npm run build:docker
