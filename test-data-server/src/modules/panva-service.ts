@@ -125,20 +125,6 @@ export class PanvaAuthService implements IAuthService {
         
     }
 
-    private buildHttpAgent(): http.Agent {
-        let httpsAgent = new http.Agent({
-            //ca: readFileSync(path.join(__dirname, '../security/cdr-auth-server/mtls', process.env.CA_FILE as string))
-           })
-        return httpsAgent;
-    }
-
-    // TODO USed with https
-    private buildHttpsAgent(): https.Agent {
-        let httpsAgent = new https.Agent({
-            ca: readFileSync(path.join(__dirname, '../security/cdr-auth-server/mtls', process.env.CA_FILE as string))
-           })
-        return httpsAgent;
-    }
 
     private async buildUser(arrangement: CdrArrangement) : Promise<boolean> {
         try {
@@ -168,40 +154,5 @@ export class PanvaAuthService implements IAuthService {
     private calculateTLSThumbprint(): string {
         // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint   
         return '';
-    }
-
-    private buildIntrospecticePostBody(token: string): any {
-        let postBody: any = {};
-        postBody.token = token.replace('Bearer ', '');
-        return postBody;
-    }
-
-    private decryptLoginId(token: string) : string {
-        let decoded: any = jwtDecode(token);
-        let encodedLoginID = decoded?.sub as string;
-        let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-        let buffer = Buffer.from(CryptoUtils.decode(encodedLoginID), 'base64')
-        let login = CryptoUtils.decrypt(encryptionKey, buffer);
-        return login;
-    }
-
-    private decryptAccountArray(token: string) : string[]{
-        let decoded: any = jwtDecode(token);
-        let accountIds: string [] = [];
-        if (Array.isArray(decoded?.account_id) == true)
-            accountIds = decoded?.account_id as string[];
-        else
-            accountIds.push(CryptoUtils.decode(decoded?.account_id));
-
-        let accounts: string[] = [];
-        const userNameLength = this.authUser?.loginId?.length as number;
-        for(let i = 0; i < accountIds.length; i++) {
-            let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
-            let buffer = Buffer.from(CryptoUtils.decode(accountIds[i]), 'base64');
-            let decryptedValue = CryptoUtils.decrypt(encryptionKey, buffer);
-            let accountId = decryptedValue?.substring(userNameLength)
-            accounts.push(accountId);
-        }
-        return accounts;
     }
 }
