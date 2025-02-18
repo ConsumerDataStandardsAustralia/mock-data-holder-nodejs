@@ -188,8 +188,8 @@
     {
         "requestType": "GET",
         "requestPath": "/banking/accounts/{accountId}/transactions/{transactionId}",
-        "minSupportedVersion": 1,
-        "maxSupportedVersion": 1
+        "minSupportedVersion": 2,
+        "maxSupportedVersion": 2
     },
     {
         "requestType": "GET",

@@ -1,7 +1,6 @@
 import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2, 
     BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, 
-    BankingTransaction, 
-    BankingTransactionDetail} from "consumer-data-standards/banking";
+    BankingTransaction, BankingTransactionDetailV2} from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import { EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
     EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV3, 
@@ -119,7 +118,7 @@ export class SingleData implements IDatabase {
                 return x;
         })
         //customer?.banking?.accounts.forEach((acc: any) => {
-            account?.transactions.filter((tr: BankingTransactionDetail) => {
+            account?.transactions.filter((tr: BankingTransactionDetailV2) => {
                 let refDate = range.startRange;
                 if (tr.executionDateTime != null)
                     refDate = Date.parse(tr.executionDateTime);
@@ -135,7 +134,7 @@ export class SingleData implements IDatabase {
             })
         return retArray;
     }
-    async getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetail | undefined> {
+    async getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetailV2 | undefined> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let customer = await this.getCustomer(allDataCollection, customerId);
         let account = customer?.banking?.accounts.find((x: any) => {
