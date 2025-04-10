@@ -32,13 +32,30 @@ This solution:
 4. Navigate to the root directory of the repository and the run the following command to start the services defined in the Docker Compose file:
     
     ```bash
-    docker-compose up
+    docker-compose -f docker-compose.yaml up -d
     ```
     
     This command will automatically pull the necessary Docker images and create the containers required for the Mock Data Holder, setting up everything you need to get started without manually handling the code repository.
     
 4. Open your web browser and navigate to the desired API endpoints using [https://localhost:8082](https://localhost:8082/) as the base URL for the Mock Data Holder (NodeJS) application. For example, you can obtain a list of energy plans from [https://localhost:8082/cds-au/v1/energy/plans](https://localhost:8082/cds-au/v1/energy/plans).
 5. To obtain a new access token required to call the resource APIs, navigate to [https://localhost:9001](https://localhost:9001/) to initiate the PAR login sequence. This access token can then be used for API access, for instance, with the DSB Postman collection.
+
+## Quick Start with Docker Compose - Running without authorisation
+
+This is an alternative and simplified run mode.
+In this mode the mock-data-holder simply serves the API. No valid token is required, the assumed user is set in the environment file, and all accounts for that user are assumed to have been given consent.
+
+If an access token is found the request header and a `scopes` property (space delimted string) is found, then these scopes will be used. If no token is found, then all scopes are assumed to be valid.
+
+To run in this mode
+
+1. Download the Docker Compose file (noauth) from this [link](https://github.com/ConsumerDataStandardsAustralia/mock-data-holder-nodejs/blob/master/docker-compose.noauth.yaml).
+2. Download the Docker environment (noauth) file from this [link](https://github.com/ConsumerDataStandardsAustralia/mock-data-holder-nodejs/blob/master/.env.noauth) into the same folder.
+
+    ```bash
+    docker-compose -f docker-compose.noauth.yaml up -d
+    ```
+*Note the additional setting `NO_AUTH_SERVER="true"` in the .env.noauth file*
 
 ## Local Setup and Customisation
 

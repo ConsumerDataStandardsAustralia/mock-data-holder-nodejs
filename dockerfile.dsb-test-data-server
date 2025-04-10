@@ -1,52 +1,29 @@
 FROM node:16
 
 ENV NODE_ENV=docker
-
-
-ENV CUSTOMER_COLLECTION_NAME=Customers
-ENV PLAN_COLLECTION_NAME=Plans
-ENV SINGLE_COLLECTION_NAME=all-data-1.29.1
-ENV DATA_IS_SINGLE_DOCUMENT=true
-ENV MONGO_HOSTNAME=mongodb
-ENV MONGO_PORT=27017
-ENV MONGO_DB=DSB
-ENV VERSION=1.29.1
-ENV APP_LISTENTING_PORT=3005
-ENV AUTH_SERVER_URL=https://cdr-auth-server:8081
-ENV IDPERMANENCEKEY=90733A75F19347118B3BE0030AB590A8
-ENV INTERNAL_INTROSPECTION=https://cdr-auth-server:8081/connect/introspect-internal
-ENV CORS_ALLOWED_ORIGINS=https://localhost:3004,https://mock-data-recipient:9001,https://authserver-ui:3000
-# Create app directory
+# create app directory
 WORKDIR /app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY ./test-data-server/package*.json ./
 
 RUN npm install
-# COPY ./test-data-server/node_modules/ /app/
-# If you are building your code for production
-# RUN npm ci --only=production
 
 # Bundle app source
-COPY ./test-data-server/ .
-COPY ./security/mock-data-holder/ ./security
+COPY ./test-data-server/ ./
+COPY ./security/ /security
 
-RUN npm run build:prod
+RUN npm run build:docker
 
 COPY ./security/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates
 
-RUN apt-get update
-RUN apt-get -y install -y iputils-ping
-RUN apt-get -y install -y ssh
-RUN apt-get -y install vim
+# These can be disabled for ssh debugging purposes
+# RUN apt-get update
+# RUN apt-get -y install -y iputils-ping
+# RUN apt-get -y install -y ssh
+# RUN apt-get -y install vim
 
 CMD [ "node", "dist/src/app.js"]
 
 
 EXPOSE 3005
-
-# Need to run this command on the MSSQL container
-# CMD /opt/mssql-tools/bin/sqlcmd  -U sa -P Pa{}w0rd2019 -i ./AddClientScriptRelease.sql

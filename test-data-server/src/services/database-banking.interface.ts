@@ -1,4 +1,4 @@
-import { BankingAccountV2, BankingAccountDetailV3, BankingProductV4, BankingTransaction, BankingBalance, BankingDirectDebit, BankingScheduledPaymentFrom, BankingScheduledPaymentV2, BankingPayeeV2, BankingPayeeDetailV2, BankingTransactionDetail } from "consumer-data-standards/banking";
+import { BankingAccountV2, BankingAccountDetailV3, BankingProductV4, BankingTransaction, BankingBalance, BankingDirectDebit, BankingScheduledPaymentFrom, BankingScheduledPaymentV2, BankingPayeeV2, BankingPayeeDetailV2, BankingTransactionDetailV2 } from "consumer-data-standards/banking";
 import { CustomerModel } from "../models/login";
 
 export interface IBankingData {
@@ -13,7 +13,7 @@ export interface IBankingData {
 
     getTransationsForAccount(customerId: string, accountId: string, queryParameters: any): Promise<BankingTransaction[]>;
 
-    getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetail | undefined>;
+    getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetailV2 | undefined>;
 
     getBulkBalances(customerId: string, queryParameters: any): Promise<BankingBalance[]>;
 
@@ -37,6 +37,9 @@ export interface IBankingData {
 
     getPayeeDetail(customerId: string, payeeId: string): Promise<BankingPayeeDetailV2 | undefined>;
 
-    getPayeesForCustomer(customerId: string): Promise<string[] | undefined>
+    getPayeesForCustomer(customerId: string): Promise<string[] | undefined>;
+
+    // This method is used when the server is run without authentication and a user is set in the env file
+    getAllBankingAccountsForCustomer(customerId: string) : Promise<BankingAccountV2[]> | undefined;
 
 }

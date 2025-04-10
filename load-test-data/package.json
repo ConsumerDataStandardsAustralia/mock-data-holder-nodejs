@@ -4,13 +4,14 @@
   "description": "Load data generated from testdata-cli into MongoDB",
   "main": "app.js",
   "scripts": {
-
-    "start": "rm -rf ./dist/* && tsc && cp -r ./input ./dist/input && cd ./dist && node ./app.js",
-    "build": "rm -r ./dist/* && tsc && cp -r ./input ./dist/input",
+    "start": "npm run build && npm run copy-files && cd ./dist && node ./app.js",
+    "build": "rm -rf ./dist && tsc && cp -r ./input ./dist/input",
+    "copy-files": "cp ../.env ./dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
+    "@types/consumer-data-standards": "^7.2.1",
     "@types/uuid": "^9.0.0",
     "nodemon": "^2.0.13",
     "ts-node": "^10.3.0",
@@ -21,21 +22,21 @@
     "@types/body-parser": "^1.19.2",
     "@types/express-serve-static-core": "^4.17.30",
     "@types/mongoose": "^5.11.97",
-    "body-parser": "^1.20.1",
+    "body-parser": "^1.20.3",
     "dotenv": "^16.0.3",
-    "express": "^4.17.1",
+    "express": "^4.21.1",
     "mongodb": "^4.13.0",
     "mongoose": "^6.8.4",
     "rxjs": "^7.8.0",
     "uuid": "^9.0.0"
   },
   "keywords": [
-    "'Consumer",
+    "Consumer",
     "Data",
     "Standards'",
-    "'MongoDB'",
-    "'NodeJS'",
-    "'Typescript'"
+    "MongoDB",
+    "NodeJS",
+    "Typescript"
   ],
   "author": "T Schier",
   "license": "ISC"

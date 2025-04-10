@@ -1,5 +1,4 @@
 
-import { AuthService } from "./auth-service";
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
 import { CdrConfig, DefaultBankingEndpoints, DefaultCommonEndpoints, DefaultEnergyEndpoints, EndpointConfig } from "@cds-au/holder-sdk";
@@ -8,14 +7,13 @@ import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
 import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 import { DsbEndpoint } from "../models/dsb-endpoints";
 import { IAuthService } from "./auth-service.interface";
-import { IDatabase } from "../services/database.interface";
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
 var svc: IAuthService;
 
 
 // TODO need to be incorporated in holder-sdk middleware
-export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | undefined): any {
+export function cdrAuthorization(authService: IAuthService,  options: CdrConfig | undefined): any {
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
         let allEP: EndpointConfig[] = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...DefaultCommonEndpoints];
@@ -23,31 +21,32 @@ export function cdrAuthorization(dbService: IDatabase,  options: CdrConfig | und
             endpoints: allEP,
             basePath: options?.basePath
         }
-        svc = new AuthService(dbService);
+        svc = authService;
         let ep = getEndpoint(req, config);
+        console.log("Endpoint is: " + JSON.stringify(ep))
         if (ep == null || ep.authScopesRequired == null) {
             next();
             return;
         }
 
-        let accessToken = req.headers.authorization;
-        if (accessToken == null) {
-            res.status(404).json('No authorization header provided');
-            return;
-        }
-        
         // initialise the authService
         if (await svc.initAuthService() == false) {
             res.status(500).json('Could not communicate with authorisation server');
             return;
         }
-        // validate access token via introspective endpoint
-        if (await svc.verifyAccessToken(accessToken) == false) {
-            res.status(404).json('Invalid access token');
+
+        let accessToken = req.headers?.authorization;
+        // In NO_AUTH_SERVER=false an accessToken may still be provided
+        if (accessToken == null && process.env?.NO_AUTH_SERVER?.toUpperCase() == 'FALSE') {
+            res.status(404).json('No authorization header provided');
             return;
         }
-        // get service points for user
         
+        // validate access token via introspective endpoint
+        if (await svc.verifyAccessToken(accessToken) == false) {
+            res.status(401).json('Invalid access token');
+            return;
+        }    
         next();
     };
 
