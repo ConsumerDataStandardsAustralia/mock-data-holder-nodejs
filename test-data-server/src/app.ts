@@ -1680,32 +1680,13 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
 });
 
 // Get the information required by the Auth server to displaythe login screen
-app.get(`/login-data/:sector`, async (req: Request, res: Response, next: NextFunction) => {
+app.get('/login-data', async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let qry: any = req.query
-        let customers = await dbService.getLoginInformation(req.params?.sector, qry["loginId"])
+        let customers = await dbService.getLoginInformation(qry.sector, qry["loginId"])
         if (customers == null) {
-            console.log(`Error: customer not found ${req.params?.loginId}`);
-            res.status(404).json('Not Found');
-            return;
-        }
-        let result = { Customers: customers };
-        res.send(result);
-    } catch (e) {
-        console.log('Error:', e);
-        res.sendStatus(500);
-    }
-});
-
-// Get the information required by the Auth server to displaythe login screen
-app.get(`/login-data`, async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        console.log(`Received request on ${port} for ${req.url}`);
-        let qry: any = req.query
-        let customers = await dbService.getLoginInformation('ALL', qry["loginId"])
-        if (customers == null) {
-            console.log(`Error: customer not found ${req.params?.loginId}`);
+            console.log(`Error: customer not found ${qry.loginId}`);
             res.status(404).json('Not Found');
             return;
         }

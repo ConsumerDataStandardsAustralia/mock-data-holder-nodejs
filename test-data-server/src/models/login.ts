@@ -9,7 +9,7 @@ export type CustomerModel = {
 
 export type AccountModel = {
     AccountId: string,
-    DisplayName: string,
+    DisplayName?: string,
     ProductName?: string,
     MaskedName?: string,
     AccountNumber?:string,

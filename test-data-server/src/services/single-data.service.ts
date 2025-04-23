@@ -1115,21 +1115,24 @@ export class SingleData implements IDatabase {
                         email: c.customer?.person?.emailAddresses[0]?.address,
                         phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber
                     };
-                    let accounts: AccountModel[] = [];
 
                     if (sector == null || sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
                         c?.energy?.accounts.forEach((acc: any) => {
+                            const accountDescription = buildEnergyAccountDescription(acc.account.plans);
+                            if (!accountDescription) {
+                                // This situation is only possible when there are no NMIs on the account,
+                                // which means there are no Electricity plans, therefore
+                                // skip this account because Gas plans are shareable only if bundled with Electricity ones.
+                                return;
+                            }
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
-                                MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: `${acc?.account?.displayName}`,
+                                DisplayName: (!acc?.account?.accountNumber && !acc?.account?.displayName ? accountDescription : acc.account.displayName),
                                 Sector: 'ENERGY'
                             };
-                            accounts.push(loginAccount)
+                            aModel.Accounts.push(loginAccount);
                         })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
                     }
 
                     if (sector == null || sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
@@ -1138,14 +1141,14 @@ export class SingleData implements IDatabase {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
                                 MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: `${acc?.account?.displayName}`,
+                                DisplayName: acc?.account?.displayName,
                                 Sector: 'BANKING'
                             };
-                            accounts.push(loginAccount)
+                            aModel.Accounts.push(loginAccount);
                         })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
                     }
+
+                    loginModel.push(aModel);
                 }
             })
         }
@@ -1224,4 +1227,11 @@ export class SingleData implements IDatabase {
 
 }
 
-
+function buildEnergyAccountDescription(plans: [any]): string | undefined {
+    let nmi : string[] = [];
+    plans.forEach(({servicePointIds}: {servicePointIds : [string]}) => nmi = nmi.concat(servicePointIds));
+    if (nmi.length == 0) {
+        return;
+    }
+    return `Account for NMI${nmi.length > 1 ? 's' : ''}: ${nmi.join(', ')}`;
+}
