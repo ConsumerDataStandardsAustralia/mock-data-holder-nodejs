@@ -44,6 +44,7 @@ import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 import { AuthService } from './modules/auth-service';
 import moment from 'moment';
+import { PanvaAuthService } from './modules/panva-service';
 
 
 dotenv.config();
@@ -74,10 +75,16 @@ if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
     authService = new StandAloneAuthService(dbService);
 }
+else if (authServerType.toUpperCase() == "PANVA") {
+    console.log(`Running server with authorisation. Required to go through authorisation process`)
+    authService = new PanvaAuthService(dbService);
+}
 else {
     console.log(`Running server with authorisation. Required to go through authorisation process`)
     authService = new AuthService(dbService);  
 }
+
+
 
 // Add a list of allowed origins.
 // If you have more origins you would like to add, you can add them to the array below.
@@ -93,8 +100,10 @@ const sampleEndpoints = [...endpoints] as EndpointConfig[];
 
 const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
+const signingPublicKeyFile = path.join(__dirname, '/security/mock-data-holder/public.json')
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
+const publicKey = readFileSync(signingPublicKeyFile, 'utf8');
 
 const endpointValidatorOptions: CdrConfig = {
     endpoints: sampleEndpoints
@@ -124,7 +133,7 @@ var userService: IUserService = {
     }
 };
 
-const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", ]
+const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", "/jwks"]
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -154,7 +163,7 @@ async function initaliseApp() {
             let port = `${process.env.APP_LISTENTING_PORT_SSL}`;
             https.createServer(options, app)
                 .listen(port, () => {
-                    console.log(`Server started. Listening on port ${port}`);
+                    console.log(`Server started (SSL). Listening on port ${port}`);
                 })
         } else {
             http.createServer(app)
@@ -177,6 +186,22 @@ app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
         res.sendStatus(500);
     }
 });
+
+// get the jwks signing key. This is called by the auth server
+app.get(`/jwks`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        res.contentType('application/json')
+        //const jwkFile = path.join(__dirname, '/security/public.json')
+        const jwk = JSON.parse(readFileSync(signingPublicKeyFile, 'utf8'));
+        console.log(jwk);
+        res.send(jwk);
+    } catch(err: any) {
+        console.log(`Could not get Jwk: ${err?.message}`)
+    }
+    
+});
+
 
 // function used to determine if the middleware is to be bypassed for the given 'paths'
 function unless(middleware: any, paths: string[]) {

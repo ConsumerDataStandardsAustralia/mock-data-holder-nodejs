@@ -1113,7 +1113,8 @@ export class SingleData implements IDatabase {
                         firstName: c.customer?.person?.firstName,
                         lastName: c.customer?.person?.lastName,
                         email: c.customer?.person?.emailAddresses[0]?.address,
-                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber
+                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber,
+                        lastUpdateTime: c.customer?.person?.lastUpdateTime
                     };
 
                     if (sector == null || sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {

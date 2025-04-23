@@ -1,0 +1,158 @@
+import path from "path";
+import { DsbCdrUser } from "../models/user";
+import * as https from 'https'
+import * as http from 'https'
+import { readFileSync } from "fs";
+import { Introspection } from "../models/introspection";
+import { JwkKey } from "../models/jwt-key";
+import axios, { Axios, AxiosRequestConfig, RawAxiosRequestHeaders } from "axios";
+import jwtDecode from "jwt-decode";
+import { IDatabase } from "../services/database.interface";
+import { CryptoUtils } from "../utils/crypto-utils";
+import { IAuthService } from "./auth-service.interface";
+import { unescape } from "querystring";
+import { CdrArrangement } from "./cdr-arrangement.model";
+
+
+export class PanvaAuthService implements IAuthService {
+
+    private introspection_endpoint: string | undefined;
+    //private introspection_endpoint_internal: string | undefined;
+
+
+    authUser: DsbCdrUser| undefined;
+    private jwkKeys: JwkKey[] | undefined;
+    private tlsThumPrint: string | undefined;
+    private jwtEncodingAlgorithm: string;
+    private issuer: string | undefined;
+    private jwks_uri: string | undefined;
+    private algorithm = 'AES-256-CBC';
+    private token_endpoint:  string | undefined;
+    // This key must be the same on the authorisation server
+    private idPermanenceKey = process.env.IDPERMANENCEKEY;
+    private iv = Buffer.alloc(16);
+    private dbService: IDatabase;
+
+    constructor(dbService: IDatabase) {
+        this.dbService = dbService;
+        this.jwtEncodingAlgorithm = 'ES256';
+    }
+
+    public async initAuthService(): Promise<boolean> {
+        try {
+            console.log('Initialise auth service..');
+            this.tlsThumPrint = this.calculateTLSThumbprint();
+            const url = `${process.env.AUTH_SERVER_URL}/.well-known/openid-configuration`
+            console.log(`Auth server url: ${url}`);
+            const response = await axios.get(url)
+            if (!(response.status == 200)) {
+                console.log('Auth server discovery failed.');
+                return false;
+              }
+            else {
+                console.log(`Auth server discovery complete. ${JSON.stringify(response.data)}`);
+                // set the various endpoints
+                this.token_endpoint = response.data?.token_endpoint;
+                this.introspection_endpoint = response.data?.introspection_endpoint;
+                this.jwks_uri = response.data?.jwks_uri;
+                this.issuer = response.data?.issuer;
+                return true;
+            }
+        } catch (error: any) {
+            console.log('ERROR: ', error.message);
+            console.log('ERROR DETAIL', error?.response?.data);   
+            return false;
+        }       
+    }
+
+    private async getArrangement(id: string): Promise<any> {
+        let authHeader = this.buildBasicAuthHeader();
+        let config : AxiosRequestConfig = {
+            headers: {'Authorization': `${authHeader}`}
+        };
+        //let url = new URL(`${process.env.AUTH_SERVER_URL}/cdrarrangement`);
+        let urlStr = `${process.env.AUTH_SERVER_URL}/arrangement/${id}`
+        const response = await axios.get(urlStr, config)
+        // response.data will be a CDrArrangment object as defined in dsb-panva-oidc--provider
+        return response;
+    }
+    
+    public async verifyAccessToken(token: string): Promise<boolean> {
+        try {
+            // no introspective endpoint exists
+            if (this.introspection_endpoint == undefined)
+               return false;
+            let authHeader = this.buildBasicAuthHeader();
+            let hdrs = {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `${authHeader}`
+                    } as RawAxiosRequestHeaders;
+              let config : AxiosRequestConfig = {
+                headers: hdrs,
+                method: 'POST'
+              }
+            console.log(`Token reponse is ${token}`)
+            let tokeToBeValidated = token.split(' ')[1];
+            //et postBody = this.buildIntrospecticePostBody(tokeToBeValidated);
+            const postBody: any = {
+                token: tokeToBeValidated
+            }
+            console.log(`Token to be validated is ${JSON.stringify(postBody)}`)
+            const response = await axios.post(this.introspection_endpoint, postBody, config)
+            if (!(response.status == 200)) {
+                return false;
+              }
+            else {
+                let arrangement : any = await this.getArrangement(response?.data?.cdr_arrangement_id);
+                await this.buildUser(arrangement?.data);
+                return true;
+            }
+        } catch (error: any) {
+            console.log('ERROR: ', error.message);
+            console.log('ERROR DETAIL', error?.response?.data);   
+            return false;
+        }
+    }
+
+    // This header is used for introspection calls, using Basic Auth "client_id:secret"
+    private buildBasicAuthHeader(): string {    
+        let basic = 'Basic ';
+        console.log(`Building auth string from clientId: ${process.env.CLIENT_ID} and clientSecret: ${process.env.CLIENT_SECRET}`)
+        let authString = `${unescape(process.env.CLIENT_ID ?? '')}:${unescape(process.env.CLIENT_SECRET ?? '')}`;
+        let authString64 = Buffer.from(authString).toString('base64url');
+        console.log(`Auth string: ${basic}${authString64}`)
+        return `${basic}${authString64}`
+        
+    }
+
+
+    private async buildUser(arrangement: CdrArrangement) : Promise<boolean> {
+        try {
+                
+            let loginId = arrangement.loginId;
+            let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
+            if (customerId == undefined)
+               return false;
+            this.authUser  = {
+                loginId : loginId,
+                customerId: customerId,
+                encodeUserId: arrangement.loginId,
+                encodedAccounts: undefined,
+                accountsEnergy: arrangement.consentedEnergyAccounts?.map(x => x.AccountId),
+                accountsBanking: arrangement.consentedBankingAccounts?.map(x => x.AccountId),
+                scopes_supported: arrangement.scopes.split(' ')
+            }
+            this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+            this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+            return true;
+        } catch(ex) {
+            console.log(JSON.stringify(ex))
+            return false;
+        }
+    }
+
+    private calculateTLSThumbprint(): string {
+        // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint   
+        return '';
+    }
+}

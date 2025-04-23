@@ -4,6 +4,7 @@ export type CustomerModel = {
     lastName?: string;
     email?: string;
     phoneNumber?: string;
+    lastUpdateTime?: string;
     Accounts: AccountModel[]
 }
 

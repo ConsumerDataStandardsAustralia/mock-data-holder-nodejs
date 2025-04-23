@@ -1,16 +1,16 @@
-FROM node:16
+FROM node:18
 
 ENV NODE_ENV=docker
 # create app directory
 WORKDIR /app
 
-COPY ./test-data-server/package*.json ./
+COPY ./test-data-server/. .
 
 RUN npm install
 
 # Bundle app source
-COPY ./test-data-server/ ./
-COPY ./security/ /security
+COPY ./test-data-server/ .
+COPY ./security/ /app
 
 RUN npm run build:docker
 
