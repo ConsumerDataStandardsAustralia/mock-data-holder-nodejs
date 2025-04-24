@@ -45,6 +45,7 @@ import { IAuthService } from './modules/auth-service.interface';
 import { AuthService } from './modules/auth-service';
 import moment from 'moment';
 import { PanvaAuthService } from './modules/panva-service';
+import { KeycloakAuthService } from './modules/keycloak-service';
 
 
 dotenv.config();
@@ -71,17 +72,22 @@ var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
 // the auth server type will determine which implementation of IAuthService will be used.
-if (authServerType.toUpperCase() == "STANDALONE") {
-    console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
-    authService = new StandAloneAuthService(dbService);
-}
-else if (authServerType.toUpperCase() == "PANVA") {
-    console.log(`Running server with authorisation. Required to go through authorisation process`)
-    authService = new PanvaAuthService(dbService);
-}
-else {
-    console.log(`Running server with authorisation. Required to go through authorisation process`)
-    authService = new AuthService(dbService);  
+switch (authServerType.toUpperCase()) {
+    case "STANDALONE":
+        console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
+        authService = new StandAloneAuthService(dbService);
+        break;
+    case "KEYCLOAK":
+        console.log(`Running server with authorisation. Required to go through authorisation process`)
+        authService = new KeycloakAuthService(dbService);
+        break;
+    case "PANVA":
+        console.log(`Running server with authorisation. Required to go through authorisation process`)
+        authService = new PanvaAuthService(dbService);
+        break;
+    default:
+        console.log(`Running server with authorisation. Required to go through authorisation process`)
+        authService = new AuthService(dbService);  
 }
 
 
