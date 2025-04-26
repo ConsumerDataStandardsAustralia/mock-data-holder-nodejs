@@ -17,5 +17,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.16"
+  },
+  "dependencies": {
+    "test-data-server": "file:"
   }
 }
