@@ -9,6 +9,7 @@ services:
       - "7001:7001"
       - "7006:7006"
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-holder:host-gateway"
       - "mock-data-recipient:host-gateway"  
       - "authserver-ui:host-gateway" 
@@ -29,14 +30,15 @@ services:
   mock-data-recipient:
     container_name: mock-data-recipient
     image: consumerdatastandardsaustralia/mock-data-recipient:0.2
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.mock-data-recipient
+    build:
+      context: . 
+      dockerfile: dockerfile.mock-data-recipient
     ports: 
       - "9001:9001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway" 
       - "authserver-ui:host-gateway" 
@@ -55,15 +57,16 @@ services:
   cdr-auth-server:
     container_name: cdr-auth-server
     image: consumerdatastandardsaustralia/cdr-auth-server:0.2
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.cdr-auth-server 
+    build:
+      context: . 
+      dockerfile: dockerfile.cdr-auth-server 
     ports: 
       - "8001:8001"
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
@@ -83,9 +86,9 @@ services:
   authserver-ui:
     container_name: authserver-ui
     image: consumerdatastandardsaustralia/authserver-ui:0.5
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.authserver-ui
+    build:
+      context: . 
+      dockerfile: dockerfile.authserver-ui
     ports: 
       - "3000:3000"
     environment:
@@ -94,6 +97,7 @@ services:
       - REACT_APP_CDR_POLICY_LINK=https://cdr-policy
       - REACT_APP_CDR_FAQ_LINK=https://www.cdr.gov.au
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
@@ -105,10 +109,11 @@ services:
   tls-gateway:
     container_name: tls-gateway
     image: consumerdatastandardsaustralia/tls-gateway:0.2
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.tlsgateway  
+    build:
+      context: . 
+      dockerfile: dockerfile.tlsgateway  
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
@@ -122,13 +127,14 @@ services:
      
   mtls-gateway:
     container_name: mtls-gateway
-    # build:
-    #   context: . 
-    #   dockerfile: dockerfile.mtlsgateway  
+    build:
+      context: . 
+      dockerfile: dockerfile.mtlsgateway  
     image: consumerdatastandardsaustralia/mtls-gateway:0.2
     ports: 
       - "8082:8082"
     extra_hosts:
+      - host.docker.internal:host-gateway
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
@@ -148,6 +154,7 @@ services:
     restart: unless-stopped
     env_file: .env.accc
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
@@ -167,7 +174,6 @@ services:
   mssql:
     container_name: mssql
     image: consumerdatastandardsaustralia/energy-sql-data
-    #image: 'mcr.microsoft.com/mssql/server:2019-latest'
     ports:
       - '1433:1433'
     user: root

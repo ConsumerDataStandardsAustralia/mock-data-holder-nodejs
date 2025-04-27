@@ -1,0 +1,89 @@
+version: '3.8'
+name: dsb-data
+services:
+  panva-oidc:
+    container_name: panva-oidc
+    image: consumerdatastandardsaustralia/panva-oidc:0.1
+    build:
+      context: . 
+      dockerfile: dockerfile 
+    restart: unless-stopped
+    env_file: .env.panva
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      - dsb-nodejs-resource-api:host-gateway
+      - dsb-sample-adr:host-gateway
+    networks:
+      - panva
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongodb
+
+  dsb-sample-adr:
+    container_name: dsb-sample-adr
+    image: consumerdatastandardsaustralia/dsb-sample-adr:0.1
+    env_file: .env.panva
+    restart: unless-stopped
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      - dsb-nodejs-resource-api:host-gateway
+      - panva-oidc:host-gateway  
+    ports:
+       - "3007:3007"
+    networks:
+       - panva
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:     
+      - dbdata:/usr/local/var/mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - panva     
+  
+  dsb-nodejs-resource-api:
+    container_name: dsb-nodejs-resource-api
+    image: consumerdatastandardsaustralia/dsb-nodejs-resource-api:panva
+    build:
+      context: . 
+      dockerfile: dockerfile.dsb-test-data-server       
+    restart: unless-stopped
+    env_file: .env.panva
+    extra_hosts:
+      - host.docker.internal:host-gateway
+      - panva-oidc:host-gateway 
+
+      - dsb-sample-adr:host-gateway     
+    ports:
+       - "3005:3005"
+    networks:
+       - panva
+    depends_on:
+      - mongodb
+      - panva-oidc
+
+  dsb-data-loader:
+    container_name: dsb-data-loader
+    image: consumerdatastandardsaustralia/dsb-data-loader:panva
+    build:
+      context: .
+      dockerfile: dockerfile.dsb-data-loader    
+    env_file: .env.panva
+    depends_on:
+      - mongodb
+    networks:
+       - panva
+
+volumes:
+  dbdata:
+
+networks:
+  panva:
+  
+

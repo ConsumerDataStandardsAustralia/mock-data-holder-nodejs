@@ -17,8 +17,6 @@ import { CdrArrangement } from "./cdr-arrangement.model";
 export class PanvaAuthService implements IAuthService {
 
     private introspection_endpoint: string | undefined;
-    //private introspection_endpoint_internal: string | undefined;
-
 
     authUser: DsbCdrUser| undefined;
     private jwkKeys: JwkKey[] | undefined;
@@ -26,11 +24,8 @@ export class PanvaAuthService implements IAuthService {
     private jwtEncodingAlgorithm: string;
     private issuer: string | undefined;
     private jwks_uri: string | undefined;
-    private algorithm = 'AES-256-CBC';
     private token_endpoint:  string | undefined;
-    // This key must be the same on the authorisation server
-    private idPermanenceKey = process.env.IDPERMANENCEKEY;
-    private iv = Buffer.alloc(16);
+
     private dbService: IDatabase;
 
     constructor(dbService: IDatabase) {
@@ -70,10 +65,9 @@ export class PanvaAuthService implements IAuthService {
         let config : AxiosRequestConfig = {
             headers: {'Authorization': `${authHeader}`}
         };
-        //let url = new URL(`${process.env.AUTH_SERVER_URL}/cdrarrangement`);
         let urlStr = `${process.env.AUTH_SERVER_URL}/arrangement/${id}`
         const response = await axios.get(urlStr, config)
-        // response.data will be a CDrArrangment object as defined in dsb-panva-oidc--provider
+        // response.data will be a CdrArrangement object as defined in dsb-panva-oidc--provider
         return response;
     }
     
@@ -93,7 +87,6 @@ export class PanvaAuthService implements IAuthService {
               }
             console.log(`Token reponse is ${token}`)
             let tokeToBeValidated = token.split(' ')[1];
-            //et postBody = this.buildIntrospecticePostBody(tokeToBeValidated);
             const postBody: any = {
                 token: tokeToBeValidated
             }

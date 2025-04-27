@@ -98,9 +98,9 @@ const router = exp.Router();
 
 const sampleEndpoints = [...endpoints] as EndpointConfig[];
 
-const certFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_FILE as string)
-const keyFile = path.join(__dirname, '/security/mock-data-holder/tls', process.env.CERT_KEY_FILE as string)
-const signingPublicKeyFile = path.join(__dirname, '/security/mock-data-holder/public.json')
+const certFile = path.join(__dirname, '/security/tls', process.env.CERT_FILE as string)
+const keyFile = path.join(__dirname, '/security/tls', process.env.CERT_KEY_FILE as string)
+const signingPublicKeyFile = path.join(__dirname, '/security/public.json')
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
 const publicKey = readFileSync(signingPublicKeyFile, 'utf8');
