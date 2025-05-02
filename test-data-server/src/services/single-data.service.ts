@@ -1105,7 +1105,7 @@ export class SingleData implements IDatabase {
 
             allCustomers.forEach((c: any) => {
 
-                let id = c.customerId;
+                let id = `${c.customer?.person?.lastName}.${c.customer?.person?.firstName}`;
                 if (id == loginId) {
                     let aModel: CustomerModel = {
                         LoginId: id,
