@@ -139,6 +139,25 @@ Note: A custom build can be run from any debug environment and will interact wit
     
 4. Open your web browser and navigate to [http://localhost:9001](http://localhost:9001/) to access the Mock Data Recipient application. This application can be used to generate an access token required to access the API.
 
+## Running the Keycloak Auth Server
+
+1. Run the following command to start a Keycloak Auth Server which will:
+
+    ```bash
+    docker run -d --name <ContainerName> 
+    -v <ProviderFolder>:/opt/keycloak/providers -p 8080:8080 
+    -e DATA_HOLDER_BASE_URL=<DataHolderHost> 
+    -e KEYCLOAK_ADMIN=admin 
+    -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:25.0.2 start-dev
+    ```
+    Replace **`project-name`** with the name of the repository.
+
+    Replace **`ContainerName`** with your chosen name of the container.
+
+    Replace **`ProviderFolder`** with the folder containing the provider files. 
+
+    Replace **`DataHolderHost`** with the host of the Data Holder, for example, http://localhost:3001
+
 ## Contribution Process
 
 We welcome contributions from the community! If you'd like to contribute to this project, please follow these simple steps:
