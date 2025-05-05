@@ -150,8 +150,7 @@ Note: A custom build can be run from any debug environment and will interact wit
     -e KEYCLOAK_ADMIN=admin 
     -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:25.0.2 start-dev
     ```
-    Replace **`project-name`** with the name of the repository.
-
+    
     Replace **`ContainerName`** with your chosen name of the container.
 
     Replace **`ProviderFolder`** with the folder containing the provider files. 
