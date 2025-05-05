@@ -156,7 +156,7 @@ Note: A custom build can be run from any debug environment and will interact wit
 
     Replace **`ProviderFolder`** with the folder containing the provider files. 
 
-    Replace **`DataHolderHost`** with the host of the Data Holder, for example, http://localhost:3001
+    Replace **`DataHolderHost`** with the host of the Data Holder, for example, http://192.168.1.103:3001
 
 ## Contribution Process
 
