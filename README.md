@@ -137,7 +137,7 @@ Note: A custom build can be run from any debug environment and will interact wit
     npm start
     ```
     
-4. Open your web browser and navigate to [http://localhost:9001](http://localhost:9001/) to access the Mock Data Recipient application. This application can be used to generate an access token required to access the API.
+4. Open your web browser and navigate to [https://localhost:9001](https://localhost:9001/) to access the Mock Data Recipient application. This application can be used to generate an access token required to access the API.
 
 ## Contribution Process
 
