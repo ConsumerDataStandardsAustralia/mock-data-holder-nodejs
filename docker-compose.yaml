@@ -9,6 +9,7 @@ services:
       - "7001:7001"
       - "7006:7006"
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-holder:host-gateway"
       - "mock-data-recipient:host-gateway"  
       - "authserver-ui:host-gateway" 
@@ -37,6 +38,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway" 
       - "authserver-ui:host-gateway" 
@@ -64,6 +66,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
@@ -94,6 +97,7 @@ services:
       - REACT_APP_CDR_POLICY_LINK=https://cdr-policy
       - REACT_APP_CDR_FAQ_LINK=https://www.cdr.gov.au
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mssql:host-gateway"
       - "mock-data-holder:host-gateway"
       - "mock-register:host-gateway"  
@@ -109,6 +113,7 @@ services:
     #   context: . 
     #   dockerfile: dockerfile.tlsgateway  
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
@@ -129,6 +134,7 @@ services:
     ports: 
       - "8082:8082"
     extra_hosts:
+      - host.docker.internal:host-gateway
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
@@ -148,6 +154,7 @@ services:
     restart: unless-stopped
     env_file: .env.accc
     extra_hosts:
+      - host.docker.internal:host-gateway    
       - "mock-data-recipient:host-gateway"
       - "mock-register:host-gateway"  
       - "mock-data-holder:host-gateway" 
@@ -167,7 +174,6 @@ services:
   mssql:
     container_name: mssql
     image: consumerdatastandardsaustralia/energy-sql-data
-    #image: 'mcr.microsoft.com/mssql/server:2019-latest'
     ports:
       - '1433:1433'
     user: root
