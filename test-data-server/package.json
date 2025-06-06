@@ -8,7 +8,7 @@
     "start": "npm run build && cd ./dist/src && node ./app.js",
     "build": "tsc   && npm run copy-files",
     "build:docker": "tsc ",
-    "copy-files": "copyfiles  \"../security/mock-data-holder/**/*\"  \"./dist/src/**\"",
+    "copy-files": "copyfiles  \"../.env\" \"../security/mock-data-holder/**/*\"  \"./dist/src/**\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon"
   },
