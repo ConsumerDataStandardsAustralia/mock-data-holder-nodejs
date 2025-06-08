@@ -11,7 +11,9 @@ RUN npm install
 # Bundle app source
 RUN npm run build:docker
 
-COPY ./security/mock-data-holder /app/dist/src/security/mock-data-holder
+COPY ./security/mock-data-holder/tls/dsb-server.pfx /app/dist/src/security/dsb-server.pfx
+COPY ./security/mock-data-holder/tls/dsb-server.pem /app/dist/src/security/dsb-server.pem
+COPY ./security/mock-data-holder/tls/dsb-server.key /app/dist/src/security/dsb-server.key
 
 COPY ./security/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
 RUN  update-ca-certificates

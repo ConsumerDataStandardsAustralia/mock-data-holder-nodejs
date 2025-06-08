@@ -98,8 +98,8 @@ const router = exp.Router();
 
 const sampleEndpoints = [...endpoints] as EndpointConfig[];
 
-const certFile = path.join(__dirname, '/security/tls', process.env.CERT_FILE as string)
-const keyFile = path.join(__dirname, '/security/tls', process.env.CERT_KEY_FILE as string)
+const certFile = path.join(__dirname, '/security', process.env.CERT_FILE as string)
+const keyFile = path.join(__dirname, '/security', process.env.CERT_KEY_FILE as string)
 const signingPublicKeyFile = path.join(__dirname, '/security/public.json')
 const rCert = readFileSync(certFile, 'utf8');
 const rKey = readFileSync(keyFile, 'utf8');
@@ -159,18 +159,17 @@ async function initaliseApp() {
         await dbService.connectDatabase();
         authService.initAuthService();
         console.log(`Connected.`);
-        if (useSSL){
-            let port = `${process.env.APP_LISTENTING_PORT_SSL}`;
-            https.createServer(options, app)
-                .listen(port, () => {
-                    console.log(`Server started (SSL). Listening on port ${port}`);
-                })
-        } else {
-            http.createServer(app)
-            .listen(port, () => {
-                console.log(`Server started. Listening on port ${port}`);
-            })  
-        }
+        let portSSL = `${process.env.APP_LISTENTING_PORT_SSL}`;
+        https.createServer(options, app)
+            .listen(portSSL, () => {
+                console.log(`Server started (SSL). Listening on port ${portSSL}`);
+            })
+        let port = `${process.env.APP_LISTENTING_PORT}`;
+        http.createServer(app)
+        .listen(port, () => {
+            console.log(`Server started. Listening on port ${port}`);
+        })  
+        
     } catch (e: any) {
         console.log(`FATAL: could not start server${e?.message}`);
     }
