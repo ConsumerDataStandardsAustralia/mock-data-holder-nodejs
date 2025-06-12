@@ -63,6 +63,7 @@ common/autoinstallers/*/.npmrc
 
 utils/data
 
+scratch/**/* 
 
 # compiled output
 dist

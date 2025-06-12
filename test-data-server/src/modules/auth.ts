@@ -16,15 +16,10 @@ var svc: IAuthService;
 export function cdrAuthorization(authService: IAuthService,  options: CdrConfig | undefined): any {
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
-        let allEP: EndpointConfig[] = [...DefaultBankingEndpoints, ...DefaultEnergyEndpoints, ...DefaultCommonEndpoints];
-        let config: CdrConfig = {
-            endpoints: allEP,
-            basePath: options?.basePath
-        }
         svc = authService;
-        let ep = getEndpoint(req, config);
-        console.log("Endpoint is: " + JSON.stringify(ep))
-        if (ep == null || ep.authScopesRequired == null) {
+        // get the endpoint
+        let ep = getEndpoint(req, options);
+        if (ep?.authScopesRequired == null){
             next();
             return;
         }

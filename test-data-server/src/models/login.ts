@@ -4,12 +4,13 @@ export type CustomerModel = {
     lastName?: string;
     email?: string;
     phoneNumber?: string;
+    lastUpdateTime?: string;
     Accounts: AccountModel[]
 }
 
 export type AccountModel = {
     AccountId: string,
-    DisplayName: string,
+    DisplayName?: string,
     ProductName?: string,
     MaskedName?: string,
     AccountNumber?:string,

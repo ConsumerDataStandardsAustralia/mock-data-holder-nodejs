@@ -443,29 +443,17 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    // Login information
-    async getUserForLoginId(loginId: string, userType: string): Promise<string | undefined> {
-        // split loginId into first and last name
-        var customerId;
-        let arr: string[] = loginId.split('.');
-        if (arr.length < 2)
-            return undefined;
-        let firstName = arr[1];
-        let lastName = arr[0];
+    // Verify subscriber
+    async getUserForLoginId(sub: string, userType: string): Promise<string | undefined> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let allData = await allDataCollection.findOne();
         if (allData?.holders != undefined) {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
-            if (allCustomers.length < 1)
-                return undefined;
-            allCustomers.forEach((c: any) => {
-                if (c?.customer?.person?.firstName.toUpperCase() == firstName.toUpperCase()
-                    && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
-                    customerId = c.customerId;
-                }
-            })
+            if (allCustomers && allCustomers.some((c: any) => c?.customerId == sub)) {
+                return sub;
+            }
         }
-        return customerId;
+        return undefined;
     }
 
     async getCustomer(allDataCollection: mongoDB.Collection, customerId: string): Promise<any> {
@@ -1125,23 +1113,27 @@ export class SingleData implements IDatabase {
                         firstName: c.customer?.person?.firstName,
                         lastName: c.customer?.person?.lastName,
                         email: c.customer?.person?.emailAddresses[0]?.address,
-                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber
+                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber,
+                        lastUpdateTime: c.customer?.person?.lastUpdateTime
                     };
-                    let accounts: AccountModel[] = [];
 
                     if (sector == null || sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
                         c?.energy?.accounts.forEach((acc: any) => {
+                            const accountDescription = buildEnergyAccountDescription(acc.account.plans);
+                            if (!accountDescription) {
+                                // This situation is only possible when there are no NMIs on the account,
+                                // which means there are no Electricity plans, therefore
+                                // skip this account because Gas plans are shareable only if bundled with Electricity ones.
+                                return;
+                            }
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
-                                MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: `${acc?.account?.displayName}`,
+                                DisplayName: (!acc?.account?.accountNumber && !acc?.account?.displayName ? accountDescription : acc.account.displayName),
                                 Sector: 'ENERGY'
                             };
-                            accounts.push(loginAccount)
+                            aModel.Accounts.push(loginAccount);
                         })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
                     }
 
                     if (sector == null || sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
@@ -1150,14 +1142,14 @@ export class SingleData implements IDatabase {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
                                 MaskedName: acc?.account?.maskedNumber,
-                                DisplayName: `${acc?.account?.displayName}`,
+                                DisplayName: acc?.account?.displayName,
                                 Sector: 'BANKING'
                             };
-                            accounts.push(loginAccount)
+                            aModel.Accounts.push(loginAccount);
                         })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
                     }
+
+                    loginModel.push(aModel);
                 }
             })
         }
@@ -1236,4 +1228,11 @@ export class SingleData implements IDatabase {
 
 }
 
-
+function buildEnergyAccountDescription(plans: [any]): string | undefined {
+    let nmi : string[] = [];
+    plans.forEach(({servicePointIds}: {servicePointIds : [string]}) => nmi = nmi.concat(servicePointIds));
+    if (nmi.length == 0) {
+        return;
+    }
+    return `Account for NMI${nmi.length > 1 ? 's' : ''}: ${nmi.join(', ')}`;
+}
