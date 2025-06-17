@@ -7,16 +7,17 @@ import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
 import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 import { DsbEndpoint } from "../models/dsb-endpoints";
 import { IAuthService } from "./auth-service.interface";
+import { CdrArrangement } from './cdr-arrangement.model';
+import { Introspection } from '../models/introspection';
 
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
-var svc: IAuthService;
 
 
 // TODO need to be incorporated in holder-sdk middleware
 export function cdrAuthorization(authService: IAuthService,  options: CdrConfig | undefined): any {
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
-        svc = authService;
+
         // get the endpoint
         let ep = getEndpoint(req, options);
         if (ep?.authScopesRequired == null){
@@ -24,24 +25,36 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             return;
         }
 
-        // initialise the authService
-        if (await svc.initAuthService() == false) {
-            res.status(500).json('Could not communicate with authorisation server');
+        let accessToken = req.headers?.authorization;
+        if (process.env?.NO_AUTH_SERVER?.toUpperCase() == 'FALSE'){
+
+            await authService.setUser(req, undefined);
+            next();
             return;
         }
-
-        let accessToken = req.headers?.authorization;
+        
         // In NO_AUTH_SERVER=false an accessToken may still be provided
-        if (accessToken == null && process.env?.NO_AUTH_SERVER?.toUpperCase() == 'FALSE') {
+        if (accessToken == null) {
             res.status(404).json('No authorization header provided');
             return;
         }
         
         // validate access token via introspective endpoint
-        if (await svc.verifyAccessToken(accessToken) == false) {
+        const accessTokenObject: Introspection | null = await authService.verifyAccessToken(accessToken)
+        if (accessTokenObject == null) {
             res.status(401).json('Invalid access token');
             return;
-        }    
+        } 
+
+       
+        if (accessTokenObject.exp == null || accessTokenObject.exp < Date.now()/1000) {
+            res.status(401).json('Access token has expired');
+            return;     
+        }
+        if (authService.getUser(req) == null)
+             // by passing in the decoded accessTokenObject this eliminates the call which was already done with verifyAccessToken
+            await authService.setUser(req, accessTokenObject)
+              
         next();
     };
 
@@ -128,7 +141,3 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
     }
 
 };
-
-export function authService() {
-    return svc;
-}

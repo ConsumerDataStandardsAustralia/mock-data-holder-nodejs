@@ -42,10 +42,10 @@ import { SingleData } from './services/single-data.service';
 import { BankingAccountDetailV3, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
 import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
-import { AuthService } from './modules/auth-service';
+// import { AuthService } from './modules/auth-service';
 import moment from 'moment';
 import { PanvaAuthService } from './modules/panva-service';
-
+import session from 'express-session';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -76,12 +76,12 @@ if (authServerType.toUpperCase() == "STANDALONE") {
     authService = new StandAloneAuthService(dbService);
 }
 else if (authServerType.toUpperCase() == "PANVA") {
-    console.log(`Running server with authorisation. Required to go through authorisation process`)
+    console.log(`Running server with Panva IdP authorisation. Required to go through authorisation process`)
     authService = new PanvaAuthService(dbService);
 }
 else {
-    console.log(`Running server with authorisation. Required to go through authorisation process`)
-    authService = new AuthService(dbService);  
+    console.log(`No authorisation mechanism specified. Will not use authorisation`);
+    authService = new StandAloneAuthService(dbService);
 }
 
 
@@ -92,8 +92,13 @@ const corsOptions: cors.CorsOptions = {
     origin: corsAllowedOrigin
 };
 app.use(cors(corsOptions));
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(session({
+       secret: 'your-secret-key', // Replace with a strong secret key
+       resave: false,
+       saveUninitialized: true,
+       cookie: { secure: false } // Set to true in production with HTTPS
+   }));
+
 const router = exp.Router();
 
 const sampleEndpoints = [...endpoints] as EndpointConfig[];
@@ -115,35 +120,35 @@ const headerValidatorOptions: CdrConfig = {
 
 // The user service which provides the callback function for the 
 // cdrResourceValidator middleware function to accounts associated with user
-var userService: IUserService = {
-    getUser: function (): DsbCdrUser | undefined {
-        if (authService?.authUser == null)
-            return undefined;
-        let user: DsbCdrUser | undefined = {
-            customerId: authService.authUser?.customerId as string,
-            scopes_supported: authService.authUser?.scopes_supported,
-            accountsEnergy: authService.authUser?.accountsEnergy,
-            accountsBanking: authService.authUser?.accountsBanking,
-            energyServicePoints: authService.authUser?.energyServicePoints,
-            loginId: authService.authUser?.loginId as string,
-            encodeUserId: authService.authUser?.encodeUserId as string,
-            encodedAccounts: authService.authUser?.encodedAccounts
-        }
-        return user;
-    }
-};
+// var userService: IUserService = {
+//     getUser: function (req: Request): DsbCdrUser | undefined {
+//         let user = authService.getUser(req);
+//         // if (authService?.authUser == null)
+//         //     return undefined;
+//         // let user: DsbCdrUser | undefined = {
+//         //     customerId: authService.authUser?.customerId as string,
+//         //     scopes_supported: authService.authUser?.scopes_supported,
+//         //     accountsEnergy: authService.authUser?.accountsEnergy,
+//         //     accountsBanking: authService.authUser?.accountsBanking,
+//         //     energyServicePoints: authService.authUser?.energyServicePoints,
+//         //     loginId: authService.authUser?.loginId as string,
+//         //     encodeUserId: authService.authUser?.encodeUserId as string,
+//         //     encodedAccounts: authService.authUser?.encodedAccounts
+//         // }
+//         return user;
+//     }
+// };
 
 const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", "/jwks"]
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
-// This is a function which interacts with the Authorisation server developed by the ACCC
 app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), excludedPaths));
 app.use(unless(cdrEndpointValidator(endpointValidatorOptions), excludedPaths));
 app.use(unless(cdrHeaderValidator(headerValidatorOptions), excludedPaths));
-app.use(unless(cdrScopeValidator(userService), excludedPaths));
-app.use(unless(cdrResourceValidator(userService), excludedPaths));
+// app.use(unless(cdrScopeValidator(userService), excludedPaths));
+// app.use(unless(cdrResourceValidator(userService), excludedPaths));
 
 
 app.use('/', router);
@@ -223,14 +228,14 @@ function unless(middleware: any, paths: string[]) {
 router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        if ((await isEnergyAccountForUser(authService?.authUser?.customerId as string, req.params.accountId)) == false) {
+        if ((await isEnergyAccountForUser(req, req.params.accountId)) == false) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params?.accountId}`)
             res.status(404).json(errorList);
             return;
         }
         var excludes = ["invoices", "billing", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let data: any | undefined = await dbService.getEnergyAccountDetails(authService?.authUser?.customerId as string, req.params?.accountId)
+            let data: any | undefined = await dbService.getEnergyAccountDetails(authService?.getUser(req)?.customerId as string, req.params?.accountId)
             if (data == null) {
                 let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_BANK_ACCOUNT, `Unavailable Energy Account: ${req.params?.accountId}`)
                 res.status(404).json(errorList);
@@ -256,7 +261,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 res.status(400).json(errorList);
                 return;
             }
-            let result: EnergyInvoice[] = await dbService.getBulkInvoicesForUser(authService?.authUser?.customerId as string, req?.query)
+            let result: EnergyInvoice[] = await dbService.getBulkInvoicesForUser(authService?.getUser(req)?.customerId as string, req?.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -292,7 +297,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                 res.status(400).json(errorList);
                 return;
             }
-            let result = await dbService.getBulkBilllingForUser(authService?.authUser?.customerId as string, req.query)
+            let result = await dbService.getBulkBilllingForUser(authService?.getUser(req)?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -321,7 +326,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
         }
 
         if (req.params?.accountId == "balances") {
-            let result: any[] = await dbService.getBulkBalancesForUser(authService?.authUser?.customerId as string)
+            let result: any[] = await dbService.getBulkBalancesForUser(authService?.getUser(req)?.customerId as string)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -368,7 +373,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 res.status(400).json(errorList);
                 return;
             }
-            let result: EnergyServicePointDetail = await dbService.getServicePointDetails(authService?.authUser?.customerId as string, req.params?.servicePointId)
+            let result: EnergyServicePointDetail = await dbService.getServicePointDetails(authService?.getUser(req)?.customerId as string, req.params?.servicePointId)
             if (result == null) {
                 let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params?.servicePointId}`)
                 res.status(404).json(errorList);
@@ -394,7 +399,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 res.status(400).json(errorList);
                 return;
             }
-            let result: EnergyUsageRead[] = await dbService.getBulkUsageForUser(authService?.authUser?.customerId as string, req?.query)
+            let result: EnergyUsageRead[] = await dbService.getBulkUsageForUser(authService?.getUser(req)?.customerId as string, req?.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -431,7 +436,7 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 res.status(400).json(errorList);
                 return;
             }
-            let result: EnergyDerRecord[] = await dbService.getBulkDerForUser(authService?.authUser?.customerId as string)
+            let result: EnergyDerRecord[] = await dbService.getBulkDerForUser(authService?.getUser(req)?.customerId as string)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -476,7 +481,7 @@ app.get(`${basePath}/energy/accounts`, async (req: Request, res: Response, next:
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService?.authUser?.customerId as string, authService?.authUser?.accountsEnergy as string[], req.query);
+        let result: EnergyAccountV2[] = await dbService.getEnergyAccounts(authService?.getUser(req)?.customerId as string, authService?.getUser(req)?.accountsEnergy as string[], req.query);
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -521,7 +526,7 @@ app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyServicePoint[] = await dbService.getServicePoints(authService?.authUser?.customerId as string);
+        let result: EnergyServicePoint[] = await dbService.getServicePoints(authService?.getUser(req)?.customerId as string);
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -556,7 +561,7 @@ app.get(`${basePath}/energy/electricity/servicepoints`, async (req: Request, res
 app.get(`${basePath}/common/customer/detail`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getCustomerDetails(authService?.authUser?.customerId as string);
+        let result = await dbService.getCustomerDetails(authService?.getUser(req)?.customerId as string);
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -572,7 +577,7 @@ app.get(`${basePath}/common/customer/detail`, async (req: Request, res: Response
 app.get(`${basePath}/common/customer`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result = await dbService.getCustomerDetails(authService?.authUser?.customerId as string);
+        let result = await dbService.getCustomerDetails(authService?.getUser(req)?.customerId as string);
         if (result == null || result?.data == null) {
             res.sendStatus(404);
         } else {
@@ -666,7 +671,7 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/usage`, as
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyUsageRead[] = await dbService.getUsageForServicePoint(authService?.authUser?.customerId as string, req.params.servicePointId, req?.query)
+        let result: EnergyUsageRead[] = await dbService.getUsageForServicePoint(authService?.getUser(req)?.customerId as string, req.params.servicePointId, req?.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params.servicePointId}`)
             res.status(404).json(errorList);
@@ -704,12 +709,12 @@ app.get(`${basePath}/energy/electricity/servicepoints/:servicePointId/der`, asyn
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         // find service point in user object, if it is not a service point associated with
-        if ((await isServicePointsForUser(authService?.authUser?.customerId as string, req.params.servicePointId)) == false) {
+        if ((await isServicePointsForUser(req, req.params.servicePointId)) == false) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params.servicePointId}`)
             res.status(404).json(errorList);
             return;
         }
-        let data: EnergyDerRecord | undefined = await dbService.getDerForServicePoint(authService?.authUser?.customerId as string, req.params.servicePointId);
+        let data: EnergyDerRecord | undefined = await dbService.getDerForServicePoint(req.session.cdrUser?.customerId as string, req.params.servicePointId);
         if (data == null) {
             let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_SERVICE_POINT, `Unavailable Service Point: ${req.params.servicePointId}`)
             res.status(404).json(errorList);
@@ -744,7 +749,7 @@ app.post(`${basePath}/energy/electricity/servicepoints/der`, async (req: Request
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyDerRecord[] = await dbService.getDerForMultipleServicePoints(authService?.authUser?.customerId as string, req.body?.data?.servicePointIds);
+        let result: EnergyDerRecord[] = await dbService.getDerForMultipleServicePoints(authService?.getUser(req)?.customerId as string, req.body?.data?.servicePointIds);
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -789,7 +794,7 @@ app.get(`${basePath}/energy/accounts/:accountId/invoices`, async (req: Request, 
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyInvoice[] = await dbService.getInvoicesForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
+        let result: EnergyInvoice[] = await dbService.getInvoicesForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params?.accountId}`);
             res.status(404).json(errorList);
@@ -834,7 +839,7 @@ app.post(`${basePath}/energy/accounts/invoices`, async (req: Request, res: Respo
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyInvoice[] = await dbService.getInvoicesForMultipleAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        let result: EnergyInvoice[] = await dbService.getInvoicesForMultipleAccounts(authService?.getUser(req)?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -879,7 +884,7 @@ app.post(`${basePath}/energy/accounts/balances`, async (req: Request, res: Respo
             res.status(400).json(errorList);
             return;
         }
-        let result: any[] = await dbService.getBalancesForMultipleAccount(authService?.authUser?.customerId as string, req.body?.data?.accountIds)
+        let result: any[] = await dbService.getBalancesForMultipleAccount(authService?.getUser(req)?.customerId as string, req.body?.data?.accountIds)
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -923,7 +928,7 @@ app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Reque
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyUsageRead[] = await dbService.getUsageForMultipleServicePoints(authService?.authUser?.customerId as string, req.body?.data?.servicePointIds, req.query)
+        let result: EnergyUsageRead[] = await dbService.getUsageForMultipleServicePoints(authService?.getUser(req)?.customerId as string, req.body?.data?.servicePointIds, req.query)
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -959,7 +964,7 @@ app.post(`${basePath}/energy/electricity/servicepoints/usage`, async (req: Reque
 app.get(`${basePath}/energy/accounts/:accountId/concessions`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result: EnergyConcession[] | undefined = await dbService.getConcessionsForAccount(authService?.authUser?.customerId as string, req.params?.accountId)
+        let result: EnergyConcession[] | undefined = await dbService.getConcessionsForAccount(authService?.getUser(req)?.customerId as string, req.params?.accountId)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
@@ -988,7 +993,7 @@ app.get(`${basePath}/energy/accounts/:accountId/balance`, async (req: Request, r
     try {
         console.log(`Received request on ${port} for ${req.url}`);
         let st = `Received request on ${port} for ${req.url}`;
-        let result = await dbService.getBalanceForAccount(authService?.authUser?.customerId as string, req.params?.accountId)
+        let result = await dbService.getBalanceForAccount(authService?.getUser(req)?.customerId as string, req.params?.accountId)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
@@ -1016,7 +1021,7 @@ app.get(`${basePath}/energy/accounts/:accountId/balance`, async (req: Request, r
 app.get(`${basePath}/energy/accounts/:accountId/payment-schedule`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let result: EnergyPaymentSchedule[] = await dbService.getPaymentSchedulesForAccount(authService?.authUser?.customerId as string, req.params?.accountId)
+        let result: EnergyPaymentSchedule[] = await dbService.getPaymentSchedulesForAccount(authService?.getUser(req)?.customerId as string, req.params?.accountId)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
@@ -1052,7 +1057,7 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyBillingTransactionV2[] = await dbService.getBillingForAccount(authService?.authUser?.customerId as string, req.params?.accountId, req?.query)
+        let result: EnergyBillingTransactionV2[] = await dbService.getBillingForAccount(authService?.getUser(req)?.customerId as string, req.params?.accountId, req?.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_ENERGY_ACCOUNT, `Invalid Energy Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
@@ -1097,7 +1102,7 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
             res.status(400).json(errorList);
             return;
         }
-        let result: EnergyBillingTransactionV2[] = await dbService.getBillingForMultipleAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        let result: EnergyBillingTransactionV2[] = await dbService.getBillingForMultipleAccounts(authService?.getUser(req)?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -1135,14 +1140,14 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
 router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        if ((await isBankAccountForUser(authService?.authUser?.customerId as string, req.params.accountId)) == false) {
+        if ((await isBankAccountForUser(req, req.params.accountId)) == false) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req.params.accountId}`)
             res.status(404).json(errorList);
             return;
         }
         var excludes = ["direct-debits", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let data: BankingAccountDetailV3 | undefined = await dbService.getAccountDetail(authService?.authUser?.customerId as string, req.params.accountId)
+            let data: BankingAccountDetailV3 | undefined = await dbService.getAccountDetail(authService?.getUser(req)?.customerId as string, req.params.accountId)
             if (data == null) {
                 let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_BANK_ACCOUNT, `Unavailable Bank Account: ${req.params.accountId}`);
                 res.status(404).json(errorList);
@@ -1167,7 +1172,7 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
                 res.status(400).json(errorList);
                 return;
             }
-            let result = await dbService.getBulkBalances(authService?.authUser?.customerId as string, req.query)
+            let result = await dbService.getBulkBalances(authService?.getUser(req)?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -1202,7 +1207,7 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
                 res.status(400).json(errorList);
                 return;
             }
-            let result = await dbService.getBulkDirectDebits(authService?.authUser?.customerId as string, req.query)
+            let result = await dbService.getBulkDirectDebits(authService?.getUser(req)?.customerId as string, req.query)
             if (result == null) {
                 res.sendStatus(404);
                 return;
@@ -1317,7 +1322,7 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
             res.status(400).json(errorList);
             return;
         }
-        let result = await dbService.getAccounts(authService?.authUser?.customerId as string, authService?.authUser?.accountsBanking as string[], req.query)
+        let result = await dbService.getAccounts(authService?.getUser(req)?.customerId as string, authService?.getUser(req)?.accountsBanking as string[], req.query)
 
         let paginatedData = paginateData(result, req.query);
         // check if this is an error object
@@ -1351,7 +1356,7 @@ app.get(`${basePath}/banking/accounts/:accountId/balance`, async (req: Request, 
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let data = await dbService.getAccountBalance(authService?.authUser?.customerId as string, req.params.accountId)
+        let data = await dbService.getAccountBalance(authService?.getUser(req)?.customerId as string, req.params.accountId)
         if (data == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req?.params?.accountId}`);
             res.status(404).json(errorList);
@@ -1379,7 +1384,7 @@ app.post(`${basePath}/banking/accounts/balances`, async (req: Request, res: Resp
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getBalancesForSpecificAccounts(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        let result = await dbService.getBalancesForSpecificAccounts(authService?.getUser(req)?.customerId as string, req.body?.data?.accountIds, req.query)
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -1423,7 +1428,7 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
             res.status(400).json(errorList);
             return;
         }
-        let result = await dbService.getTransationsForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
+        let result = await dbService.getTransationsForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req.params?.accountId}`)
             res.status(404).json(errorList);
@@ -1461,7 +1466,7 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, a
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let data = await dbService.getTransactionDetail(authService?.authUser?.customerId as string, req.params.accountId, req.params.transactionId)
+        let data = await dbService.getTransactionDetail(authService?.getUser(req)?.customerId as string, req.params.accountId, req.params.transactionId)
         if (data == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req?.params?.accountId}`);
             res.status(404).json(errorList);
@@ -1490,7 +1495,7 @@ app.get(`${basePath}/banking/payees/`, async (req: Request, res: Response, next:
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getPayees(authService?.authUser?.customerId as string, req.query)
+        let result = await dbService.getPayees(authService?.getUser(req)?.customerId as string, req.query)
         let paginatedData = paginateData(result, req.query);
         // check if this is an error object
         if (paginatedData?.errors != null) {
@@ -1521,7 +1526,7 @@ app.get(`${basePath}/banking/payees/:payeeId`, async (req: Request, res: Respons
     console.log(`Received request on ${port} for ${req.url}`);
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let data = await dbService.getPayeeDetail(authService?.authUser?.customerId as string, req.params.payeeId)
+        let data = await dbService.getPayeeDetail(authService?.getUser(req)?.customerId as string, req.params.payeeId)
         if (data == null) {
             let errorList = buildErrorMessage(DsbStandardError.RESOURCE_NOT_FOUND, `Resource Not Found: ${req?.params?.payeeId}`);
             res.status(404).json(errorList);
@@ -1548,7 +1553,7 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getBulkScheduledPayments(authService?.authUser?.customerId as string, req.query)
+        let result = await dbService.getBulkScheduledPayments(authService?.getUser(req)?.customerId as string, req.query)
         // check if this is an error object
         let paginatedData = paginateData(result, req.query);
         if (paginatedData?.errors != null) {
@@ -1580,7 +1585,7 @@ app.post(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Res
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getScheduledPaymentsForAccountList(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        let result = await dbService.getScheduledPaymentsForAccountList(authService?.getUser(req)?.customerId as string, req.body?.data?.accountIds, req.query)
         // check if this is an error object
         let paginatedData = paginateData(result, req.query);
         if (paginatedData?.errors != null) {
@@ -1612,7 +1617,7 @@ app.get(`${basePath}/banking/accounts/:accountId/payments/scheduled`, async (req
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getScheduledPaymentsForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
+        let result = await dbService.getScheduledPaymentsForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query)
         // check if this is an error object
         let paginatedData = paginateData(result, req.query);
         if (paginatedData?.errors != null) {
@@ -1644,7 +1649,7 @@ app.get(`${basePath}/banking/accounts/:accountId/direct-debits`, async (req: Req
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getDirectDebitsForAccount(authService?.authUser?.customerId as string, req.params.accountId, req.query)
+        let result = await dbService.getDirectDebitsForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query)
         // check if this is an error object
         let paginatedData = paginateData(result, req.query);
         if (paginatedData?.errors != null) {
@@ -1676,7 +1681,7 @@ app.post(`${basePath}/banking/accounts/direct-debits`, async (req: Request, res:
     try {
         console.log(`Received request on ${port} for ${req.url}`);
 
-        let result = await dbService.getDirectDebitsForAccountList(authService?.authUser?.customerId as string, req.body?.data?.accountIds, req.query)
+        let result = await dbService.getDirectDebitsForAccountList(authService?.getUser(req)?.customerId as string, req.body?.data?.accountIds, req.query)
         // check if this is an error object
         let paginatedData = paginateData(result, req.query);
         if (paginatedData?.errors != null) {
@@ -1753,28 +1758,28 @@ app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
 });
 
 
-async function isServicePointsForUser(customerId: string, servicePointId: string): Promise<boolean> {
+async function isServicePointsForUser(req: Request, servicePointId: string): Promise<boolean> {
     let retVal: boolean = false;
-    if (userService != null) {
-        let idx = (await userService.getUser())?.energyServicePoints?.findIndex((x: string) => servicePointId);
+    if (authService != null) {
+        let idx = (await authService.getUser(req))?.energyServicePoints?.findIndex((x: string) => servicePointId);
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal
 }
 
-async function isBankAccountForUser(customerId: string, accountId: string): Promise<boolean> {
+async function isBankAccountForUser(req: Request, accountId: string): Promise<boolean> {
     let retVal: boolean = false;
-    if (userService != null) {
-        let idx = (await userService.getUser())?.accountsBanking?.findIndex((x: string) => accountId);
+    if (authService != null) {
+        let idx = (await authService.getUser(req))?.accountsBanking?.findIndex((x: string) => accountId);
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal
 }
 
-async function isEnergyAccountForUser(customerId: string, accountId: string): Promise<boolean> {
+async function isEnergyAccountForUser(req: Request, accountId: string): Promise<boolean> {
     let retVal: boolean = false;
-    if (userService != null) {
-        let idx = (await userService.getUser())?.accountsEnergy?.findIndex((x: string) => accountId);
+    if (authService != null) {
+        let idx = (await authService.getUser(req))?.accountsEnergy?.findIndex((x: string) => accountId);
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal

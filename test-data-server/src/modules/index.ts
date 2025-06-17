@@ -1,4 +1,4 @@
 
-import { authService, cdrAuthorization } from './auth';
+import { cdrAuthorization } from './auth';
 
-export {cdrAuthorization, authService};
+export {cdrAuthorization};
