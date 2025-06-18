@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from 'express';
 import endpoints from '../data/endpoints.json'
 import {
     CdrConfig, cdrHeaderValidator,
-    IUserService,
     cdrEndpointValidator,
     cdrScopeValidator,
     cdrResourceValidator,
@@ -12,7 +11,8 @@ import {
     DsbStandardError,
     getLinksPaginated,
     getMetaPaginated,
-    paginateData
+    paginateData,
+    IUserService
 } from "@cds-au/holder-sdk"
 
 import bodyParser from 'body-parser';
@@ -120,24 +120,11 @@ const headerValidatorOptions: CdrConfig = {
 
 // The user service which provides the callback function for the 
 // cdrResourceValidator middleware function to accounts associated with user
-// var userService: IUserService = {
-//     getUser: function (req: Request): DsbCdrUser | undefined {
-//         let user = authService.getUser(req);
-//         // if (authService?.authUser == null)
-//         //     return undefined;
-//         // let user: DsbCdrUser | undefined = {
-//         //     customerId: authService.authUser?.customerId as string,
-//         //     scopes_supported: authService.authUser?.scopes_supported,
-//         //     accountsEnergy: authService.authUser?.accountsEnergy,
-//         //     accountsBanking: authService.authUser?.accountsBanking,
-//         //     energyServicePoints: authService.authUser?.energyServicePoints,
-//         //     loginId: authService.authUser?.loginId as string,
-//         //     encodeUserId: authService.authUser?.encodeUserId as string,
-//         //     encodedAccounts: authService.authUser?.encodedAccounts
-//         // }
-//         return user;
-//     }
-// };
+var userService: IUserService = {
+    getUser: function (req: Request): DsbCdrUser | undefined {
+        return req.session.cdrUser;
+    }
+};
 
 const excludedPaths: string[] = ["/health", "/login-data", "/login-data/all", "/login-data/energy", "/login-data/banking", "/jwks"]
 
@@ -147,8 +134,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(unless(cdrAuthorization(authService, endpointValidatorOptions), excludedPaths));
 app.use(unless(cdrEndpointValidator(endpointValidatorOptions), excludedPaths));
 app.use(unless(cdrHeaderValidator(headerValidatorOptions), excludedPaths));
-// app.use(unless(cdrScopeValidator(userService), excludedPaths));
-// app.use(unless(cdrResourceValidator(userService), excludedPaths));
+app.use(unless(cdrScopeValidator(userService), excludedPaths));
+app.use(unless(cdrResourceValidator(userService), excludedPaths));
 
 
 app.use('/', router);
@@ -1761,7 +1748,7 @@ app.get(`/health`, async (req: Request, res: Response, next: NextFunction) => {
 async function isServicePointsForUser(req: Request, servicePointId: string): Promise<boolean> {
     let retVal: boolean = false;
     if (authService != null) {
-        let idx = (await authService.getUser(req))?.energyServicePoints?.findIndex((x: string) => servicePointId);
+        let idx = (await userService.getUser(req))?.energyServicePoints?.findIndex((x: string) => servicePointId);
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal
@@ -1769,8 +1756,8 @@ async function isServicePointsForUser(req: Request, servicePointId: string): Pro
 
 async function isBankAccountForUser(req: Request, accountId: string): Promise<boolean> {
     let retVal: boolean = false;
-    if (authService != null) {
-        let idx = (await authService.getUser(req))?.accountsBanking?.findIndex((x: string) => accountId);
+    if (authService != null && process.env?.NO_AUTH_SERVER?.toUpperCase() == "TRUE") {
+        let idx = (await userService.getUser(req))?.accountsBanking?.findIndex((x: string) => accountId);
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal
@@ -1778,8 +1765,8 @@ async function isBankAccountForUser(req: Request, accountId: string): Promise<bo
 
 async function isEnergyAccountForUser(req: Request, accountId: string): Promise<boolean> {
     let retVal: boolean = false;
-    if (authService != null) {
-        let idx = (await authService.getUser(req))?.accountsEnergy?.findIndex((x: string) => accountId);
+    if (authService != null && process.env?.NO_AUTH_SERVER ?.toUpperCase()== "TRUE") {
+        let idx = (await userService.getUser(req))?.accountsEnergy?.findIndex((x: string) => accountId);
         retVal = (idx != null) && (idx > - 1) ? true : false;
     }
     return retVal

@@ -5,6 +5,4 @@ export interface DsbCdrUser extends CdrUser {
     loginId: string | undefined; // the unique login used for authorisation, which is returned as userId 
     encodeUserId: string | undefined;
     encodedAccounts: string[] | undefined;
-    //accounts: string[] | undefined;
-    scopes_supported: string[] | undefined;
 }

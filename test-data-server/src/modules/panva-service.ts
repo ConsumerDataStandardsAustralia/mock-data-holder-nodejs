@@ -151,11 +151,11 @@ export class PanvaAuthService implements IAuthService {
             let user: DsbCdrUser = {
                 loginId: loginId,
                 customerId: customerId,
-                encodeUserId: arrangement.loginId,
+                encodeUserId: arrangement?.loginId,
                 encodedAccounts: undefined,
-                accountsEnergy: arrangement.consentedEnergyAccounts?.map(x => x.AccountId),
-                accountsBanking: arrangement.consentedBankingAccounts?.map(x => x.AccountId),
-                scopes_supported: arrangement.scopes
+                accountsEnergy: arrangement?.consentedEnergyAccounts?.map(x => x.AccountId),
+                accountsBanking: arrangement?.consentedBankingAccounts?.map(x => x.AccountId),
+                scopes_supported: arrangement.scopes?.split(' ')
             }
             user.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
             user.bankingPayees = await this.dbService.getPayeesForCustomer(customerId) as string[];

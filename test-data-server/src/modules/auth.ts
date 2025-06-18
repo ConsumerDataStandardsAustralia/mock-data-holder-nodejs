@@ -26,12 +26,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         }
 
         let accessToken = req.headers?.authorization;
-        if (process.env?.NO_AUTH_SERVER?.toUpperCase() == 'FALSE'){
 
-            await authService.setUser(req, undefined);
-            next();
-            return;
-        }
         
         // In NO_AUTH_SERVER=false an accessToken may still be provided
         if (accessToken == null) {
@@ -51,6 +46,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             res.status(401).json('Access token has expired');
             return;     
         }
+        
         if (authService.getUser(req) == null)
              // by passing in the decoded accessTokenObject this eliminates the call which was already done with verifyAccessToken
             await authService.setUser(req, accessTokenObject)

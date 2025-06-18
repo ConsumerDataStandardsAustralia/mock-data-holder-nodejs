@@ -9,7 +9,7 @@ export interface CdrArrangement {
     softwareProductId: string;
     loginId: string;
     grantId: string;
-    scopes: string[];
+    scopes: string;
     consentedEnergyAccounts?: DsbArrangmentAccount[];
     consentedBankingAccounts?: DsbArrangmentAccount[]
 }
