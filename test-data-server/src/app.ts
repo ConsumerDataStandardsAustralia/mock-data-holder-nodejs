@@ -122,7 +122,7 @@ const headerValidatorOptions: CdrConfig = {
 // cdrResourceValidator middleware function to accounts associated with user
 var userService: IUserService = {
     getUser: function (req: Request): DsbCdrUser | undefined {
-        return req.session.cdrUser;
+        return req.session?.cdrUser;
     }
 };
 

@@ -43,7 +43,8 @@ export class PanvaAuthService implements IAuthService {
         // validate access token via introspective endpoint
         const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string) ;
         const arrangement: CdrArrangement | null = arrangementResponse?.data
-        const currentUser: DsbCdrUser|undefined = await this.buildUser(arrangement)
+        let currentUser: DsbCdrUser|undefined = await this.buildUser(arrangement, accessTokenObject)
+
         req.session.cdrUser = currentUser;
         return currentUser;
     }
@@ -140,11 +141,11 @@ export class PanvaAuthService implements IAuthService {
 
     }
 
-    public async buildUser(arrangement: CdrArrangement|null): Promise<DsbCdrUser| undefined> {
+    private async buildUser(arrangement: CdrArrangement|null, accessTokenObject: Introspection|null): Promise<DsbCdrUser| undefined> {
         try {
             if (arrangement == null)
                 return undefined;
-            let loginId = arrangement.loginId;
+            let loginId = arrangement.loginId?.split('_')[0];
             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
             if (customerId == undefined)
                 return undefined;
@@ -155,7 +156,7 @@ export class PanvaAuthService implements IAuthService {
                 encodedAccounts: undefined,
                 accountsEnergy: arrangement?.consentedEnergyAccounts?.map(x => x.AccountId),
                 accountsBanking: arrangement?.consentedBankingAccounts?.map(x => x.AccountId),
-                scopes_supported: arrangement.scopes?.split(' ')
+                scopes_supported: accessTokenObject?.scope?.split(' ')
             }
             user.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
             user.bankingPayees = await this.dbService.getPayeesForCustomer(customerId) as string[];

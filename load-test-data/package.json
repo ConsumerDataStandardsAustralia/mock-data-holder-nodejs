@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "npm run build && npm run copy-files && cd ./dist && node ./app.js",
-    "build": "rm -rf ./dist && tsc && cp -r ./input ./dist/input",
+    "build": "rm -rf ./dist && chmod +x node_modules/.bin/tsc && tsc && cp -r ./input ./dist/input",
     "copy-files": "cp ../.env ./dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
