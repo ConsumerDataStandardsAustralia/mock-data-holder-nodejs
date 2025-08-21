@@ -4,8 +4,9 @@ import { NextFunction, Request, Response } from 'express';
 
 export interface IAuthService {
     //authUser: DsbCdrUser| undefined;
+    defaultAccessToken: string|undefined;
     initAuthService(): Promise<boolean>;
-    verifyAccessToken(token?: string): Promise<Introspection|null>;
+    verifyAccessToken(req: Request): Promise<Introspection|null>;
     getUser(req: Request): DsbCdrUser|undefined;
     setUser(req: Request, accessTokenObject: Introspection | undefined): Promise<DsbCdrUser|undefined>;
 }

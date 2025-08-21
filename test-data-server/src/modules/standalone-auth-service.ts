@@ -6,42 +6,57 @@ import { IAuthService } from "./auth-service.interface";
 import { Request } from "express";
 import { Introspection } from "../models/introspection";
 import { CdrArrangement } from "./cdr-arrangement.model";
+import { readFileSync } from 'fs';
+import path from 'path';
 
 
 export class StandAloneAuthService implements IAuthService {
     authUser: DsbCdrUser | undefined;
-
+    defaultAccessToken: string | undefined;
     allScopes: string = 'openid profile energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:electricity.der:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read openid profile bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read openid profile common:customer.basic:read common:customer.detail:read cdr:registration'
     private dbService: IDatabase;
 
-    constructor(dbService: IDatabase) {
+    constructor(dbService: IDatabase, defaultToken: string|undefined) {
         this.dbService = dbService;
+        this.defaultAccessToken = defaultToken;
     }
-    public async verifyAccessToken(token?: string): Promise<Introspection | null> {
-        let introspection: Introspection = {
-            cdr_arrangement_id: undefined,
-            client_id: undefined,
-            scope: undefined,
-            exp: undefined,
-            iat: undefined,
-            iss: undefined,
-            active: false,
-            token_type: "access_token",
-            sub: process.env.LOGIN_ID
+    public async verifyAccessToken(req: Request): Promise<Introspection | null> {
+        try {
+            let token = req.headers?.authorization;
+            if ((token == null || token == "") && this.defaultAccessToken != null) {
+                console.log(`No token found in request header. Using default token: ${this.defaultAccessToken}`);
+                token = this.defaultAccessToken;
+            }
+            console.log(`Token to verify is:  ${token}`)
+            // decode the token (Assumed to be JWT)
+            let decoded = jwtDecode(token as string) as any;
+            let introspection: Introspection = {
+                cdr_arrangement_id: decoded?.cdr_arrangement_id,
+                client_id: decoded?.client_id,
+                scope: decoded?.scope.flat(),
+                exp: decoded?.exp,
+                iat: decoded?.iat,
+                iss: decoded?.iss,
+                active: false,
+                token_type: "access_token",
+                sub: process.env.LOGIN_ID
+            }
+            return introspection;
+        } catch (ex) {
+            console.log(JSON.stringify(ex))
+            return null;
         }
-        return introspection;
     }
 
     public getUser(req: Request): DsbCdrUser | undefined {
         return req.session.cdrUser;
     }
 
-    public async setUser(req: Request): Promise<DsbCdrUser | undefined> {
+    public async setUser(req: Request, accessTokenObject: Introspection | undefined): Promise<DsbCdrUser | undefined> {
         try {
-
             // Since this is running without authorisation a user is set in the environment file
-            let loginId = process.env.LOGIN_ID
-            console.log(`Login id is: ${loginId}`)
+            let loginId = accessTokenObject?.sub;
+            console.log(`Login id is: ${loginId}. Setting user Object.`)
             let customerId = await this.dbService.getUserForLoginId(loginId as string, 'person');
             console.log(`CustomerId id is: ${customerId}`)
             if (customerId == undefined)
@@ -110,12 +125,18 @@ export class StandAloneAuthService implements IAuthService {
 
     private getScopes(token?: string): string[] {
         let scopes: string[] = [];
-        if (token != null) {
-            let decoded: any = jwtDecode(token);
-            scopes = decoded?.scope
-        } else {
-            scopes = this.allScopes.split(' ')
+        try {
+
+            if (token != null) {
+                let decoded: any = jwtDecode(token);
+                scopes = decoded?.scope
+            } else {
+                scopes = this.allScopes.split(' ')
+            }
+            return scopes;
+        } catch (ex) {
+            console.log(JSON.stringify(ex))
+            return scopes;
         }
-        return scopes;
     }
 }

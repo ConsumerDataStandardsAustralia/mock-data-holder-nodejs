@@ -70,10 +70,13 @@ var dbService: IDatabase;
 var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
+// The default token is used when this is run in STANDALONE_MODE, ie no authentication validation is performed
+const defaultToken = process.env.DEFAULT_TOKEN;
+
 // the auth server type will determine which implementation of IAuthService will be used.
 if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
-    authService = new StandAloneAuthService(dbService);
+     authService = new StandAloneAuthService(dbService, defaultToken);
 }
 else if (authServerType.toUpperCase() == "PANVA") {
     console.log(`Running server with Panva IdP authorisation. Required to go through authorisation process`)
@@ -81,7 +84,7 @@ else if (authServerType.toUpperCase() == "PANVA") {
 }
 else {
     console.log(`No authorisation mechanism specified. Will not use authorisation`);
-    authService = new StandAloneAuthService(dbService);
+    authService = new StandAloneAuthService(dbService, defaultToken);
 }
 
 
