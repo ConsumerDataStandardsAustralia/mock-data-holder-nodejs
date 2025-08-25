@@ -11,31 +11,34 @@ import { CdrArrangement } from "./cdr-arrangement.model";
 export class StandAloneAuthService implements IAuthService {
     authUser: DsbCdrUser | undefined;
     clientId: string;
-    clientSecret: string;
+    clientSecret: string; 
     allScopes: string = 'openid profile energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:electricity.der:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read openid profile bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read openid profile common:customer.basic:read common:customer.detail:read cdr:registration'
     private dbService: IDatabase;
     defaultAccessToken: string|undefined;
 
-    constructor(dbService: IDatabase) {
+    constructor(dbService: IDatabase, defaultToken: string|undefined) {
         this.dbService = dbService;
+        this.defaultAccessToken = defaultToken;
         this.clientId = "";
         this.clientSecret = "";
         this.defaultAccessToken = process.env.DEFAULT_ACCESS_TOKEN;
     }
-    public async verifyAccessToken(token?: string): Promise<Introspection | null> {
+    public async verifyAccessToken(req?: Request): Promise<Introspection | null> {
+        let token = req?.headers?.authorization;
         if (token == null)
             return null;
-        let decodedToken = jwtDecode(token) as any;
+        let decoded = jwtDecode(token) as any;
+
         let introspection: Introspection = {
-            cdr_arrangement_id: decodedToken?.payload.cdr_arrangement_id,
-            client_id: decodedToken?.payload.client_id,
-            scope: decodedToken?.payload.scope,
-            exp: decodedToken?.payload?.exp,
-            iat: decodedToken?.payload?.iat,
-            iss: decodedToken?.payload?.iss,
+            cdr_arrangement_id: decoded?.payload?.cdr_arrangement_id,
+            client_id: decoded?.payload?.client_id,
+            scope: decoded?.payload?.scope,
+            exp: decoded?.payload?.exp,
+            iat: decoded?.payload?.iat,
+            iss: decoded?.payload?.iss,
             active: false,
             token_type: "access_token",
-            sub: decodedToken?.payload?.sub
+            sub: decoded?.payload?.sub
         }
         return introspection;
     }
@@ -44,11 +47,10 @@ export class StandAloneAuthService implements IAuthService {
         return req.session.cdrUser;
     }
 
-    public async setUser(req: Request, introspectionObject: Introspection | undefined): Promise<DsbCdrUser | undefined> {
+    public async setUser(req: Request): Promise<DsbCdrUser | undefined> {
         try {
-
             // Since this is running without authorisation a user is set in the environment file
-            let loginId = introspectionObject?.sub;
+            let loginId = process.env.LOGIN_ID
             console.log(`Login id is: ${loginId}`)
             let customerId = await this.dbService.getUserForLoginId(loginId as string, 'person');
             console.log(`CustomerId id is: ${customerId}`)
@@ -114,12 +116,18 @@ export class StandAloneAuthService implements IAuthService {
 
     private getScopes(token?: string): string[] {
         let scopes: string[] = [];
-        if (token != null) {
-            let decoded: any = jwtDecode(token);
-            scopes = decoded?.scope
-        } else {
-            scopes = this.allScopes.split(' ')
+        try {
+
+            if (token != null) {
+                let decoded: any = jwtDecode(token);
+                scopes = decoded?.scope
+            } else {
+                scopes = this.allScopes.split(' ')
+            }
+            return scopes;
+        } catch (ex) {
+            console.log(JSON.stringify(ex))
+            return scopes;
         }
-        return scopes;
     }
 }

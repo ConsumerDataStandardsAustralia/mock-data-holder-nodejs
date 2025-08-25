@@ -26,7 +26,7 @@ import { DsbCdrUser } from './models/user';
 import { cdrAuthorization } from './modules/auth';
 import {
     EnergyAccountV2, EnergyBalanceListResponse,
-    EnergyBalanceResponse, EnergyBillingListResponse, EnergyBillingTransactionV2, EnergyConcession,
+    EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession,
     EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord,
     EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan,
     EnergyPlanListResponse, EnergyServicePoint, EnergyServicePointDetail,
@@ -39,7 +39,7 @@ import {
 } from 'consumer-data-standards/energy';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
-import { BankingAccountDetailV3, ResponseBankingAccountByIdV2, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
+import { BankingAccountDetailV3, ResponseBankingAccountByIdV3, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
 import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 // import { AuthService } from './modules/auth-service';
@@ -70,10 +70,13 @@ var dbService: IDatabase;
 var authService: IAuthService;
 dbService = new SingleData(connString, process.env.MONGO_DB as string);
 
+// The default token is used when this is run in STANDALONE_MODE, ie no authentication validation is performed
+const defaultToken = process.env.DEFAULT_TOKEN;
+
 // the auth server type will determine which implementation of IAuthService will be used.
 if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
-    authService = new StandAloneAuthService(dbService);
+     authService = new StandAloneAuthService(dbService, defaultToken);
 }
 else if (authServerType.toUpperCase() == "PANVA") {
     console.log(`Running server with Panva IdP authorisation. Required to go through authorisation process`)
@@ -81,7 +84,7 @@ else if (authServerType.toUpperCase() == "PANVA") {
 }
 else {
     console.log(`No authorisation mechanism specified. Will not use authorisation`);
-    authService = new StandAloneAuthService(dbService);
+    authService = new StandAloneAuthService(dbService, defaultToken);
 }
 
 
@@ -299,7 +302,7 @@ router.get(`${basePath}/energy/accounts/:accountId`, async (req, res) => {
                     return;
                 }
                 else {
-                    let listResponse: EnergyBillingListResponse = {
+                    let listResponse: EnergyBillingListResponseV2 = {
                         links: getLinksPaginated(req, result.length),
                         meta: getMetaPaginated(result.length, req.query),
                         data: {
@@ -1060,7 +1063,7 @@ app.get(`${basePath}/energy/accounts/:accountId/billing`, async (req: Request, r
                 return;
             }
             else {
-                let listResponse: EnergyBillingListResponse = {
+                let listResponse: EnergyBillingListResponseV2 = {
                     links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
@@ -1104,7 +1107,7 @@ app.post(`${basePath}/energy/accounts/billing`, async (req: Request, res: Respon
                 return;
             }
             else {
-                let listResponse: EnergyBillingListResponse = {
+                let listResponse: EnergyBillingListResponseV2 = {
                     links: getLinksPaginated(req, result.length),
                     meta: getMetaPaginated(result.length, req.query),
                     data: {
@@ -1140,7 +1143,7 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
                 res.status(404).json(errorList);
                 return;
             } else {
-                let result: ResponseBankingAccountByIdV2 = {
+                let result: ResponseBankingAccountByIdV3 = {
                     data: data,
                     links: {
                         self: req.protocol + '://' + req.get('host') + req.originalUrl

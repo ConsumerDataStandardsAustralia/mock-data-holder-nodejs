@@ -49,7 +49,7 @@ services:
   
   dsb-nodejs-resource-api:
     container_name: dsb-nodejs-resource-api
-    image: consumerdatastandardsaustralia/dsb-nodejs-resource-api:panva
+    image: consumerdatastandardsaustralia/dsb-nodejs-resource:panva.0.1
     build:
       context: . 
       dockerfile: dockerfile.dsb-test-data-server       

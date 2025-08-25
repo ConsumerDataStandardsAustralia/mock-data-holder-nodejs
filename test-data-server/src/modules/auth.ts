@@ -18,7 +18,6 @@ const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndp
 export function cdrAuthorization(authService: IAuthService,  options: CdrConfig | undefined): any {
     
     return async function authorize(req: Request, res: Response, next: NextFunction) {
-
         // get the endpoint
         let ep = getEndpoint(req as Request, options);
         if (ep?.authScopesRequired == null){
@@ -37,12 +36,17 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         
         // In NO_AUTH_SERVER=false an accessToken may still be provided
         if (accessToken == null) {
-            res.status(404).json('No authorization header provided');
-            return;
+            if (authService.defaultAccessToken != undefined) {
+                accessToken = authService.defaultAccessToken;
+            }
+            else {
+                res.status(404).json('No authorization header provided');
+                return;
+            }
         }
         
         // validate access token via introspective endpoint
-        const introspectionObject: Introspection | null = await authService.verifyAccessToken(accessToken)
+        const introspectionObject: Introspection | null = await authService.verifyAccessToken(req)
         if (introspectionObject == null) {
             res.status(401).json('Invalid access token');
             return;

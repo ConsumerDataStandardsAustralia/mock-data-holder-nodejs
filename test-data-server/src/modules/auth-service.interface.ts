@@ -11,7 +11,7 @@ export interface IAuthService {
     clientId: string; /* this is the clientId for the resource server itself. Required for some calls to the Idp */
     clientSecret: string; /* this is the clientSecret for the resource server itself. Required for some calls to the Idp */
     initAuthService(): Promise<boolean>; /* Initialises the authorisation service based on discovery endpoint */
-    verifyAccessToken(token?: string): Promise<Introspection|null>; /* This will typically be called by the middleware to validate the token */
+    verifyAccessToken(req: Request): Promise<Introspection|null>; /* This will typically be called by the middleware to validate the token */
     getUser(req: Request): DsbCdrUser|undefined;
     setUser(req: Request, introspectionObject: Introspection | undefined): Promise<DsbCdrUser|undefined>;
 }

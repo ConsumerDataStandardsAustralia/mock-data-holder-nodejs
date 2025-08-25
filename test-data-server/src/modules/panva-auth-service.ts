@@ -7,7 +7,7 @@ import { IDatabase } from "../services/database.interface";
 import { IAuthService } from "./auth-service.interface";
 import { unescape } from "querystring";
 import { CdrArrangement } from "./cdr-arrangement.model";
-import { Request} from 'express';
+import { Request } from 'express';
 import { Introspection } from "../models/introspection";
 
 
@@ -34,24 +34,30 @@ export class PanvaAuthService implements IAuthService {
     }
 
     public getUser(req: Request): DsbCdrUser | undefined {
-            return req.session.cdrUser;
+        return req.session.cdrUser;
 
     }
 
     public async setUser(req: Request, accessTokenObject: Introspection): Promise<DsbCdrUser | undefined> {
-        let accessToken = req.headers?.authorization;
-        // In NO_AUTH_SERVER=false an accessToken may still be provided
-        if (accessToken == null) {
+        try {
+            let accessToken = req.headers?.authorization;
+
+            if (accessToken == null) {
+                return undefined;
+            }
+
+            // validate access token via introspective endpoint
+            const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string);
+            const arrangement: CdrArrangement | null = arrangementResponse?.data
+            let currentUser: DsbCdrUser | undefined = await this.buildUser(arrangement, accessTokenObject)
+
+            req.session.cdrUser = currentUser;
+            return currentUser;
+        } catch (error: any) {
+            console.log('ERROR: ', error.message);
+            console.log('ERROR DETAIL', error?.response?.data);
             return undefined;
         }
-              
-        // validate access token via introspective endpoint
-        const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string) ;
-        const arrangement: CdrArrangement | null = arrangementResponse?.data
-        let currentUser: DsbCdrUser|undefined = await this.buildUser(arrangement, accessTokenObject)
-
-        req.session.cdrUser = currentUser;
-        return currentUser;
     }
 
     public async initAuthService(): Promise<boolean> {
@@ -81,7 +87,7 @@ export class PanvaAuthService implements IAuthService {
         }
     }
 
-    public async getArrangement(id: string): Promise<CdrArrangement|null> {
+    public async getArrangement(id: string): Promise<CdrArrangement | null> {
         try {
             let authHeader = this.buildBasicAuthHeader();
             let config: AxiosRequestConfig = {
@@ -100,8 +106,8 @@ export class PanvaAuthService implements IAuthService {
         }
     }
 
-    // Call the Idp introspection endpoint and returns the decoded access token OR n
-    public async verifyAccessToken(token: string): Promise<Introspection|null> {
+    // Call the Idp introspection endpointy and returns the decoded access token OR n
+    public async verifyAccessToken(req: Request): Promise<Introspection | null> {
         try {
             // no introspective endpoint exists
             if (this.introspection_endpoint == undefined)
@@ -115,8 +121,9 @@ export class PanvaAuthService implements IAuthService {
                 headers: hdrs,
                 method: 'POST'
             }
+            let token = req.headers?.authorization;
             console.log(`Token reponse is ${token}`)
-            let tokeToBeValidated = token.split(' ')[1];
+            let tokeToBeValidated = token?.split(' ')[1];
             const postBody: any = {
                 token: tokeToBeValidated
             }
@@ -137,16 +144,21 @@ export class PanvaAuthService implements IAuthService {
 
     // This header is used for introspection calls, using Basic Auth "client_id:secret"
     private buildBasicAuthHeader(): string {
-        let basic = 'Basic ';
-        console.log(`Building auth string from clientId: ${this.clientId} and clientSecret: ${this.clientSecret}`)
-        let authString = `${unescape(this.clientId ?? '')}:${unescape(this.clientSecret ?? '')}`;
-        let authString64 = Buffer.from(authString).toString('base64url');
-        console.log(`Auth string: ${basic}${authString64}`)
-        return `${basic}${authString64}`
-
+        try {
+            let basic = 'Basic ';
+            console.log(`Building auth string from clientId: ${process.env.CLIENT_ID} and clientSecret: ${process.env.CLIENT_SECRET}`)
+            let authString = `${unescape(process.env.CLIENT_ID ?? '')}:${unescape(process.env.CLIENT_SECRET ?? '')}`;
+            let authString64 = Buffer.from(authString).toString('base64url');
+            console.log(`Auth string: ${basic}${authString64}`)
+            return `${basic}${authString64}`;
+        } catch (error: any) {
+            console.log('ERROR: ', error.message);
+            console.log('ERROR DETAIL', error?.response?.data);
+            return '';
+        }
     }
 
-    private async buildUser(arrangement: CdrArrangement|null, accessTokenObject: Introspection|null): Promise<DsbCdrUser| undefined> {
+    private async buildUser(arrangement: CdrArrangement | null, accessTokenObject: Introspection | null): Promise<DsbCdrUser | undefined> {
         try {
             if (arrangement == null)
                 return undefined;
