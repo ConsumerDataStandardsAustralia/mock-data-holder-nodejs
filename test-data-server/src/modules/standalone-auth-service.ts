@@ -10,24 +10,32 @@ import { CdrArrangement } from "./cdr-arrangement.model";
 
 export class StandAloneAuthService implements IAuthService {
     authUser: DsbCdrUser | undefined;
-
+    clientId: string;
+    clientSecret: string;
     allScopes: string = 'openid profile energy:electricity.servicepoints.basic:read energy:electricity.servicepoints.detail:read energy:electricity.usage:read energy:electricity.der:read energy:accounts.basic:read energy:accounts.detail:read energy:accounts.paymentschedule:read energy:accounts.concessions:read energy:billing:read openid profile bank:accounts.basic:read bank:accounts.detail:read bank:transactions:read bank:regular_payments:read bank:payees:read openid profile common:customer.basic:read common:customer.detail:read cdr:registration'
     private dbService: IDatabase;
+    defaultAccessToken: string|undefined;
 
     constructor(dbService: IDatabase) {
         this.dbService = dbService;
+        this.clientId = "";
+        this.clientSecret = "";
+        this.defaultAccessToken = process.env.DEFAULT_ACCESS_TOKEN;
     }
     public async verifyAccessToken(token?: string): Promise<Introspection | null> {
+        if (token == null)
+            return null;
+        let decodedToken = jwtDecode(token) as any;
         let introspection: Introspection = {
-            cdr_arrangement_id: undefined,
-            client_id: undefined,
-            scope: undefined,
-            exp: undefined,
-            iat: undefined,
-            iss: undefined,
+            cdr_arrangement_id: decodedToken?.payload.cdr_arrangement_id,
+            client_id: decodedToken?.payload.client_id,
+            scope: decodedToken?.payload.scope,
+            exp: decodedToken?.payload?.exp,
+            iat: decodedToken?.payload?.iat,
+            iss: decodedToken?.payload?.iss,
             active: false,
             token_type: "access_token",
-            sub: process.env.LOGIN_ID
+            sub: decodedToken?.payload?.sub
         }
         return introspection;
     }
@@ -36,11 +44,11 @@ export class StandAloneAuthService implements IAuthService {
         return req.session.cdrUser;
     }
 
-    public async setUser(req: Request): Promise<DsbCdrUser | undefined> {
+    public async setUser(req: Request, introspectionObject: Introspection | undefined): Promise<DsbCdrUser | undefined> {
         try {
 
             // Since this is running without authorisation a user is set in the environment file
-            let loginId = process.env.LOGIN_ID
+            let loginId = introspectionObject?.sub;
             console.log(`Login id is: ${loginId}`)
             let customerId = await this.dbService.getUserForLoginId(loginId as string, 'person');
             console.log(`CustomerId id is: ${customerId}`)

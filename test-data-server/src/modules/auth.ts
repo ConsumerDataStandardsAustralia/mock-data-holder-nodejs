@@ -26,8 +26,14 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             return;
         }
 
+        // The STANDALONE implementation my still provide a dummy access token itself
         let accessToken = req.headers?.authorization;
 
+        // If our implementation is STANDALONE (ie no auth), AND we set the access token to a default value
+        // usable with the current data set. This required as we need to token to determine user and accounts
+        // for most API calls to the resource server
+        if (accessToken == null && authService.defaultAccessToken != null)
+            accessToken = authService.defaultAccessToken;
         
         // In NO_AUTH_SERVER=false an accessToken may still be provided
         if (accessToken == null) {
@@ -36,22 +42,21 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         }
         
         // validate access token via introspective endpoint
-        req.clientId = process.env.CLIENT_ID;
-        const accessTokenObject: Introspection | null = await authService.verifyAccessToken(accessToken)
-        if (accessTokenObject == null) {
+        const introspectionObject: Introspection | null = await authService.verifyAccessToken(accessToken)
+        if (introspectionObject == null) {
             res.status(401).json('Invalid access token');
             return;
         } 
 
        
-        if (accessTokenObject.exp == null || accessTokenObject.exp < Date.now()/1000) {
+        if (introspectionObject.exp == null || introspectionObject.exp < Date.now()/1000) {
             res.status(401).json('Access token has expired');
             return;     
         }
         
         if (authService.getUser(req) == null)
              // by passing in the decoded accessTokenObject this eliminates the call which was already done with verifyAccessToken
-            await authService.setUser(req, accessTokenObject)
+            await authService.setUser(req, introspectionObject)
               
         next();
     };

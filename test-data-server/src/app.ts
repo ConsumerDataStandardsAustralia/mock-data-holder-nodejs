@@ -77,7 +77,7 @@ if (authServerType.toUpperCase() == "STANDALONE") {
 }
 else if (authServerType.toUpperCase() == "PANVA") {
     console.log(`Running server with Panva IdP authorisation. Required to go through authorisation process`)
-    authService = new PanvaAuthService(dbService);
+    authService = new PanvaAuthService(dbService, process.env.CLIENT_ID as string, process.env.CLIENT_SECRET as string);
 }
 else {
     console.log(`No authorisation mechanism specified. Will not use authorisation`);

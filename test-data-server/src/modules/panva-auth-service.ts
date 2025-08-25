@@ -20,12 +20,17 @@ export class PanvaAuthService implements IAuthService {
     private issuer: string | undefined;
     private jwks_uri: string | undefined;
     private token_endpoint: string | undefined;
+    clientId: string;
+    clientSecret: string;
+    defaultAccessToken: string | undefined;
 
     private dbService: IDatabase;
 
-    constructor(dbService: IDatabase) {
+    constructor(dbService: IDatabase, clientId: string, clientSecret: string) {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
     }
 
     public getUser(req: Request): DsbCdrUser | undefined {
@@ -95,7 +100,7 @@ export class PanvaAuthService implements IAuthService {
         }
     }
 
-    // Call the Idp introspection endpointy and returns the decoded access token OR n
+    // Call the Idp introspection endpoint and returns the decoded access token OR n
     public async verifyAccessToken(token: string): Promise<Introspection|null> {
         try {
             // no introspective endpoint exists
@@ -133,8 +138,8 @@ export class PanvaAuthService implements IAuthService {
     // This header is used for introspection calls, using Basic Auth "client_id:secret"
     private buildBasicAuthHeader(): string {
         let basic = 'Basic ';
-        console.log(`Building auth string from clientId: ${process.env.CLIENT_ID} and clientSecret: ${process.env.CLIENT_SECRET}`)
-        let authString = `${unescape(process.env.CLIENT_ID ?? '')}:${unescape(process.env.CLIENT_SECRET ?? '')}`;
+        console.log(`Building auth string from clientId: ${this.clientId} and clientSecret: ${this.clientSecret}`)
+        let authString = `${unescape(this.clientId ?? '')}:${unescape(this.clientSecret ?? '')}`;
         let authString64 = Buffer.from(authString).toString('base64url');
         console.log(`Auth string: ${basic}${authString64}`)
         return `${basic}${authString64}`
