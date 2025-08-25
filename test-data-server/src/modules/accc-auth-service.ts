@@ -4,15 +4,17 @@
 // import { readFileSync } from "fs";
 // import { Introspection } from "../models/introspection";
 // import { JwkKey } from "../models/jwt-key";
-// import axios, { Axios, AxiosRequestConfig } from "axios";
+// import axios, { Axios, AxiosRequestConfig, RawAxiosRequestHeaders } from "axios";
 // import jwtDecode from "jwt-decode";
 // import { IDatabase } from "../services/database.interface";
 // import { CryptoUtils } from "../utils/crypto-utils";
 // import { IAuthService } from "./auth-service.interface";
 // import { EnergyServicePoint } from "consumer-data-standards/energy";
+// import { CdrArrangement } from "./cdr-arrangement.model";
+// import { Request } from "express";
 
 
-// export class AuthService implements IAuthService {
+// export class AcccAuthService implements IAuthService {
 
 //     private token_endpoint: string | undefined;
 //     private introspection_endpoint: string | undefined;
@@ -35,6 +37,25 @@
 //         this.dbService = dbService;
 //         this.jwtEncodingAlgorithm = 'ES256';
 //         this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
+//     }
+
+//     getUser(req: Request): DsbCdrUser | undefined {
+//             return req.session.cdrUser;
+//     }
+//     async setUser(req: Request, accessTokenObject: Introspection | undefined): Promise<DsbCdrUser | undefined> {
+//         let accessToken = req.headers?.authorization;
+//         // In NO_AUTH_SERVER=false an accessToken may still be provided
+//         if (accessToken == null) {
+//             return undefined;
+//         }
+              
+//         // validate access token via introspective endpoint
+//         const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string) ;
+//         const arrangement: CdrArrangement | null = arrangementResponse?.data
+//         let currentUser: DsbCdrUser|undefined = await this.buildUser(arrangement, accessTokenObject)
+
+//         req.session.cdrUser = currentUser;
+//         return currentUser;
 //     }
 
 //     getArrangement(id: string): Promise<boolean> {
@@ -73,34 +94,38 @@
 //             return false;
 //         }       
 //     }
-    
-//     public async verifyAccessToken(token: string): Promise<boolean> {
+
+//     public async verifyAccessToken(token?: string): Promise<Introspection|null>{
 //         try {
 //             // no introspective endpoint exists
-//             if (this.introspection_endpoint_internal == undefined)
-//                return false;
+//             if (this.introspection_endpoint == undefined)
+//                 return null;
+//             let authHeader = this.buildBasicAuthHeader();
 //             let hdrs = {
-//                         'Content-Type': 'application/x-www-form-urlencoded'
-//                     } ;
-//             this.authUser = await this.buildUser(token);
-//             const httpsAgent = this.buildHttpsAgent();
-//               let config : AxiosRequestConfig = {
-//                 httpsAgent: httpsAgent,
-//                 headers: hdrs
-//               }
-//             let postBody = this.buildIntrospecticePostBody(token);
-//             const response = await axios.post(this.introspection_endpoint_internal, postBody, config)
+//                 'Content-Type': 'application/x-www-form-urlencoded',
+//                 'Authorization': `${authHeader}`
+//             } as RawAxiosRequestHeaders;
+//             let config: AxiosRequestConfig = {
+//                 headers: hdrs,
+//                 method: 'POST'
+//             }
+//             console.log(`Token reponse is ${token}`)
+//             let tokeToBeValidated = token.split(' ')[1];
+//             const postBody: any = {
+//                 token: tokeToBeValidated
+//             }
+//             console.log(`Token to be validated is ${JSON.stringify(postBody)}`)
+//             const response = await axios.post(process.env?.INTERNAL_INTROSPECTION as string, postBody, config)
 //             if (!(response.status == 200)) {
-//                 return false;
-//               }
+//                 return null;
+//             }
 //             else {
-//                 let intro: Introspection = response.data as Introspection;
-//                 return intro.active;
+//                 return response?.data as Introspection;
 //             }
 //         } catch (error: any) {
 //             console.log('ERROR: ', error.message);
-//             console.log('ERROR DETAIL', error?.response?.data);   
-//             return false;
+//             console.log('ERROR DETAIL', error?.response?.data);
+//             return null;
 //         }
 //     }
 
@@ -111,42 +136,70 @@
 //         return httpsAgent;
 //     }
 
-//     private async buildUser(token: string) : Promise<DsbCdrUser | null> {
-//         // First the JWT access token must be decoded and the signature verified
-//         let decoded: any = jwtDecode(token);
-//         // decrypt the loginId, ie the sub claim from token:
-//         // Requires the software_id from the token.
-//         // The decryption key is the concatenated software_id and the private IdPermance key
-//         // The IdPermanence key (private key) is kwown to the DH and the Auth server
+//     private async buildUser(arrangement: CdrArrangement|null, accessTokenObject: Introspection|null): Promise<DsbCdrUser| undefined> {
 //         try {
-                
-//             let loginId = this.decryptLoginId(token);
+//             if (arrangement == null)
+//                 return undefined;
+//             let loginId = arrangement.loginId?.split('_')[0];
 //             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
 //             if (customerId == undefined)
-//                return null;
-//             this.authUser  = {
-//                 loginId : loginId,
+//                 return undefined;
+//             let user: DsbCdrUser = {
+//                 loginId: loginId,
 //                 customerId: customerId,
-//                 encodeUserId: decoded?.sub,
-//                 encodedAccounts: decoded?.account_id,
-//                 accountsEnergy: undefined,
-//                 accountsBanking: undefined,
-//                 scopes_supported: decoded?.scope
+//                 encodeUserId: arrangement?.loginId,
+//                 encodedAccounts: undefined,
+//                 accountsEnergy: arrangement?.consentedEnergyAccounts?.map(x => x.AccountId),
+//                 accountsBanking: arrangement?.consentedBankingAccounts?.map(x => x.AccountId),
+//                 scopes_supported: accessTokenObject?.scope?.split(' ')
 //             }
-//             // Once the customerId (here: userId) has been the account ids can be decrypted.
-//             // The parameters here are the decrypted customerId from above and the software_id from the token
-//             // The IdPermanence key (private key) is kwown to the DH and the Auth server
-//             let accountIds: string[] = this.decryptAccountArray(token);
-//             this.authUser.accountsEnergy = accountIds;
-//             this.authUser.accountsBanking = accountIds;
-//             this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
-//             this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
-//             return this.authUser;
-//         } catch(ex) {
+//             user.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+//             user.bankingPayees = await this.dbService.getPayeesForCustomer(customerId) as string[];
+//             return user;
+//         } catch (ex) {
 //             console.log(JSON.stringify(ex))
-//             return null;
+//             return undefined;
 //         }
 //     }
+
+//     // private async buildUser(token?: string) : Promise<DsbCdrUser | null> {
+//     //     // First the JWT access token must be decoded and the signature verified
+//     //     if (token == null || token == "")
+//     //         return null;
+//     //     let decoded: any = jwtDecode(token);
+//     //     // decrypt the loginId, ie the sub claim from token:
+//     //     // Requires the software_id from the token.
+//     //     // The decryption key is the concatenated software_id and the private IdPermance key
+//     //     // The IdPermanence key (private key) is kwown to the DH and the Auth server
+//     //     try {
+                
+//     //         let loginId = this.decryptLoginId(token);
+//     //         let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
+//     //         if (customerId == undefined)
+//     //            return null;
+//     //         this.authUser  = {
+//     //             loginId : loginId,
+//     //             customerId: customerId,
+//     //             encodeUserId: decoded?.sub,
+//     //             encodedAccounts: decoded?.account_id,
+//     //             accountsEnergy: undefined,
+//     //             accountsBanking: undefined,
+//     //             scopes_supported: decoded?.scope
+//     //         }
+//     //         // Once the customerId (here: userId) has been the account ids can be decrypted.
+//     //         // The parameters here are the decrypted customerId from above and the software_id from the token
+//     //         // The IdPermanence key (private key) is kwown to the DH and the Auth server
+//     //         let accountIds: string[] = this.decryptAccountArray(token);
+//     //         this.authUser.accountsEnergy = accountIds;
+//     //         this.authUser.accountsBanking = accountIds;
+//     //         this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+//     //         this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+//     //         return this.authUser;
+//     //     } catch(ex) {
+//     //         console.log(JSON.stringify(ex))
+//     //         return null;
+//     //     }
+//     // }
 
 //     private calculateTLSThumbprint(): string {
 //         // TODO read the TLS certificate and calculate the thumbprint, then store in this.tlsThumbprint   

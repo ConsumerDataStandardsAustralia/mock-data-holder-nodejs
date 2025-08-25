@@ -44,7 +44,7 @@ import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 // import { AuthService } from './modules/auth-service';
 import moment from 'moment';
-import { PanvaAuthService } from './modules/panva-service';
+import { PanvaAuthService } from './modules/panva-auth-service';
 import session from 'express-session';
 
 dotenv.config();

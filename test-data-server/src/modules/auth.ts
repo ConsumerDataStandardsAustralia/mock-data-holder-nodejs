@@ -10,6 +10,7 @@ import { IAuthService } from "./auth-service.interface";
 import { CdrArrangement } from './cdr-arrangement.model';
 import { Introspection } from '../models/introspection';
 
+
 const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
 
 
@@ -19,7 +20,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
     return async function authorize(req: Request, res: Response, next: NextFunction) {
 
         // get the endpoint
-        let ep = getEndpoint(req, options);
+        let ep = getEndpoint(req as Request, options);
         if (ep?.authScopesRequired == null){
             next();
             return;
@@ -35,6 +36,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         }
         
         // validate access token via introspective endpoint
+        req.clientId = process.env.CLIENT_ID;
         const accessTokenObject: Introspection | null = await authService.verifyAccessToken(accessToken)
         if (accessTokenObject == null) {
             res.status(401).json('Invalid access token');

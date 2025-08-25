@@ -152,8 +152,6 @@ export class PanvaAuthService implements IAuthService {
             let user: DsbCdrUser = {
                 loginId: loginId,
                 customerId: customerId,
-                encodeUserId: arrangement?.loginId,
-                encodedAccounts: undefined,
                 accountsEnergy: arrangement?.consentedEnergyAccounts?.map(x => x.AccountId),
                 accountsBanking: arrangement?.consentedBankingAccounts?.map(x => x.AccountId),
                 scopes_supported: accessTokenObject?.scope?.split(' ')
