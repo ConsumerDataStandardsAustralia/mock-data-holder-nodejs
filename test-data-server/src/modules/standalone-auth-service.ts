@@ -22,17 +22,31 @@ export class StandAloneAuthService implements IAuthService {
         this.clientId = "";
         this.clientSecret = "";
         this.defaultAccessToken = process.env.DEFAULT_ACCESS_TOKEN;
+
     }
+
+    private isArrayOfStrings(value: string|string[]) : boolean {
+        return Array.isArray(value) && value.every(element => typeof element === 'string');
+    }
+
     public async verifyAccessToken(req?: Request): Promise<Introspection | null> {
         let token = req?.headers?.authorization;
         if (token == null)
             token =  this.defaultAccessToken as string;
         let decoded = jwtDecode(token) as any;
 
+        // This will handle an array of strings as scops and a space seperated string as scopes
+        let introspectionScopes : string = '';
+        if (this.isArrayOfStrings(decoded?.scope) == true) {
+            introspectionScopes = decoded?.scope.join(" ");
+        } else {
+            introspectionScopes = decoded?.scope;
+        }
+
         let introspection: Introspection = {
             cdr_arrangement_id: decoded?.cdr_arrangement_id,
             client_id: decoded?.client_id,
-            scope: decoded?.scope,
+            scope: introspectionScopes,
             exp: decoded?.exp,
             iat: decoded?.iat,
             iss: decoded?.iss,
