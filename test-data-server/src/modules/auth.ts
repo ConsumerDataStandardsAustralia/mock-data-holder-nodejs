@@ -58,7 +58,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             return;     
         }
         
-        if (authService.getUser(req) == null)
+        //if (authService.getUser(req) == null)
              // by passing in the decoded accessTokenObject this eliminates the call which was already done with verifyAccessToken
             await authService.setUser(req, introspectionObject)
               

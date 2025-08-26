@@ -57,8 +57,8 @@ export class AcccAuthService implements IAuthService {
         // validate access token via introspective endpoint
         // const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string) ;
         // const arrangement: CdrArrangement | null = arrangementResponse?.data
-        let currentUser: DsbCdrUser|undefined = await this.buildUser(accessToken)
-
+        let currentUser: DsbCdrUser|undefined = await this.buildUser(req)
+        this.authUser = currentUser;
         req.session.cdrUser = currentUser;
         return currentUser;
     }
@@ -76,7 +76,7 @@ export class AcccAuthService implements IAuthService {
               }
 
             this.tlsThumPrint = this.calculateTLSThumbprint();
-            const url = path.join(process.env.AUTH_SERVER_URL as string, '.well-known/openid-configuration')
+            const url = `${process.env.AUTH_SERVER_URL as string}/.well-known/openid-configuration`;
             console.log(`Auth server url: ${url}`);
             const response = await axios.get(url,  config)
             if (!(response.status == 200)) {
@@ -106,7 +106,7 @@ export class AcccAuthService implements IAuthService {
             // no introspective endpoint exists
             if (this.introspection_endpoint_internal == undefined)
                return null;
-            let token = req.headers?.authorisation as string;
+            let token = req.headers?.authorization;
             if (token == null)
                 return null;
             let hdrs = {
@@ -124,7 +124,8 @@ export class AcccAuthService implements IAuthService {
                 return null;
               }
             else {
-                let intro: Introspection = response.data as Introspection;
+                let tokenObj = jwtDecode(token) as any;
+                let intro: Introspection = tokenObj;
                 return intro
             }
         } catch (error: any) {
@@ -138,14 +139,16 @@ export class AcccAuthService implements IAuthService {
     }
 
     private buildHttpsAgent(): https.Agent {
+        let caContents = readFileSync(path.join(__dirname, '../security/', process.env.CA_FILE as string));
         let httpsAgent = new https.Agent({
-            ca: readFileSync(path.join(__dirname, '../security/', process.env.CA_FILE as string))
+            ca: caContents
            })
         return httpsAgent;
     }
 
 
-    private async buildUser(token?: string) : Promise<DsbCdrUser | undefined> {
+    private async buildUser(req: Request) : Promise<DsbCdrUser | undefined> {
+        let token = req.headers?.authorization;
         // First the JWT access token must be decoded and the signature verified
         if (token == null || token == "")
             return undefined;
@@ -170,7 +173,7 @@ export class AcccAuthService implements IAuthService {
             // Once the customerId (here: userId) has been the account ids can be decrypted.
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
-            let accountIds: string[] = this.decryptAccountArray(token);
+            let accountIds: string[] = this.decryptAccountArray(req);
             user.accountsEnergy = accountIds;
             user.accountsBanking = accountIds;
             user.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
@@ -202,7 +205,10 @@ export class AcccAuthService implements IAuthService {
         return login;
     }
 
-    private decryptAccountArray(token: string) : string[]{
+    private decryptAccountArray(req: Request) : string[]{
+        let token = req.headers?.authorization;
+        if (token == null)
+            return [];
         let decoded: any = jwtDecode(token);
         let accountIds: string [] = [];
         if (Array.isArray(decoded?.account_id) == true)
@@ -211,6 +217,7 @@ export class AcccAuthService implements IAuthService {
             accountIds.push(CryptoUtils.decode(decoded?.account_id));
 
         let accounts: string[] = [];
+        let currentUser: DsbCdrUser = req.session.cdrUser as DsbCdrUser;
         const userNameLength = this.authUser?.loginId?.length as number;
         for(let i = 0; i < accountIds.length; i++) {
             let encryptionKey = `${decoded?.software_id}${this.idPermanenceKey}`;
