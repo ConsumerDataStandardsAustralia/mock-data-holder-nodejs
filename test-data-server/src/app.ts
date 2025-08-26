@@ -46,6 +46,7 @@ import { IAuthService } from './modules/auth-service.interface';
 import moment from 'moment';
 import { PanvaAuthService } from './modules/panva-auth-service';
 import session from 'express-session';
+import { AcccAuthService } from './modules/accc-auth-service';
 
 dotenv.config();
 console.log(JSON.stringify(process.env, null, 2));
@@ -77,6 +78,10 @@ const defaultToken = process.env.DEFAULT_TOKEN;
 if (authServerType.toUpperCase() == "STANDALONE") {
     console.log(`Running server without authorisation. The assumed user is ${process.env.LOGIN_ID}`);
      authService = new StandAloneAuthService(dbService, defaultToken);
+}
+else if (authServerType.toUpperCase() == "ACCC") {
+    console.log(`Running server with ACCC IdP authorisation. Required to go through authorisation process`)
+    authService = new AcccAuthService(dbService, process.env.CLIENT_ID as string, process.env.CLIENT_SECRET as string);
 }
 else if (authServerType.toUpperCase() == "PANVA") {
     console.log(`Running server with Panva IdP authorisation. Required to go through authorisation process`)
