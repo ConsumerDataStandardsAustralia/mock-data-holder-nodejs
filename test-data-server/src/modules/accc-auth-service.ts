@@ -40,8 +40,8 @@ export class AcccAuthService implements IAuthService {
         this.dbService = dbService;
         this.jwtEncodingAlgorithm = 'ES256';
         this.introspection_endpoint_internal = process.env.INTERNAL_INTROSPECTION;
-        this.clientId = process.env.CLIENT_ID;
-        this.clientSecret = process.env.CLIENT_SECRET;
+        this.clientId = process.env?.CLIENT_ID as string;
+        this.clientSecret = process.env?.CLIENT_SECRET as string;
     }
 
     getUser(req: Request): DsbCdrUser | undefined {
@@ -49,15 +49,15 @@ export class AcccAuthService implements IAuthService {
     }
     async setUser(req: Request, accessTokenObject: Introspection | undefined): Promise<DsbCdrUser | undefined> {
         let accessToken = req.headers?.authorization;
-        // In NO_AUTH_SERVER=false an accessToken may still be provided
+
         if (accessToken == null) {
             return undefined;
         }
               
         // validate access token via introspective endpoint
-        const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string) ;
-        const arrangement: CdrArrangement | null = arrangementResponse?.data
-        let currentUser: DsbCdrUser|undefined = await this.buildUser(arrangement, accessTokenObject)
+        // const arrangementResponse: any = await this.getArrangement(accessTokenObject?.cdr_arrangement_id as string) ;
+        // const arrangement: CdrArrangement | null = arrangementResponse?.data
+        let currentUser: DsbCdrUser|undefined = await this.buildUser(accessToken)
 
         req.session.cdrUser = currentUser;
         return currentUser;
@@ -112,7 +112,7 @@ export class AcccAuthService implements IAuthService {
             let hdrs = {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     } ;
-            this.authUser = await this.buildUser(token);
+            //this.authUser = await this.buildUser(token);
             const httpsAgent = this.buildHttpsAgent();
               let config : AxiosRequestConfig = {
                 httpsAgent: httpsAgent,
@@ -139,39 +139,16 @@ export class AcccAuthService implements IAuthService {
 
     private buildHttpsAgent(): https.Agent {
         let httpsAgent = new https.Agent({
-            ca: readFileSync(path.join(__dirname, '../security/mtls', process.env.CA_FILE as string))
+            ca: readFileSync(path.join(__dirname, '../security/', process.env.CA_FILE as string))
            })
         return httpsAgent;
     }
 
-    // private async buildUser(arrangement: CdrArrangement|null, accessTokenObject: Introspection|null): Promise<DsbCdrUser| undefined> {
-    //     try {
-    //         if (arrangement == null)
-    //             return undefined;
-    //         let loginId = arrangement.loginId?.split('_')[0];
-    //         let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
-    //         if (customerId == undefined)
-    //             return undefined;
-    //         let user: DsbCdrUser = {
-    //             loginId: loginId,
-    //             customerId: customerId,
-    //             accountsEnergy: arrangement?.consentedEnergyAccounts?.map(x => x.AccountId),
-    //             accountsBanking: arrangement?.consentedBankingAccounts?.map(x => x.AccountId),
-    //             scopes_supported: accessTokenObject?.scope?.split(' ')
-    //         }
-    //         user.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
-    //         user.bankingPayees = await this.dbService.getPayeesForCustomer(customerId) as string[];
-    //         return user;
-    //     } catch (ex) {
-    //         console.log(JSON.stringify(ex))
-    //         return undefined;
-    //     }
-    // }
 
-    private async buildUser(token?: string) : Promise<DsbCdrUser | null> {
+    private async buildUser(token?: string) : Promise<DsbCdrUser | undefined> {
         // First the JWT access token must be decoded and the signature verified
         if (token == null || token == "")
-            return null;
+            return undefined;
         let decoded: any = jwtDecode(token);
         // decrypt the loginId, ie the sub claim from token:
         // Requires the software_id from the token.
@@ -182,12 +159,10 @@ export class AcccAuthService implements IAuthService {
             let loginId = this.decryptLoginId(token);
             let customerId = await this.dbService.getUserForLoginId(loginId, 'person');
             if (customerId == undefined)
-               return null;
-            this.authUser  = {
+               return undefined;
+             let user: DsbCdrUser = {
                 loginId : loginId,
                 customerId: customerId,
-                encodeUserId: decoded?.sub,
-                encodedAccounts: decoded?.account_id,
                 accountsEnergy: undefined,
                 accountsBanking: undefined,
                 scopes_supported: decoded?.scope
@@ -196,14 +171,14 @@ export class AcccAuthService implements IAuthService {
             // The parameters here are the decrypted customerId from above and the software_id from the token
             // The IdPermanence key (private key) is kwown to the DH and the Auth server
             let accountIds: string[] = this.decryptAccountArray(token);
-            this.authUser.accountsEnergy = accountIds;
-            this.authUser.accountsBanking = accountIds;
-            this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
-            this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
-            return this.authUser;
+            user.accountsEnergy = accountIds;
+            user.accountsBanking = accountIds;
+            user.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
+            user.bankingPayees = await this.dbService.getPayeesForCustomer(customerId)  as string[];
+            return user;
         } catch(ex) {
             console.log(JSON.stringify(ex))
-            return null;
+            return undefined;
         }
     }
 
