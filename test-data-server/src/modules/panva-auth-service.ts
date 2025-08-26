@@ -146,8 +146,8 @@ export class PanvaAuthService implements IAuthService {
     private buildBasicAuthHeader(): string {
         try {
             let basic = 'Basic ';
-            console.log(`Building auth string from clientId: ${process.env.CLIENT_ID} and clientSecret: ${process.env.CLIENT_SECRET}`)
-            let authString = `${unescape(process.env.CLIENT_ID ?? '')}:${unescape(process.env.CLIENT_SECRET ?? '')}`;
+            console.log(`Building auth string from clientId: ${this.clientId } and clientSecret: ${this.clientSecret}`)
+            let authString = `${unescape(this.clientId  ?? '')}:${unescape(this.clientSecret ?? '')}`;
             let authString64 = Buffer.from(authString).toString('base64url');
             console.log(`Auth string: ${basic}${authString64}`)
             return `${basic}${authString64}`;

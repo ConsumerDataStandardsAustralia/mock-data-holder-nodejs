@@ -26,19 +26,19 @@ export class StandAloneAuthService implements IAuthService {
     public async verifyAccessToken(req?: Request): Promise<Introspection | null> {
         let token = req?.headers?.authorization;
         if (token == null)
-            return null;
+            token =  this.defaultAccessToken as string;
         let decoded = jwtDecode(token) as any;
 
         let introspection: Introspection = {
-            cdr_arrangement_id: decoded?.payload?.cdr_arrangement_id,
-            client_id: decoded?.payload?.client_id,
-            scope: decoded?.payload?.scope,
-            exp: decoded?.payload?.exp,
-            iat: decoded?.payload?.iat,
-            iss: decoded?.payload?.iss,
+            cdr_arrangement_id: decoded?.cdr_arrangement_id,
+            client_id: decoded?.client_id,
+            scope: decoded?.scope,
+            exp: decoded?.exp,
+            iat: decoded?.iat,
+            iss: decoded?.iss,
             active: false,
             token_type: "access_token",
-            sub: decoded?.payload?.sub
+            sub: decoded?.sub
         }
         return introspection;
     }
@@ -47,10 +47,9 @@ export class StandAloneAuthService implements IAuthService {
         return req.session.cdrUser;
     }
 
-    public async setUser(req: Request): Promise<DsbCdrUser | undefined> {
+    public async setUser(req: Request, introspectionObject: Introspection): Promise<DsbCdrUser | undefined> {
         try {
-            // Since this is running without authorisation a user is set in the environment file
-            let loginId = process.env.LOGIN_ID
+            let loginId = introspectionObject?.sub;
             console.log(`Login id is: ${loginId}`)
             let customerId = await this.dbService.getUserForLoginId(loginId as string, 'person');
             console.log(`CustomerId id is: ${customerId}`)
@@ -69,12 +68,14 @@ export class StandAloneAuthService implements IAuthService {
             allBankingAccounts?.forEach(acc => {
                 bankingAccounts.push(acc.accountId);
             });
+
+            let authUserScopes = introspectionObject?.scope as any
             this.authUser = {
-                loginId: process.env.LOGIN_ID,
+                loginId: introspectionObject?.sub,
                 customerId: customerId,
                 accountsEnergy: energyAccounts,
                 accountsBanking: bankingAccounts,
-                scopes_supported: this.getScopes(req.headers?.authorization)
+                scopes_supported:  authUserScopes as string[]
             }
             this.authUser.energyServicePoints = await this.dbService.getServicePointsForCustomer(customerId) as string[];
             this.authUser.bankingPayees = await this.dbService.getPayeesForCustomer(customerId) as string[];

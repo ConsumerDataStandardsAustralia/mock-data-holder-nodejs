@@ -13,5 +13,5 @@ export interface IAuthService {
     initAuthService(): Promise<boolean>; /* Initialises the authorisation service based on discovery endpoint */
     verifyAccessToken(req: Request): Promise<Introspection|null>; /* This will typically be called by the middleware to validate the token */
     getUser(req: Request): DsbCdrUser|undefined;
-    setUser(req: Request, introspectionObject: Introspection | undefined): Promise<DsbCdrUser|undefined>;
+    setUser(req: Request, introspectionObject: Introspection): Promise<DsbCdrUser|undefined>;
 }

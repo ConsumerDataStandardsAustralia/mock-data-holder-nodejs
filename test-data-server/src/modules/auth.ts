@@ -40,7 +40,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
                 accessToken = authService.defaultAccessToken;
             }
             else {
-                res.status(404).json('No authorization header provided');
+                res.status(403).json('No authorization header provided');
                 return;
             }
         }
@@ -48,7 +48,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         // validate access token via introspective endpoint
         const introspectionObject: Introspection | null = await authService.verifyAccessToken(req)
         if (introspectionObject == null) {
-            res.status(401).json('Invalid access token');
+            res.status(403).json('No authorization header provided');
             return;
         } 
 
