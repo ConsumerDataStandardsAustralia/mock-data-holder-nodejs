@@ -23,7 +23,7 @@ services:
   dsb-sample-adr:
     container_name: dsb-sample-adr
     image: consumerdatastandardsaustralia/dsb-sample-adr:0.1
-    env_file: .env.panva
+    env_file: .env.adr
     restart: unless-stopped
     extra_hosts:
       - host.docker.internal:host-gateway
