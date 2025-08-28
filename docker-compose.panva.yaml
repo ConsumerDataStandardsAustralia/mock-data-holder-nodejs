@@ -1,5 +1,5 @@
 version: '3.8'
-name: dsb-data
+name: panva
 services:
   panva-oidc:
     container_name: panva-oidc
@@ -12,11 +12,11 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
       - dsb-nodejs-resource-api:host-gateway
-      - dsb-sample-adr:host-gateway
+      - dsb-sample-adr:host-gateway   
     networks:
-      - panva
+      - dsb
     ports:
-      - 3000:3000
+      - 3001:3000
     depends_on:
       - mongodb
 
@@ -32,7 +32,7 @@ services:
     ports:
        - "3007:3007"
     networks:
-       - panva
+       - dsb
     depends_on:
       - mongodb
 
@@ -45,32 +45,31 @@ services:
     ports:
       - "27017:27017"
     networks:
-      - panva     
+      - dsb     
   
   dsb-nodejs-resource-api:
-    container_name: dsb-nodejs-resource-api
-    image: consumerdatastandardsaustralia/dsb-nodejs-resource:panva.0.1
+    container_name: mock-data-holder
+    image: consumerdatastandardsaustralia/nodejs-data-holder:0.5
     build:
       context: . 
-      dockerfile: dockerfile.dsb-test-data-server       
+      dockerfile: dockerfile.dsb-data-server       
     restart: unless-stopped
     env_file: .env.panva
     extra_hosts:
       - host.docker.internal:host-gateway
       - panva-oidc:host-gateway 
-
       - dsb-sample-adr:host-gateway     
     ports:
        - "3005:3005"
     networks:
-       - panva
+       - dsb
     depends_on:
       - mongodb
       - panva-oidc
 
   dsb-data-loader:
     container_name: dsb-data-loader
-    image: consumerdatastandardsaustralia/dsb-data-loader:panva
+    image: consumerdatastandardsaustralia/dsb-data-loader:0.3
     build:
       context: .
       dockerfile: dockerfile.dsb-data-loader    
@@ -78,12 +77,12 @@ services:
     depends_on:
       - mongodb
     networks:
-       - panva
+       - dsb
 
 volumes:
   dbdata:
 
 networks:
-  panva:
+  dsb:
   
 

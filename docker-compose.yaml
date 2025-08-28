@@ -145,31 +145,31 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Release
 
-  # mock-data-holder:
-  #   container_name: mock-data-holder
-  #   image: consumerdatastandardsaustralia/nodejs-data-holder:0.4
-  #   build:
-  #     context: . 
-  #     dockerfile: dockerfile.dsb-test-data-server    
-  #   restart: unless-stopped
-  #   env_file: .env.accc
-  #   extra_hosts:
-  #     - host.docker.internal:host-gateway    
-  #     - "mock-data-recipient:host-gateway"
-  #     - "mock-register:host-gateway"  
-  #     - "mock-data-holder:host-gateway" 
-  #     - "cdr-auth-server:host-gateway" 
-  #     - "authserver-ui:host-gateway"
-  #     - "mongodb:host-gateway"    
-  #     - "tls-gateway:host-gateway" 
-  #     - "mtls-gateway:host-gateway"  
-  #   depends_on:
-  #      mssql:
-  #         condition: service_healthy  
-  #      cdr-auth-server: 
-  #         condition: service_healthy      
-  #   ports:
-  #     - "3005:3005"
+  mock-data-holder:
+    container_name: mock-data-holder
+    image: consumerdatastandardsaustralia/nodejs-data-holder:0.5
+    build:
+      context: . 
+      dockerfile: dockerfile.dsb-test-data-server    
+    restart: unless-stopped
+    env_file: .env.accc
+    extra_hosts:
+      - host.docker.internal:host-gateway    
+      - "mock-data-recipient:host-gateway"
+      - "mock-register:host-gateway"  
+      - "mock-data-holder:host-gateway" 
+      - "cdr-auth-server:host-gateway" 
+      - "authserver-ui:host-gateway"
+      - "mongodb:host-gateway"    
+      - "tls-gateway:host-gateway" 
+      - "mtls-gateway:host-gateway"  
+    depends_on:
+       mssql:
+          condition: service_healthy  
+       cdr-auth-server: 
+          condition: service_healthy      
+    ports:
+      - "3005:3005"
   
   mssql:
     container_name: mssql
@@ -201,7 +201,7 @@ services:
       context: .
       dockerfile: dockerfile.dsb-data-loader
     container_name: dsb-data-loader
-    image: consumerdatastandardsaustralia/dsb-data-loader:0.2
+    image: consumerdatastandardsaustralia/dsb-data-loader:0.3
     env_file: .env.accc
     depends_on:
       - mongodb
