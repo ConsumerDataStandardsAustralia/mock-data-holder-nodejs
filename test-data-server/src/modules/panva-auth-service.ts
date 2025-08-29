@@ -95,9 +95,6 @@ export class PanvaAuthService implements IAuthService {
             };
             let urlStr = `${process.env.AUTH_SERVER_URL}/arrangement/${id}`
             const arrangement: CdrArrangement = await axios.get(urlStr, config)
-            //let arrangement: any = await this.getArrangement(response?.data?.cdr_arrangement_id);
-            //await this.buildUser(arrangement?.data);
-            // response.data will be a CdrArrangement object as defined in dsb-panva-oidc--provider
             return arrangement;
         } catch (error: any) {
             console.log('ERROR: ', error.message);
