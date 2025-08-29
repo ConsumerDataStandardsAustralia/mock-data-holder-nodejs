@@ -20,22 +20,6 @@ services:
     depends_on:
       - mongodb
 
-  dsb-sample-adr:
-    container_name: dsb-sample-adr
-    image: consumerdatastandardsaustralia/dsb-sample-adr:0.1
-    env_file: .env.adr
-    restart: unless-stopped
-    extra_hosts:
-      - host.docker.internal:host-gateway
-      - dsb-nodejs-resource-api:host-gateway
-      - panva-oidc:host-gateway  
-    ports:
-       - "3007:3007"
-    networks:
-       - dsb
-    depends_on:
-      - mongodb
-
   mongodb:
     image: mongo:6.0
     container_name: mongodb
