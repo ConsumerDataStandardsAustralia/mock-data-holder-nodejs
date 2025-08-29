@@ -48,7 +48,7 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
         // validate access token via introspective endpoint
         const introspectionObject: Introspection | null = await authService.verifyAccessToken(req)
         if (introspectionObject == null) {
-            res.status(403).json('No authorization header provided');
+            res.status(403).json('No valid authorization header provided');
             return;
         } 
 
@@ -57,10 +57,8 @@ export function cdrAuthorization(authService: IAuthService,  options: CdrConfig 
             res.status(401).json('Access token has expired');
             return;     
         }
-        
-        //if (authService.getUser(req) == null)
-             // by passing in the decoded accessTokenObject this eliminates the call which was already done with verifyAccessToken
-            await authService.setUser(req, introspectionObject)
+
+        await authService.setUser(req, introspectionObject)
               
         next();
     };

@@ -30,6 +30,7 @@ export class StandAloneAuthService implements IAuthService {
     }
 
     public async verifyAccessToken(req?: Request): Promise<Introspection | null> {
+        try {
         let token = req?.headers?.authorization;
         if (token == null)
             token =  this.defaultAccessToken as string;
@@ -55,6 +56,11 @@ export class StandAloneAuthService implements IAuthService {
             sub: decoded?.sub
         }
         return introspection;
+        } catch (ex) {
+            console.log(`Access token validation error: ${JSON.stringify(ex)}`)
+            return null;
+        }
+
     }
 
     public getUser(req: Request): DsbCdrUser | undefined {
