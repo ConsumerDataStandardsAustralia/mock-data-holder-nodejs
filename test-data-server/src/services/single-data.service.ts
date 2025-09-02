@@ -1130,7 +1130,7 @@ export class SingleData implements IDatabase {
                     };
                     let accounts: AccountModel[] = [];
 
-                    if (sector == null || sector?.toUpperCase() == 'ENERGY' || sector?.toUpperCase() == 'ALL') {
+                    if (sector?.toUpperCase() == 'ENERGY') {
                         c?.energy?.accounts.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
@@ -1142,10 +1142,10 @@ export class SingleData implements IDatabase {
                             accounts.push(loginAccount)
                         })
                         aModel.Accounts = accounts;
-                        loginModel.push(aModel);
+
                     }
 
-                    if (sector == null || sector?.toUpperCase() == 'BANKING' || sector?.toUpperCase() == 'ALL') {
+                    if (sector?.toUpperCase() == 'BANKING') {
                         c?.banking?.accounts.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
@@ -1156,9 +1156,34 @@ export class SingleData implements IDatabase {
                             };
                             accounts.push(loginAccount)
                         })
-                        aModel.Accounts = accounts;
-                        loginModel.push(aModel);
+
                     }
+                    if (sector == null || sector?.toUpperCase() == 'ALL') {
+                        c?.banking?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: `${acc?.account?.displayName}`,
+                                Sector: 'BANKING'
+                            };
+                            accounts.push(loginAccount)
+                        })
+
+                        c?.energy?.accounts.forEach((acc: any) => {
+                            let loginAccount: AccountModel = {
+                                AccountId: acc?.account?.accountId,
+                                AccountNumber: acc?.account?.accountNumber,
+                                MaskedName: acc?.account?.maskedNumber,
+                                DisplayName: `${acc?.account?.displayName}`,
+                                Sector: 'ENERGY'
+                            };
+                            accounts.push(loginAccount)
+                        })
+                                             
+                    }                                        
+                    aModel.Accounts = accounts;
+                    loginModel.push(aModel);   
                 }
             })
         }
