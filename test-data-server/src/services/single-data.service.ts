@@ -44,7 +44,7 @@ export class SingleData implements IDatabase {
 
 
         if (accDetailList != null) {
-            accDetailList.forEach((acc: any) => {
+            accDetailList?.forEach((acc: any) => {
                 //let cnt = acc?.account?.plans?.length;
                 if ( 
                     // condition 1
@@ -162,7 +162,7 @@ export class SingleData implements IDatabase {
             isowned = query["is-owned"] === "true";
         }
         let retArray: BankingBalance[] = [];
-        customer?.banking?.accounts.forEach((acc: any) => {
+        customer?.banking?.accounts?.forEach((acc: any) => {
             let account : BankingAccountDetailV3 = acc.account;
             if ((category == null || account.productCategory == category)
                 && (openStatus == null || account.openStatus == openStatus)
@@ -194,7 +194,7 @@ export class SingleData implements IDatabase {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let customer = await this.getCustomer(allDataCollection, customerId);
         let accounts: any[] = [];
-        accountIds.forEach((id: string) => {
+        accountIds?.forEach((id: string) => {
             accounts = customer?.banking?.accounts.filter((x: any) => {
                 if (x.account?.accountId == id && x?.balance != null) {
                     ret.push(x.balance);
@@ -220,8 +220,8 @@ export class SingleData implements IDatabase {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let customer = await this.getCustomer(allDataCollection, customerId);
         let debits: BankingDirectDebit[] = [];
-        accountIds.forEach((id: string) => {
-            customer?.banking?.directDebits.forEach((x: any) => {
+        accountIds?.forEach((id: string) => {
+            customer?.banking?.directDebits?.forEach((x: any) => {
                 if (x?.accountId == id) {
                     debits.push(x);
                 }
@@ -244,7 +244,7 @@ export class SingleData implements IDatabase {
             isowned = query["is-owned"] === "true";
         }
         let retArray: BankingDirectDebit[] = [];
-        customer?.banking?.directDebits.forEach((debit: BankingDirectDebit) => {
+        customer?.banking?.directDebits?.forEach((debit: BankingDirectDebit) => {
             let acc : any = customer?.banking?.accounts.find((x:any) => x.account.accountId == debit.accountId);
             if (   ( acc != null)
                 && (category == null || acc.account.productCategory == category)
@@ -285,8 +285,8 @@ export class SingleData implements IDatabase {
         let customer = await this.getCustomer(allDataCollection, customerId);
 
             let payments: BankingScheduledPaymentV2[] = [];
-            accountIds.forEach((id: string) => {
-                customer?.banking?.payments.forEach((x: any) => {
+            accountIds?.forEach((id: string) => {
+                customer?.banking?.payments?.forEach((x: any) => {
                     if (x.from?.accountId == id) {
                         payments.push(x);
                     }
@@ -337,7 +337,7 @@ export class SingleData implements IDatabase {
         if (query["type"] != undefined ) {
             payeeType = query["type"].toUpperCase();
         }
-        customer?.banking?.payees.forEach((p: BankingPayeeDetailV2) => {
+        customer?.banking?.payees?.forEach((p: BankingPayeeDetailV2) => {
             if (p.type == payeeType || payeeType == "ALL" || payeeType == null){
                 let payee: BankingPayeeV2 = {
                     nickname: p.nickname,
@@ -374,7 +374,7 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getProducts(allData, undefined);
         let products: BankingProductV4[] = [];
-        await allPlans.forEach((p: BankingProductDetailV4) => {
+        await allPlans?.forEach((p: BankingProductDetailV4) => {
             let product: BankingProductV4 = {
                 brand: p.brand,
                 description: p.description,
@@ -437,7 +437,7 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let allPayees: any = cust?.banking.payees;
-        allPayees.forEach((p: any) => {
+        allPayees?.forEach((p: any) => {
             ret.push(p.payeeId)
         })
         return ret;
@@ -458,7 +458,7 @@ export class SingleData implements IDatabase {
             let allCustomers = allData?.holders[0]?.holder?.authenticated?.customers;
             if (allCustomers.length < 1)
                 return undefined;
-            allCustomers.forEach((c: any) => {
+            allCustomers?.forEach((c: any) => {
                 if (c?.customer?.person?.firstName.toUpperCase() == firstName.toUpperCase()
                     && c?.customer?.person?.lastName.toUpperCase() == lastName.toUpperCase()) {
                     customerId = c.customerId;
@@ -617,7 +617,7 @@ export class SingleData implements IDatabase {
         let retArray: EnergyBillingTransactionV3[] = [];
         if (cust != null) {
             let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
-            cust?.energy?.accounts.forEach((acc: any) => {
+            cust?.energy?.accounts?.forEach((acc: any) => {
                 acc?.transactions.filter((tr: any) => {
                     let refDate = Date.parse(tr.executionDateTime);
                     if (isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
@@ -675,7 +675,7 @@ export class SingleData implements IDatabase {
         if (allPlans == null) {
             ret.data = { plans: retArray };
         } else {
-            await allPlans.forEach((p: EnergyPlan) =>
+            await allPlans?.forEach((p: EnergyPlan) =>
                 retArray.push(p));
         }
         return retArray;
@@ -730,7 +730,7 @@ export class SingleData implements IDatabase {
         if (cust != null) {
             let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetail[];
             if (spDetailList != null) {
-                spDetailList.forEach((sp: any) => {
+                spDetailList?.forEach((sp: any) => {
                     let newSP: EnergyServicePoint = {
                         jurisdictionCode: sp.servicePoint.jurisdictionCode,
                         lastUpdateDateTime: sp.servicePoint.lastUpdateDateTime,
@@ -760,7 +760,7 @@ export class SingleData implements IDatabase {
                 var idx = accountIds?.indexOf(acc.account.accountId)
                 if (idx > -1) {
                     if (acc?.transactions != null) {
-                        acc?.transactions.forEach((tr: EnergyBillingTransactionV3) => {
+                        acc?.transactions?.forEach((tr: EnergyBillingTransactionV3) => {
                             if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
                                 {
                                     filteredBilling.push(tr);
@@ -833,7 +833,7 @@ export class SingleData implements IDatabase {
                 var idx = servicePointIds?.indexOf(sp.servicePoint.servicePointId)
                 if (idx > -1) {
 
-                    sp?.usage.forEach((read: EnergyUsageRead) => {
+                    sp?.usage?.forEach((read: EnergyUsageRead) => {
                         if (read.readUType == "intervalRead" && (readType == "MIN_30" || readType == "FULL")) {
                             if (read.intervalRead != null) {
                                 //TODO do something with the read intervals, ie calculate it then set it
@@ -944,7 +944,7 @@ export class SingleData implements IDatabase {
             cust?.energy?.accounts?.forEach((acc: any) => {
                 if (acc.account.accountId == accountId) {
                     if (acc?.invoices != null) {
-                        acc?.transactions.forEach((tr: EnergyBillingTransactionV3) => {
+                        acc?.transactions?.forEach((tr: EnergyBillingTransactionV3) => {
                             if (Date.parse(tr.executionDateTime) >= range.startRange && Date.parse(tr.executionDateTime) <= range.endRange) {
                                 transactions.push(tr);
                             }
@@ -976,7 +976,7 @@ export class SingleData implements IDatabase {
                 }
             }
 
-            readData.forEach((rd: EnergyUsageRead) => {
+            readData?.forEach((rd: EnergyUsageRead) => {
                 if (rd.readUType == "intervalRead" && (readType == "MIN_30" || readType == "FULL")) {
                     if (rd.intervalRead != null) {
                         //TODO do something with the read intervals, ie calculate it then set it
@@ -1029,7 +1029,7 @@ export class SingleData implements IDatabase {
         let openStatus = query["open-status"];
 
         if (accDetailList != null) {
-            accDetailList.forEach((acc: any) => {
+            accDetailList?.forEach((acc: any) => {
                 let cnt = acc?.account?.plans?.length;
                 if ((openStatus == null) || (openStatus.toUpperCase() == "ALL")
                     || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())) {
@@ -1068,7 +1068,7 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let allPoints: any = cust?.energy.servicePoints;
-        allPoints.forEach((sp: any) => {
+        allPoints?.forEach((sp: any) => {
             ret.push(sp.servicePoint.servicePointId)
         })
         return ret;
@@ -1099,7 +1099,7 @@ export class SingleData implements IDatabase {
         let collections = await this.dsbData.collections();
         let name = this.dsbData.databaseName;
         let cnt = await collections.length;
-        collections.forEach(c => {
+        collections?.forEach(c => {
             retList.push(c.collectionName)
         })
         return retList;
@@ -1131,7 +1131,7 @@ export class SingleData implements IDatabase {
                     let accounts: AccountModel[] = [];
 
                     if (sector?.toUpperCase() == 'ENERGY') {
-                        c?.energy?.accounts.forEach((acc: any) => {
+                        c?.energy?.accounts?.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
@@ -1146,7 +1146,7 @@ export class SingleData implements IDatabase {
                     }
 
                     if (sector?.toUpperCase() == 'BANKING') {
-                        c?.banking?.accounts.forEach((acc: any) => {
+                        c?.banking?.accounts?.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
@@ -1159,7 +1159,7 @@ export class SingleData implements IDatabase {
 
                     }
                     if (sector == null || sector?.toUpperCase() == 'ALL') {
-                        c?.banking?.accounts.forEach((acc: any) => {
+                        c?.banking?.accounts?.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
@@ -1170,7 +1170,7 @@ export class SingleData implements IDatabase {
                             accounts.push(loginAccount)
                         })
 
-                        c?.energy?.accounts.forEach((acc: any) => {
+                        c?.energy?.accounts?.forEach((acc: any) => {
                             let loginAccount: AccountModel = {
                                 AccountId: acc?.account?.accountId,
                                 AccountNumber: acc?.account?.accountNumber,
@@ -1205,7 +1205,7 @@ export class SingleData implements IDatabase {
         let accDetailList = cust?.energy?.accounts as EnergyAccountDetailV3[];
 
         if (accDetailList != null) {
-            accDetailList.forEach((acc: any) => {
+            accDetailList?.forEach((acc: any) => {
                 let cnt = acc?.account?.plans?.length;
                 let planList: any[] = [];
                 for (let i = 0; i < cnt; i++) {
@@ -1240,7 +1240,7 @@ export class SingleData implements IDatabase {
         let accList: BankingAccountV2[] = [];
         let accDetailList = cust?.banking?.accounts as BankingAccountDetailV3[];
         if (accDetailList != null) {
-            accDetailList.forEach((acc: any) => {
+            accDetailList?.forEach((acc: any) => {
 
                             let newAccount: BankingAccountV2 = {
 
