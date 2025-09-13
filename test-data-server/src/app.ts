@@ -39,7 +39,13 @@ import {
 } from 'consumer-data-standards/energy';
 import { IDatabase } from './services/database.interface';
 import { SingleData } from './services/single-data.service';
-import { BankingAccountDetailV3, ResponseBankingAccountByIdV3, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList, ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2, ResponseBankingProductByIdV4, ResponseBankingProductListV2, ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList } from 'consumer-data-standards/banking';
+import {ResponseBankingAccountByIdV3, ResponseBankingAccountListV2, ResponseBankingAccountsBalanceById, ResponseBankingAccountsBalanceList,
+    ResponseBankingDirectDebitAuthorisationList, ResponseBankingPayeeByIdV2, ResponseBankingPayeeListV2,
+    ResponseBankingProductByIdV5, ResponseBankingProductByIdV6, ResponseBankingProductByIdV7, ResponseBankingProductListV2, 
+    ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList ,
+    ResponseBankingAccountByIdV4, ResponseBankingAccountByIdV5, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7,
+    BankingAccountDetailV3, BankingAccountDetailV4, BankingAccountDetailV5
+} from 'consumer-data-standards/banking';
 import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
 // import { AuthService } from './modules/auth-service';
@@ -1142,19 +1148,43 @@ router.get(`${basePath}/banking/accounts/:accountId`, async (req, res) => {
         }
         var excludes = ["direct-debits", "balances"];
         if (excludes.indexOf(req.params?.accountId) == -1) {
-            let data: BankingAccountDetailV3 | undefined = await dbService.getAccountDetail(authService?.getUser(req)?.customerId as string, req.params.accountId)
+             let version = getVersion(req, "/banking/accounts/{accountId}")
+            let data = await dbService.getAccountDetail(authService?.getUser(req)?.customerId as string, req.params.accountId, version)
             if (data == null) {
                 let errorList = buildErrorMessage(DsbStandardError.UNAVAILABLE_BANK_ACCOUNT, `Unavailable Bank Account: ${req.params.accountId}`);
                 res.status(404).json(errorList);
                 return;
             } else {
-                let result: ResponseBankingAccountByIdV3 = {
-                    data: data,
-                    links: {
-                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                if (version == 3) {
+                    let result: (ResponseBankingAccountByIdV3) = {
+                        data: data as BankingAccountDetailV3,
+                        links: {
+                            self: req.protocol + '://' + req.get('host') + req.originalUrl
+                        }
                     }
+                    res.send(result);
+                    return;
                 }
-                res.send(result);
+                if (version == 4) {
+                    let result: (ResponseBankingAccountByIdV4) = {
+                        data: data as BankingAccountDetailV4,
+                        links: {
+                            self: req.protocol + '://' + req.get('host') + req.originalUrl
+                        }
+                    }
+                    res.send(result);
+                    return;                    
+                }
+                if (version == 5) {
+                    let result: (ResponseBankingAccountByIdV5) = {
+                        data: data as BankingAccountDetailV5,
+                        links: {
+                            self: req.protocol + '://' + req.get('host') + req.originalUrl
+                        }
+                    }
+                    res.send(result);
+                    return;                    
+                }                
                 return;
             }
         }
@@ -1247,7 +1277,8 @@ app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, nex
             return;
         }
         let q = req.query as object;
-        let result = await dbService.getAllBankingProducts(q);
+        let version = getVersion(req, "/banking/products")
+        let result = await dbService.getAllBankingProducts(q, version);
         if (result == null) {
             res.sendStatus(404);
             return;
@@ -1283,27 +1314,83 @@ app.get(`${basePath}/banking/products/`, async (req: Request, res: Response, nex
 app.get(`${basePath}/banking/products/:productId`, async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-        let data = await dbService.getBankingProductDetails(req.params.productId)
+        let version = getVersion(req, "/banking/products/{productId}")
+        let data = await dbService.getBankingProductDetails(req.params.productId, version) 
         if (data == null) {
             let errorList = buildErrorMessage(DsbStandardError.RESOURCE_NOT_FOUND, `Resource Not Found: ${req.params.productId}`);
             res.status(404).json(errorList);
             return;
         } else {
-            let result: ResponseBankingProductByIdV4 = {
-                data: data,
-                links: {
-                    self: req.protocol + '://' + req.get('host') + req.originalUrl
+            if (version == 5) {
+                let result: (ResponseBankingProductByIdV5) = {
+                    data: data as BankingProductDetailV5,
+                    links: {
+                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                    }
                 }
+                res.send(result);
+                return;                
             }
-            res.send(result);
+            if (version == 6) {
+                let result: (ResponseBankingProductByIdV6) = {
+                    data: data as BankingProductDetailV6,
+                    links: {
+                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                    }
+                }
+                res.send(result);
+                return;                
+            }
+            if (version == 7) {
+                let result: (ResponseBankingProductByIdV7) = {
+                    data: data as BankingProductDetailV7,
+                    links: {
+                        self: req.protocol + '://' + req.get('host') + req.originalUrl
+                    }
+                }
+                res.send(result);
+                return;                
+            }            
+            // let result: (ResponseBankingProductByIdV5 | ResponseBankingProductByIdV6 | ResponseBankingProductByIdV7) = {
+            //     data: data,
+            //     links: {
+            //         self: req.protocol + '://' + req.get('host') + req.originalUrl
+            //     }
+            // }
+            // res.send(result);
             return;
         }
     } catch (e) {
         console.log('Error:', e);
         res.sendStatus(500);
     }
-
 });
+
+// This will get the version the API will return. This assumes the use of middleware which will filter out
+// any request for version that are not supported. That is, by the time we call this there will be at least
+// one version we can return
+function getVersion(req: Request, requestPath: string): number {
+//    try {
+        if (req.headers['x-v'] == undefined) throw new Error("Mandatory header x-v not found");
+        let versionRequested = parseInt(req.headers['x-v'].toString() as string);
+        var idx = endpoints.findIndex(x => x.requestPath == requestPath);
+        let ep = endpoints[idx];
+        let version = Math.min(versionRequested, ep.maxSupportedVersion);
+        return version;
+    // } catch(e) {
+    //     console.log("ERROR: could not determine version to return");
+    // }
+}
+
+function findMaxSupported(requestPath: string): number {
+    try {
+        var idx = endpoints.findIndex(x => x.requestPath == requestPath);
+        let ep = endpoints[idx];
+        return ep.maxSupportedVersion;
+    } catch(e) {
+        return 1;
+    }
+}
 
 app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, next: NextFunction) => {
     console.log(`Received request on ${port} for ${req.url}`);

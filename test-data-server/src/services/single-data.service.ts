@@ -1,10 +1,14 @@
-import { BankingAccountDetailV3, BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2, 
-    BankingProductDetailV4, BankingProductV4, BankingScheduledPaymentV2, 
-    BankingTransaction, BankingTransactionDetailV2} from "consumer-data-standards/banking";
+import {
+    BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2,
+    BankingProductDetailV4, BankingProductV4, BankingProductV5, BankingProductV6, BankingScheduledPaymentV2, BankingAccountDetailV3, BankingAccountDetailV4, BankingAccountDetailV5,
+    BankingTransaction, BankingTransactionDetailV2, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7
+} from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
-import { EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2,  EnergyBillingTransactionV3, EnergyConcession,  
-    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV3, 
-    EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead} from "consumer-data-standards/energy";
+import {
+    EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2, EnergyBillingTransactionV3, EnergyConcession,
+    EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV3,
+    EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead
+} from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { AccountModel, CustomerModel } from "../models/login";
 import { QueryRange } from "../models/query-range";
@@ -31,7 +35,7 @@ export class SingleData implements IDatabase {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let accList: BankingAccountV2[] = [];
-        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV3[];
+        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV4[];
         let openStatus = query["open-status"];
         let category: string | null = null;
         let isowned: boolean | null = null;
@@ -46,9 +50,9 @@ export class SingleData implements IDatabase {
         if (accDetailList != null) {
             accDetailList?.forEach((acc: any) => {
                 //let cnt = acc?.account?.plans?.length;
-                if ( 
+                if (
                     // condition 1
-                    ((openStatus == null) 
+                    ((openStatus == null)
                         || (openStatus.toUpperCase() == "OPEN" && acc.account?.openStatus == null)
                         || (openStatus.toUpperCase() == "ALL")
                         || (acc.account?.openStatus?.toUpperCase() == openStatus?.toUpperCase())
@@ -58,80 +62,84 @@ export class SingleData implements IDatabase {
                     (accountIds?.length > 0 && accountIds.indexOf(acc?.account?.accountId) > -1)
                     &&
                     // condition 3
-                    (category == null  
+                    (category == null
                         || (category == acc.account?.productCategory.toUpperCase()))
                     &&
                     // condition 4
                     (
                         (isowned == null)
-                            ||
+                        ||
                         (acc.account?.isOwned == isowned)
                         ||
                         (acc.account?.isOwned == null && isowned == true)
-                        )
+                    )
                 ) {
 
-                            let newAccount: BankingAccountV2 = {
+                    let newAccount: BankingAccountV2 = {
 
-                                accountId: acc.account?.accountId,
-                                creationDate: acc.account?.creationDate as string,
-                                displayName: acc.account?.displayName,
-                                openStatus: acc.account?.openStatus,
-                                isOwned: acc.account?.isOwned,
-                                accountOwnership: acc.account?.accountOwnership,
-                                maskedNumber: acc.account?.maskedNumber,
-                                productCategory: acc.account?.productCategory,
-                                productName: acc.account?.productName
-                            }
-                            accList.push(newAccount);
-                        }
-                    
-                
+                        accountId: acc.account?.accountId,
+                        creationDate: acc.account?.creationDate as string,
+                        displayName: acc.account?.displayName,
+                        openStatus: acc.account?.openStatus,
+                        isOwned: acc.account?.isOwned,
+                        accountOwnership: acc.account?.accountOwnership,
+                        maskedNumber: acc.account?.maskedNumber,
+                        productCategory: acc.account?.productCategory,
+                        productName: acc.account?.productName
+                    }
+                    accList.push(newAccount);
+                }
+
+
             })
         }
         return accList;
     }
 
-    async getAccountDetail(customerId: string, accountId: string): Promise<BankingAccountDetailV3 | undefined> {
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+    async getAccountDetail(customerId: string, accountId: string, version: number): Promise<BankingAccountDetailV3 | BankingAccountDetailV4 | BankingAccountDetailV5 | undefined> {
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string)
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.banking.accounts.find((x: any) => x.account.accountId == accountId);
-        return acc?.account as BankingAccountDetailV3;
+        if (version == 3) return acc?.account as BankingAccountDetailV3;
+        if (version == 4) return acc?.account as BankingAccountDetailV4
+        if (version == 5) return acc?.account as BankingAccountDetailV5;
+        return undefined;
     }
+
     async getTransationsForAccount(customerId: string, accountId: string, query: any): Promise<BankingTransaction[]> {
         let account: any;
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        let retArray : BankingTransaction[] = [];
+        let retArray: BankingTransaction[] = [];
         let mSecInDay = 86400000;
         let minAmount: number | null = null;
         let maxAmount: number | null = null;
         let customer = await this.getCustomer(allDataCollection, customerId);
         let range: QueryRange = this.getDateRangeFromQueryParams(query, "oldest-time", "newest-time");
         if (query["oldest-time"] == null)
-            range.startRange = range.endRange - 90*mSecInDay;
+            range.startRange = range.endRange - 90 * mSecInDay;
         if (query["min-amount"] != null)
             minAmount = parseFloat(query["min-amount"])
         if (query["max-amount"] != null)
-            maxAmount = parseFloat(query["max-amount"])        
+            maxAmount = parseFloat(query["max-amount"])
         account = customer?.banking?.accounts.find((x: any) => {
             if (x.account.accountId == accountId)
                 return x;
         })
         //customer?.banking?.accounts.forEach((acc: any) => {
-            account?.transactions.filter((tr: BankingTransactionDetailV2) => {
-                let refDate = range.startRange;
-                if (tr.executionDateTime != null)
-                    refDate = Date.parse(tr.executionDateTime);
-                if (tr.valueDateTime != null)
-                    refDate = Date.parse(tr.valueDateTime); 
-                if (tr.postingDateTime != null)
-                    refDate = Date.parse(tr.postingDateTime);
-               
-                if ((isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
-                    && (minAmount == null || parseFloat(tr.amount) >= minAmount)
-                    && (maxAmount == null || parseFloat(tr.amount) <= maxAmount))
-                    retArray.push(tr)
-            })
+        account?.transactions.filter((tr: BankingTransactionDetailV2) => {
+            let refDate = range.startRange;
+            if (tr.executionDateTime != null)
+                refDate = Date.parse(tr.executionDateTime);
+            if (tr.valueDateTime != null)
+                refDate = Date.parse(tr.valueDateTime);
+            if (tr.postingDateTime != null)
+                refDate = Date.parse(tr.postingDateTime);
+
+            if ((isNaN(refDate) || (refDate >= range.startRange && refDate <= range.endRange))
+                && (minAmount == null || parseFloat(tr.amount) >= minAmount)
+                && (maxAmount == null || parseFloat(tr.amount) <= maxAmount))
+                retArray.push(tr)
+        })
         return retArray;
     }
     async getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetailV2 | undefined> {
@@ -163,17 +171,17 @@ export class SingleData implements IDatabase {
         }
         let retArray: BankingBalance[] = [];
         customer?.banking?.accounts?.forEach((acc: any) => {
-            let account : BankingAccountDetailV3 = acc.account;
+            let account: BankingAccountDetailV4 = acc.account;
             if ((category == null || account.productCategory == category)
                 && (openStatus == null || account.openStatus == openStatus)
-                    // condition 4
-                &&    (
-                        (isowned == null)
-                            ||
-                        (acc.account?.isOwned == isowned)
-                        ||
-                        (acc.account?.isOwned == null && isowned == true)
-                        )
+                // condition 4
+                && (
+                    (isowned == null)
+                    ||
+                    (acc.account?.isOwned == isowned)
+                    ||
+                    (acc.account?.isOwned == null && isowned == true)
+                )
             )
                 retArray.push(acc.balance)
         })
@@ -183,9 +191,9 @@ export class SingleData implements IDatabase {
     async getAccountBalance(customerId: string, accountId: string): Promise<BankingBalance | undefined> {
         let ret: any = {};
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
- 
+
         let customer = await this.getCustomer(allDataCollection, customerId);
-        let accounts =  customer?.banking?.accounts.find((x:any) => x.account?.accountId == accountId)
+        let accounts = customer?.banking?.accounts.find((x: any) => x.account?.accountId == accountId)
         return accounts?.balance;
     }
 
@@ -199,12 +207,12 @@ export class SingleData implements IDatabase {
                 if (x.account?.accountId == id && x?.balance != null) {
                     ret.push(x.balance);
                 }
-                    
+
             })
         })
         return ret;
     }
-    
+
     async getDirectDebitsForAccount(customerId: string, accountId: string, query: any): Promise<BankingDirectDebit[]> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let customer = await this.getCustomer(allDataCollection, customerId);
@@ -215,7 +223,7 @@ export class SingleData implements IDatabase {
         })
         return ret;
     }
-    
+
     async getDirectDebitsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingDirectDebit[]> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let customer = await this.getCustomer(allDataCollection, customerId);
@@ -225,7 +233,7 @@ export class SingleData implements IDatabase {
                 if (x?.accountId == id) {
                     debits.push(x);
                 }
-                    
+
             })
         })
         return debits;
@@ -245,18 +253,18 @@ export class SingleData implements IDatabase {
         }
         let retArray: BankingDirectDebit[] = [];
         customer?.banking?.directDebits?.forEach((debit: BankingDirectDebit) => {
-            let acc : any = customer?.banking?.accounts.find((x:any) => x.account.accountId == debit.accountId);
-            if (   ( acc != null)
+            let acc: any = customer?.banking?.accounts.find((x: any) => x.account.accountId == debit.accountId);
+            if ((acc != null)
                 && (category == null || acc.account.productCategory == category)
                 && (openStatus == null || acc.account.openStatus == openStatus)
-                    // condition 4
-                &&    (
-                        (isowned == null)
-                            ||
-                        (acc.account.isOwned == isowned)
-                        ||
-                        (acc.account.isOwned == null && isowned == true)
-                        )
+                // condition 4
+                && (
+                    (isowned == null)
+                    ||
+                    (acc.account.isOwned == isowned)
+                    ||
+                    (acc.account.isOwned == null && isowned == true)
+                )
             )
                 retArray.push(debit)
         })
@@ -273,32 +281,32 @@ export class SingleData implements IDatabase {
                 if (x.from.accountId == accountId)
                     return x;
             })
-  
-            retArray =  payments;
+
+            retArray = payments;
         }
         return retArray;
     }
 
     async getScheduledPaymentsForAccountList(customerId: string, accountIds: string[], query: any): Promise<BankingScheduledPaymentV2[]> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-     
+
         let customer = await this.getCustomer(allDataCollection, customerId);
 
-            let payments: BankingScheduledPaymentV2[] = [];
-            accountIds?.forEach((id: string) => {
-                customer?.banking?.payments?.forEach((x: any) => {
-                    if (x.from?.accountId == id) {
-                        payments.push(x);
-                    }
-                        
-                })
+        let payments: BankingScheduledPaymentV2[] = [];
+        accountIds?.forEach((id: string) => {
+            customer?.banking?.payments?.forEach((x: any) => {
+                if (x.from?.accountId == id) {
+                    payments.push(x);
+                }
+
             })
+        })
         return payments;
     }
 
     async getBulkScheduledPayments(customerId: string, query: any): Promise<BankingScheduledPaymentV2[]> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        let customer = await this.getCustomer(allDataCollection, customerId); 
+        let customer = await this.getCustomer(allDataCollection, customerId);
         let openStatus = query["open-status"];
         let category: string | null = null;
         let isowned: boolean | null = null;
@@ -311,20 +319,20 @@ export class SingleData implements IDatabase {
 
         let payments: BankingScheduledPaymentV2[] = [];
         customer?.banking?.payments.forEach((debit: BankingScheduledPaymentV2) => {
-            let acc : any = customer?.banking?.accounts.find((x:any) => x.account.accountId == debit.from.accountId);
-            if (   ( acc != null)
+            let acc: any = customer?.banking?.accounts.find((x: any) => x.account.accountId == debit.from.accountId);
+            if ((acc != null)
                 && (category == null || acc.account.productCategory == category)
                 && (openStatus == null || acc.account.openStatus == openStatus || openStatus == "ALL")
-                    // condition 4
-                &&    (
-                        (isowned == null)
-                            ||
-                        (acc.account.isOwned == isowned)
-                        ||
-                        (acc.account.isOwned == null && isowned == true)
-                        )
+                // condition 4
+                && (
+                    (isowned == null)
+                    ||
+                    (acc.account.isOwned == isowned)
+                    ||
+                    (acc.account.isOwned == null && isowned == true)
+                )
             )
-            payments.push(debit)
+                payments.push(debit)
         })
         return payments;
     }
@@ -334,22 +342,22 @@ export class SingleData implements IDatabase {
         let customer = await this.getCustomer(allDataCollection, customerId);
         let payees: BankingPayeeV2[] = [];
         let payeeType = "ALL";
-        if (query["type"] != undefined ) {
+        if (query["type"] != undefined) {
             payeeType = query["type"].toUpperCase();
         }
         customer?.banking?.payees?.forEach((p: BankingPayeeDetailV2) => {
-            if (p.type == payeeType || payeeType == "ALL" || payeeType == null){
+            if (p.type == payeeType || payeeType == "ALL" || payeeType == null) {
                 let payee: BankingPayeeV2 = {
                     nickname: p.nickname,
                     payeeId: p.payeeId,
                     type: p.type
-                } ;
-                if (p.creationDate != null ) payee.creationDate = p.creationDate;
-                if (p.description != null ) payee.description = p.description; 
-                payees.push(payee); 
+                };
+                if (p.creationDate != null) payee.creationDate = p.creationDate;
+                if (p.description != null) payee.description = p.description;
+                payees.push(payee);
             }
-     
-        });       
+
+        });
         return payees;
     }
 
@@ -370,35 +378,66 @@ export class SingleData implements IDatabase {
         }
     }
 
-    async getAllBankingProducts(query: any): Promise<BankingProductV4[]> {
+    async getAllBankingProducts(query: any, version: number): Promise<BankingProductV4[] | BankingProductV5[] | BankingProductV6[] > {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let allPlans: any = await this.getProducts(allData, undefined);
-        let products: BankingProductV4[] = [];
-        await allPlans?.forEach((p: BankingProductDetailV4) => {
-            let product: BankingProductV4 = {
-                brand: p.brand,
-                description: p.description,
-                isTailored: p.isTailored,
-                lastUpdated: p.lastUpdated,
-                name: p.name,
-                productCategory: p.productCategory,
-                productId: p.productId
-            } ;
-            if (p.additionalInformation != null ) product.additionalInformation = p.additionalInformation;
-            if (p.effectiveFrom != null ) product.effectiveFrom = p.effectiveFrom;
-            if (p.effectiveTo != null ) product.effectiveFrom = p.effectiveTo;
-            if (p.brandName != null ) product.brandName = p.brandName;
-            if (p.applicationUri != null) product.applicationUri = p.applicationUri;
-            if (p.cardArt != null) product.cardArt = p.cardArt;
-            products.push(product);      
-        });       
-        return products;
+        //let products: any[] = [];
+        // let products: BankingProductV4[] = [];
+        if (version == 3) {
+            let products: BankingProductV4[] = [];
+            await allPlans?.forEach((p: BankingProductDetailV5) => {
+                products.push(p as BankingProductV4);
+            });
+            return products;
+        }
+        if (version == 4) {
+            let products: BankingProductV5[] = [];
+            await allPlans?.forEach((p: BankingProductDetailV6) => {
+                products.push(p as BankingProductV5);
+            });
+            return products;
+        } 
+        if (version == 5) {
+            let products: BankingProductV6[] = [];
+            await allPlans?.forEach((p: BankingProductDetailV7) => {
+                products.push(p as BankingProductV6);
+            });
+            return products;
+        } 
+        return [];                
+        // await allPlans?.forEach((p: BankingProductDetailV5 | BankingProductDetailV6 | BankingProductDetailV7) => {
+        //     let products: BankingProductV4[] | BankingProductV5[] | BankingProductV6[] = [];
+        //     let product: BankingProductV4 | BankingProductV5 | BankingProductV6 = null;
+        //     if (version == 4) product = p as BankingProductV4[];
+        //     if (version == 5) product = p as BankingProductV5[];
+        //     if (version == 6) product = p as BankingProductV6[];
+        //     // let product: any = {
+        //     //     brand: p.brand,
+        //     //     description: p.description,
+        //     //     isTailored: p.isTailored,
+        //     //     lastUpdated: p.lastUpdated,
+        //     //     name: p.name,
+        //     //     productCategory: p.productCategory,
+        //     //     productId: p.productId
+        //     // } ;
+        //     // if (p.additionalInformation != null ) product.additionalInformation = p.additionalInformation;
+        //     // if (p.effectiveFrom != null ) product.effectiveFrom = p.effectiveFrom;
+        //     // if (p.effectiveTo != null ) product.effectiveFrom = p.effectiveTo;
+        //     // if (p.brandName != null ) product.brandName = p.brandName;
+        //     // if (p.applicationUri != null) product.applicationUri = p.applicationUri;
+        //     // if (p.cardArt != null) product.cardArt = p.cardArt;
+        //     products.push(product);
+        // });
+        //return products;
     }
 
-    async getBankingProductDetails(productId: string): Promise<BankingProductDetailV4 | undefined> {
+    async getBankingProductDetails(productId: string, version?: number): Promise<BankingProductDetailV5 | BankingProductDetailV6 | BankingProductDetailV7 | undefined> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        let products: BankingProductDetailV4[] = await this.getProducts(allData, productId);
+        let products = null;
+        if (version == 5) products = await this.getProducts(allData, productId) as BankingProductDetailV5[];
+        if (version == 6) products = await this.getProducts(allData, productId) as BankingProductDetailV6[];
+        if (version == 7) products = await this.getProducts(allData, productId) as BankingProductDetailV7[];
         if (products == null || products.length == 0)
             return undefined;
         return products[0];
@@ -414,7 +453,7 @@ export class SingleData implements IDatabase {
                 if (x.productId == productId)
                     return x;
             })
-        } 
+        }
         return allProducts;
     }
 
@@ -428,9 +467,9 @@ export class SingleData implements IDatabase {
                 if (x.productId == productId)
                     return x;
             })
-        } 
+        }
         return allProducts;
-    } 
+    }
 
     async getPayeesForCustomer(customerId: string): Promise<string[] | undefined> {
         let ret: string[] = [];
@@ -518,10 +557,10 @@ export class SingleData implements IDatabase {
             allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans
                 .filter((x: any) => {
                     if (filterPlans > 0) {
-                        var recDateTo  = x?.effectiveTo ? Date.parse(x?.effectiveTo) : Number.MAX_VALUE;
+                        var recDateTo = x?.effectiveTo ? Date.parse(x?.effectiveTo) : Number.MAX_VALUE;
                         var recDateFrom = x?.effectiveFrom ? Date.parse(x?.effectiveFrom) : 0;
                         // get the current plans
-                        if ((filterPlans) == 1 && (qryDate >= recDateFrom &&  qryDate <= recDateTo)) {
+                        if ((filterPlans) == 1 && (qryDate >= recDateFrom && qryDate <= recDateTo)) {
                             return x;
                         }
                         // get the future plans
@@ -1125,7 +1164,7 @@ export class SingleData implements IDatabase {
                         firstName: c.customer?.person?.firstName,
                         lastName: c.customer?.person?.lastName,
                         email: c.customer?.person?.emailAddresses[0]?.address,
-                        phoneNumber:c.customer?.person?.phoneNumbers[0]?.fullNumber,
+                        phoneNumber: c.customer?.person?.phoneNumbers[0]?.fullNumber,
                         lastUpdateTime: c.customer?.person?.lastUpdateTime
                     };
                     let accounts: AccountModel[] = [];
@@ -1180,10 +1219,10 @@ export class SingleData implements IDatabase {
                             };
                             accounts.push(loginAccount)
                         })
-                                             
-                    }                                        
+
+                    }
                     aModel.Accounts = accounts;
-                    loginModel.push(aModel);   
+                    loginModel.push(aModel);
                 }
             })
         }
@@ -1198,7 +1237,7 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
-    async getAllEnergyAccountsForCustomer(customerId: string) : Promise<EnergyAccountV2[]> {
+    async getAllEnergyAccountsForCustomer(customerId: string): Promise<EnergyAccountV2[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let accList: EnergyAccountV2[] = [];
@@ -1229,33 +1268,33 @@ export class SingleData implements IDatabase {
                     creationDate: acc.account?.creationDate as string
                 }
                 accList.push(newAccount);
-                })
-            }
+            })
+        }
         return accList;
     }
 
-    async getAllBankingAccountsForCustomer(customerId: string) : Promise<BankingAccountV2[]> {
+    async getAllBankingAccountsForCustomer(customerId: string): Promise<BankingAccountV2[]> {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let accList: BankingAccountV2[] = [];
-        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV3[];
+        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV4[];
         if (accDetailList != null) {
             accDetailList?.forEach((acc: any) => {
 
-                            let newAccount: BankingAccountV2 = {
+                let newAccount: BankingAccountV2 = {
 
-                                accountId: acc.account?.accountId,
-                                creationDate: acc.account?.creationDate as string,
-                                displayName: acc.account?.displayName,
-                                openStatus: acc.account?.openStatus,
-                                isOwned: acc.account?.isOwned,
-                                accountOwnership: acc.account?.accountOwnership,
-                                maskedNumber: acc.account?.maskedNumber,
-                                productCategory: acc.account?.productCategory,
-                                productName: acc.account?.productName
-                            }
-                            accList.push(newAccount);
-                        })
+                    accountId: acc.account?.accountId,
+                    creationDate: acc.account?.creationDate as string,
+                    displayName: acc.account?.displayName,
+                    openStatus: acc.account?.openStatus,
+                    isOwned: acc.account?.isOwned,
+                    accountOwnership: acc.account?.accountOwnership,
+                    maskedNumber: acc.account?.maskedNumber,
+                    productCategory: acc.account?.productCategory,
+                    productName: acc.account?.productName
+                }
+                accList.push(newAccount);
+            })
         }
         return accList;
     }

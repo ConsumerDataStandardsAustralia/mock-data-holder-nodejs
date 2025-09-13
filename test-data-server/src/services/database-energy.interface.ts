@@ -1,64 +1,64 @@
 import { EnergyAccountV2, EnergyServicePoint, EnergyAccountDetailV4, EnergyInvoice, EnergyUsageRead, EnergyDerRecord, 
-    EnergyServicePointDetail, EnergyBillingTransactionV2, EnergyConcession, EnergyPaymentSchedule, 
-    EnergyPlanDetailV3, EnergyPlan } from "consumer-data-standards/energy";
+    EnergyServicePointDetail, EnergyBillingTransactionV2, EnergyConcession, EnergyPaymentSchedule, EnergyBillingTransactionV3,
+    EnergyPlanDetailV3, EnergyPlan, EnergyServicePointDetailV2 } from "consumer-data-standards/energy";
 import { CustomerModel } from "../models/login";
 
 export interface IEnergyData {
 
-    getEnergyAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyAccountV2[]>;
+    getEnergyAccounts(customerId: string, accountIds: string[], query: any, version?: number): Promise<EnergyAccountV2[]>;
 
-    getServicePoints(customerId: string): Promise<EnergyServicePoint[]>;
+    getServicePoints(customerId: string, version?: number): Promise<EnergyServicePoint[]>;
 
-    getEnergyAccountDetails(customerId: string, accountId: string): Promise<EnergyAccountDetailV4 | undefined>;
+    getEnergyAccountDetails(customerId: string, accountId: string, version?: number): Promise<EnergyAccountDetailV4 | undefined>;
   
-    getInvoicesForAccount(customerId: string, accountId: string, query: any): Promise<EnergyInvoice[]>;
+    getInvoicesForAccount(customerId: string, accountId: string, query: any, version?: number): Promise<EnergyInvoice[]>;
 
-    getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyInvoice[]>;
+    getInvoicesForMultipleAccounts(customerId: string, accountIds: string[], query: any, version?: number): Promise<EnergyInvoice[]>;
 
-    getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any): Promise<EnergyUsageRead[]> 
+    getUsageForMultipleServicePoints(customerId: string, severvicePointIds: string[], query: any, version?: number): Promise<EnergyUsageRead[]> 
 
-    getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[]): Promise<EnergyDerRecord[]> 
+    getDerForMultipleServicePoints(customerId: string, severvicePointIds: string[], version?: number): Promise<EnergyDerRecord[]> 
 
-    getBalanceForAccount(customerId: string, accountId: string): Promise<any>;
+    getBalanceForAccount(customerId: string, accountId: string, version?: number): Promise<any>;
 
-    getBalancesForMultipleAccount(customerId: string, accountIds: string[]): Promise<any[]>;
+    getBalancesForMultipleAccount(customerId: string, accountIds: string[], version?: number): Promise<any[]>;
 
-    getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail>;
+    getServicePointDetails(customerId: string, servicePointId: string, version?: number): Promise<EnergyServicePointDetail | EnergyServicePointDetailV2>;
 
-    getUsageForServicePoint(customerId: string, servicePointId: string, query: any): Promise<EnergyUsageRead[]>;
+    getUsageForServicePoint(customerId: string, servicePointId: string, query: any, version?: number): Promise<EnergyUsageRead[]>;
 
-    getDerForServicePoint(customerId: string, servicePointId: string): Promise<EnergyDerRecord | undefined>;
+    getDerForServicePoint(customerId: string, servicePointId: string, version?: number): Promise<EnergyDerRecord | undefined>;
 
-    getCustomerDetails(customerId: string): Promise<any>;
+    getCustomerDetails(customerId: string, version?: number): Promise<any>;
 
-    getBillingForAccount(customerId: string, accountId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBillingForAccount(customerId: string, accountId: string, query: any, version?: number): Promise<EnergyBillingTransactionV3[]>;
 
-    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBillingForMultipleAccounts(customerId: string, accountIds: string[], query: any, version?: number): Promise<EnergyBillingTransactionV3[]>;
 
-    getConcessionsForAccount(customerId: string, accountId: string): Promise<EnergyConcession[] | undefined>;
+    getConcessionsForAccount(customerId: string, accountId: string, version?: number): Promise<EnergyConcession[] | undefined>;
 
-    getPaymentSchedulesForAccount(customerId: string, accountId: string): Promise<EnergyPaymentSchedule[]>;
+    getPaymentSchedulesForAccount(customerId: string, accountId: string, version?: number): Promise<EnergyPaymentSchedule[]>;
 
-    getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV3 | null>;
+    getEnergyPlanDetails(planId: string, version?: number): Promise<EnergyPlanDetailV3 | null>;
     
-    getEnergyAllPlans(query: any): Promise<EnergyPlan[]>;
+    getEnergyAllPlans(query: any, version?: number): Promise<EnergyPlan[]>;
 
-    getBulkInvoicesForUser(customerId: string, query: any): Promise<EnergyInvoice[]>;
+    getBulkInvoicesForUser(customerId: string, query: any, version?: number): Promise<EnergyInvoice[]>;
 
-    getBulkBilllingForUser(customerId: string, query: any): Promise<EnergyBillingTransactionV2[]>;
+    getBulkBilllingForUser(customerId: string, query: any, version?: number): Promise<EnergyBillingTransactionV3[]>;
 
-    getBulkBalancesForUser(customerId: string): Promise<any[]>;
+    getBulkBalancesForUser(customerId: string, version?: number): Promise<any[]>;
 
-    getBulkUsageForUser(customerId: string, query: any): Promise<EnergyUsageRead[]>;
+    getBulkUsageForUser(customerId: string, query: any, version?: number): Promise<EnergyUsageRead[]>;
 
-    getBulkDerForUser(customerId: string): Promise<EnergyDerRecord[]>;
+    getBulkDerForUser(customerId: string, version?: number): Promise<EnergyDerRecord[]>;
 
-    getUserForLoginId(loginId: string, userType: string): Promise<string| undefined>;
+    // getUserForLoginId(loginId: string, userType: string, version?: number): Promise<string| undefined>;
 
-    getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined>;
+    // getLoginInformation(sector?: string, loginId?: string): Promise<CustomerModel[] | undefined>;
 
-    getServicePointsForCustomer(customerId: string): Promise<string[] | undefined>
+    getServicePointsForCustomer(customerId: string, version?: number): Promise<string[] | undefined>
 
     // This method is used when the server is run without authentication and a user is set in the env file
-    getAllEnergyAccountsForCustomer(customerId: string) : Promise<EnergyAccountV2[]> | undefined;
+    getAllEnergyAccountsForCustomer(customerId: string, version?: number) : Promise<EnergyAccountV2[]> | undefined;
 }
