@@ -2,16 +2,13 @@
 import { Request, Response } from 'express';
 import { NextFunction } from 'express';
 import { CdrConfig, DefaultBankingEndpoints, DefaultCommonEndpoints, DefaultEnergyEndpoints, EndpointConfig } from "@cds-au/holder-sdk";
-import energyEndpoints  from '../../src/data/cdr-energy-endpoints.json';
-import bankingEndpoints from '../../src/data/cdr-banking-endpoints.json';
-import commonEndpoints from '../../src/data/cdr-common-endpoints.json';
 import { DsbEndpoint } from "../models/dsb-endpoints";
 import { IAuthService } from "./auth-service.interface";
 import { CdrArrangement } from './cdr-arrangement.model';
 import { Introspection } from '../models/introspection';
 
 
-const defaultEndpoints = [...energyEndpoints, ...bankingEndpoints, ...commonEndpoints];
+const defaultEndpoints = [...DefaultEnergyEndpoints, ...DefaultBankingEndpoints, ...DefaultCommonEndpoints];
 
 
 // TODO need to be incorporated in holder-sdk middleware

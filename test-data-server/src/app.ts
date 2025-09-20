@@ -29,8 +29,8 @@ import {
     EnergyBalanceResponse, EnergyBillingListResponseV2, EnergyBillingTransactionV2, EnergyConcession,
     EnergyConcessionsResponse, EnergyDerDetailResponse, EnergyDerListResponse, EnergyDerRecord,
     EnergyInvoiceListResponse, EnergyPaymentSchedule, EnergyPaymentScheduleResponse, EnergyPlan,
-    EnergyPlanListResponse, EnergyServicePoint, EnergyServicePointDetail,
-    EnergyServicePointDetailResponse, EnergyServicePointListResponse, EnergyUsageListResponse,
+    EnergyPlanListResponse, EnergyServicePoint, EnergyServicePointDetailV2,
+    EnergyServicePointDetailResponseV2, EnergyServicePointListResponse, EnergyUsageListResponse,
     EnergyUsageRead, EnergyInvoice,
     EnergyAccountDetailResponseV3,
     EnergyPlanDetailV3,
@@ -44,7 +44,7 @@ import {ResponseBankingAccountByIdV3, ResponseBankingAccountListV2, ResponseBank
     ResponseBankingProductByIdV5, ResponseBankingProductByIdV6, ResponseBankingProductByIdV7, ResponseBankingProductListV2, 
     ResponseBankingScheduledPaymentsListV2, ResponseBankingTransactionById, ResponseBankingTransactionList ,
     ResponseBankingAccountByIdV4, ResponseBankingAccountByIdV5, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7,
-    BankingAccountDetailV3, BankingAccountDetailV4, BankingAccountDetailV5
+    BankingAccountDetailV3, BankingAccountDetailV4, BankingAccountDetailV5, ResponseBankingInstalmentPlanList
 } from 'consumer-data-standards/banking';
 import { StandAloneAuthService } from './modules/standalone-auth-service';
 import { IAuthService } from './modules/auth-service.interface';
@@ -115,7 +115,7 @@ app.use(session({
 
 const router = exp.Router();
 
-const sampleEndpoints = [...endpoints] as EndpointConfig[];
+const implementedEndpoints = [...endpoints] as EndpointConfig[];
 
 const certFile = path.join(__dirname, '/security', process.env.CERT_FILE as string)
 const keyFile = path.join(__dirname, '/security', process.env.CERT_KEY_FILE as string)
@@ -125,11 +125,11 @@ const rKey = readFileSync(keyFile, 'utf8');
 const publicKey = readFileSync(signingPublicKeyFile, 'utf8');
 
 const endpointValidatorOptions: CdrConfig = {
-    endpoints: sampleEndpoints
+    endpoints: implementedEndpoints
 }
 
 const headerValidatorOptions: CdrConfig = {
-    endpoints: sampleEndpoints
+    endpoints: implementedEndpoints
 }
 
 // The user service which provides the callback function for the 
@@ -374,13 +374,13 @@ router.get(`${basePath}/energy/electricity/servicepoints/:servicePointId`, async
                 res.status(400).json(errorList);
                 return;
             }
-            let result: EnergyServicePointDetail = await dbService.getServicePointDetails(authService?.getUser(req)?.customerId as string, req.params?.servicePointId)
+            let result: EnergyServicePointDetailV2 = await dbService.getServicePointDetails(authService?.getUser(req)?.customerId as string, req.params?.servicePointId) as EnergyServicePointDetailV2;
             if (result == null) {
                 let errorList = buildErrorMessage(DsbStandardError.INVALID_SERVICE_POINT, `Invalid Service Point: ${req.params?.servicePointId}`)
                 res.status(404).json(errorList);
                 return;
             } else {
-                let resp: EnergyServicePointDetailResponse = {
+                let resp: EnergyServicePointDetailResponseV2 = {
                     data: result,
                     links: {
                         self: req.protocol + '://' + req.get('host') + req.originalUrl
@@ -1373,9 +1373,9 @@ function getVersion(req: Request, requestPath: string): number {
 //    try {
         if (req.headers['x-v'] == undefined) throw new Error("Mandatory header x-v not found");
         let versionRequested = parseInt(req.headers['x-v'].toString() as string);
-        var idx = endpoints.findIndex(x => x.requestPath == requestPath);
-        let ep = endpoints[idx];
-        let version = Math.min(versionRequested, ep.maxSupportedVersion);
+        var idx = implementedEndpoints.findIndex(x => x.requestPath == requestPath);
+        let ep = implementedEndpoints[idx];
+        let version = Math.min(versionRequested, ep.maxSupportedVersion as number);
         return version;
     // } catch(e) {
     //     console.log("ERROR: could not determine version to return");
@@ -1384,9 +1384,9 @@ function getVersion(req: Request, requestPath: string): number {
 
 function findMaxSupported(requestPath: string): number {
     try {
-        var idx = endpoints.findIndex(x => x.requestPath == requestPath);
-        let ep = endpoints[idx];
-        return ep.maxSupportedVersion;
+        var idx = implementedEndpoints.findIndex(x => x.requestPath == requestPath);
+        let ep = implementedEndpoints[idx];
+        return ep.maxSupportedVersion as number;
     } catch(e) {
         return 1;
     }
@@ -1404,7 +1404,8 @@ app.get(`${basePath}/banking/accounts/`, async (req: Request, res: Response, nex
             res.status(400).json(errorList);
             return;
         }
-        let result = await dbService.getAccounts(authService?.getUser(req)?.customerId as string, authService?.getUser(req)?.accountsBanking as string[], req.query)
+        let version = getVersion(req, "/banking/accounts")
+        let result = await dbService.getAccounts(authService?.getUser(req)?.customerId as string, authService?.getUser(req)?.accountsBanking as string[], req.query, version)
 
         let paginatedData = paginateData(result, req.query);
         // check if this is an error object
@@ -1502,6 +1503,8 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
     console.log(`Received request on ${port} for ${req.url}`);
     try {
         console.log(`Received request on ${port} for ${req.url}`);
+        let version = getVersion(req, "/banking/accounts/{accountId}/transactions");
+        res.setHeader("x-v", version);
         let allowedParams: string[] = [
             "page", "page-size", "oldest-time", "newest-time", "min-amount", "max-amount"
         ]
@@ -1510,7 +1513,7 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions`, async (req: Requ
             res.status(400).json(errorList);
             return;
         }
-        let result = await dbService.getTransationsForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query)
+        let result = await dbService.getTransationsForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query, version)
         if (result == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req.params?.accountId}`)
             res.status(404).json(errorList);
@@ -1547,15 +1550,14 @@ app.get(`${basePath}/banking/accounts/:accountId/transactions/:transactionId`, a
     console.log(`Received request on ${port} for ${req.url}`);
     try {
         console.log(`Received request on ${port} for ${req.url}`);
-
-        let data = await dbService.getTransactionDetail(authService?.getUser(req)?.customerId as string, req.params.accountId, req.params.transactionId)
+        let version = getVersion(req, "/banking/accounts/{accountId}/transactions/{transactionId}");
+        res.setHeader("x-v", version);
+        let data = await dbService.getTransactionDetail(authService?.getUser(req)?.customerId as string, req.params.accountId, req.params.transactionId, version)
         if (data == null) {
             let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req?.params?.accountId}`);
             res.status(404).json(errorList);
             return;
         } else {
-            // TODO the ResponseBankingTransactionById does not reference BankingTransactionDetail
-            // Once this has been fixed in the typedefs the 
             let result: any = {
                 data: data,
                 links: {
@@ -1654,6 +1656,93 @@ app.get(`${basePath}/banking/payments/scheduled`, async (req: Request, res: Resp
             }
             res.send(listResponse);
             return;
+        }
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+app.get(`${basePath}/banking/accounts/payments/plans`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let allowedParams: string[] = [
+            "page", "page-size", "plan-status"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
+        let result = await dbService.getInstallmentPlans(authService?.getUser(req)?.customerId as string, req.query)
+        // check if this is an error object
+        let paginatedData = paginateData(result, req.query);
+        if (paginatedData?.errors != null) {
+            res.statusCode = 422;
+            // In this case paginatedData is actually an error object
+            res.send(paginatedData);
+            return;
+        }
+        else {
+            let listResponse: ResponseBankingInstalmentPlanList = {
+                links: getLinksPaginated(req, result.length),
+                meta: getMetaPaginated(result.length, req.query),
+                data: {
+                    plans: paginatedData
+                }
+            }
+            res.send(listResponse);
+           return;
+        }
+    } catch (e) {
+        console.log('Error:', e);
+        res.sendStatus(500);
+    }
+
+});
+
+
+app.get(`${basePath}/banking/accounts/:accountId/payments/plans`, async (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request on ${port} for ${req.url}`);
+    try {
+        console.log(`Received request on ${port} for ${req.url}`);
+        let version = getVersion(req, "/banking/accounts/{accountId}/payments/plans");
+        res.setHeader("x-v", version);
+        let allowedParams: string[] = [
+            "page", "page-size", "plan-status"
+        ]
+        let errorList: ResponseErrorListV2 | undefined = validateQueryParameters(req.query, allowedParams);
+        if (errorList != undefined) {
+            res.status(400).json(errorList);
+            return;
+        }
+        let result = await dbService.getInstallmentPlansForAccount(authService?.getUser(req)?.customerId as string, req.params.accountId, req.query, version)
+        if (result == null) {
+            let errorList = buildErrorMessage(DsbStandardError.INVALID_BANK_ACCOUNT, `Invalid Bank Account: ${req.params?.accountId}`)
+            res.status(404).json(errorList);
+            return;
+        } else {
+            let paginatedData = paginateData(result, req.query);
+            // check if this is an error object
+            if (paginatedData?.errors != null) {
+                res.statusCode = 422;
+                // In this case paginatedData is actually an error object
+                res.send(paginatedData);
+                return;
+            }
+            else {
+                let listResponse: ResponseBankingInstalmentPlanList = {
+                    links: getLinksPaginated(req, result.length),
+                    meta: getMetaPaginated(result.length, req.query),
+                    data: {
+                        plans: paginatedData
+                    }
+                }
+                res.send(listResponse);
+                return;
+            }
         }
     } catch (e) {
         console.log('Error:', e);

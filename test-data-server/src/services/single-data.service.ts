@@ -1,13 +1,13 @@
 import {
-    BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2,
+    BankingAccountV2, BankingBalance, BankingDirectDebit, BankingPayeeDetailV2, BankingPayeeV2, BankingAccountV3, BankingInstalmentPlan,
     BankingProductDetailV4, BankingProductV4, BankingProductV5, BankingProductV6, BankingScheduledPaymentV2, BankingAccountDetailV3, BankingAccountDetailV4, BankingAccountDetailV5,
-    BankingTransaction, BankingTransactionDetailV2, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7
+    BankingTransaction, BankingTransactionV2, BankingTransactionDetailV2, BankingTransactionDetailV3, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7
 } from "consumer-data-standards/banking";
 import { ResponseCommonCustomerDetailV2 } from "consumer-data-standards/common";
 import {
     EnergyAccountDetailV3, EnergyAccountDetailV4, EnergyAccountV2, EnergyBillingTransactionV3, EnergyConcession,
     EnergyDerRecord, EnergyInvoice, EnergyPaymentSchedule, EnergyPlan, EnergyPlanDetailV3,
-    EnergyServicePoint, EnergyServicePointDetail, EnergyUsageRead
+    EnergyServicePoint, EnergyServicePointDetailV2, EnergyUsageRead
 } from "consumer-data-standards/energy";
 import * as mongoDB from "mongodb";
 import { AccountModel, CustomerModel } from "../models/login";
@@ -31,11 +31,12 @@ export class SingleData implements IDatabase {
 
     }
     // ********************** BANKING implementation *******************************
-    async getAccounts(customerId: string, accountIds: string[], query: any): Promise<BankingAccountV2[]> {
+    async getAccounts(customerId: string, accountIds: string[], query: any, version?: number): Promise<BankingAccountV2[] | BankingAccountV3[] > {
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
-        let accList: BankingAccountV2[] = [];
-        let accDetailList = cust?.banking?.accounts as BankingAccountDetailV4[];
+        let accList: any[]= [];
+        let accDetailList = cust?.banking?.accounts as any;
+
         let openStatus = query["open-status"];
         let category: string | null = null;
         let isowned: boolean | null = null;
@@ -74,20 +75,23 @@ export class SingleData implements IDatabase {
                         (acc.account?.isOwned == null && isowned == true)
                     )
                 ) {
+                    let newAccount: any = {};
+                    if (version == 2) accList.push(acc?.account as BankingAccountV2);
+                    if (version == 3) accList.push(acc?.account as BankingAccountV3);
 
-                    let newAccount: BankingAccountV2 = {
+                    // let newAccount: BankingAccountV2 = {
 
-                        accountId: acc.account?.accountId,
-                        creationDate: acc.account?.creationDate as string,
-                        displayName: acc.account?.displayName,
-                        openStatus: acc.account?.openStatus,
-                        isOwned: acc.account?.isOwned,
-                        accountOwnership: acc.account?.accountOwnership,
-                        maskedNumber: acc.account?.maskedNumber,
-                        productCategory: acc.account?.productCategory,
-                        productName: acc.account?.productName
-                    }
-                    accList.push(newAccount);
+                    //     accountId: acc.account?.accountId,
+                    //     creationDate: acc.account?.creationDate as string,
+                    //     displayName: acc.account?.displayName,
+                    //     openStatus: acc.account?.openStatus,
+                    //     isOwned: acc.account?.isOwned,
+                    //     accountOwnership: acc.account?.accountOwnership,
+                    //     maskedNumber: acc.account?.maskedNumber,
+                    //     productCategory: acc.account?.productCategory,
+                    //     productName: acc.account?.productName
+                    // }
+                    // accList.push(newAccount);
                 }
 
 
@@ -106,10 +110,10 @@ export class SingleData implements IDatabase {
         return undefined;
     }
 
-    async getTransationsForAccount(customerId: string, accountId: string, query: any): Promise<BankingTransaction[]> {
+    async getTransationsForAccount(customerId: string, accountId: string, query: any, version?: number): Promise<BankingTransaction[] | BankingTransactionV2[]> {
         let account: any;
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
-        let retArray: BankingTransaction[] = [];
+        let retArray: BankingTransaction[] | BankingTransactionV2[] = [];
         let mSecInDay = 86400000;
         let minAmount: number | null = null;
         let maxAmount: number | null = null;
@@ -125,8 +129,7 @@ export class SingleData implements IDatabase {
             if (x.account.accountId == accountId)
                 return x;
         })
-        //customer?.banking?.accounts.forEach((acc: any) => {
-        account?.transactions.filter((tr: BankingTransactionDetailV2) => {
+        account?.transactions.filter((tr: any) => {
             let refDate = range.startRange;
             if (tr.executionDateTime != null)
                 refDate = Date.parse(tr.executionDateTime);
@@ -140,22 +143,31 @@ export class SingleData implements IDatabase {
                 && (maxAmount == null || parseFloat(tr.amount) <= maxAmount))
                 retArray.push(tr)
         })
-        return retArray;
+        if (version == 1)
+            return retArray as BankingTransaction[];
+        else
+            return retArray as BankingTransactionV2[]
     }
-    async getTransactionDetail(customerId: string, accountId: string, transactionId: string): Promise<BankingTransactionDetailV2 | undefined> {
+
+    async getTransactionDetail(customerId: string, accountId: string, transactionId: string, version?: number): Promise<BankingTransactionDetailV2 | BankingTransactionDetailV3 | undefined> {
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
         let customer = await this.getCustomer(allDataCollection, customerId);
         let account = customer?.banking?.accounts.find((x: any) => {
             if (x?.account?.accountId == accountId)
                 return x;
         });
+        let transaction: BankingTransactionDetailV2 | BankingTransactionDetailV3;
 
-        let transaction = account?.transactions.find((x: any) => {
+        transaction = account?.transactions.find((x: any) => {
             if (x?.transactionId == transactionId)
                 return x;
         });
-        return transaction;
+        if (version == 3) return transaction as BankingTransactionDetailV3;
+        if (version == 2)  return transaction as BankingTransactionDetailV2
+        else
+            return undefined;
     }
+
     async getBulkBalances(customerId: string, query: any): Promise<BankingBalance[]> {
 
         let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
@@ -482,6 +494,60 @@ export class SingleData implements IDatabase {
         return ret;
     }
 
+    async getInstallmentPlans(customerId: string, query: any, version?: number) : Promise<BankingInstalmentPlan[] > {
+        // let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+        // let customer = await this.getCustomer(allDataCollection, customerId);
+
+        // if (query["plan-status"] != null) {
+        //     planStatus = query["plan-status"].toUpperCase();
+        // }
+
+
+        let installments: BankingInstalmentPlan[] = [];
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+
+        if (cust != null) {
+            cust?.banking?.accounts?.forEach((acc: any) => {
+                if (acc?.installments != null) {
+                    acc.installments.forEach((inst:BankingInstalmentPlan) => {
+                        installments.push(inst)
+                    });
+                }
+            })
+        }
+        return installments;     
+    }
+
+    async getInstallmentPlansForAccount(customerId: string, accountId: string, queryParameters: any, version?: number): Promise<BankingInstalmentPlan[]> {
+        // let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_DATA_DOCUMENT as string);
+        // let customer = await this.getCustomer(allDataCollection, customerId);
+
+        // if (query["plan-status"] != null) {
+        //     planStatus = query["plan-status"].toUpperCase();
+        // }
+
+
+        let installments: BankingInstalmentPlan[] = [];
+        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let cust: any = await this.getCustomer(allData, customerId);
+        let account = cust?.banking?.accounts.find((x: any) => {
+            if (x?.account?.accountId == accountId)
+                return x;
+        });
+        if (account != null) {
+            installments = account?.installments
+            // cust?.banking?.accounts?.forEach((acc: any) => {
+            //     if (acc?.installments != null) {
+            //         acc.installments.forEach((inst:BankingInstalmentPlan) => {
+            //             installments.push(inst)
+            //         });
+            //     }
+            // })
+        }
+        return installments;     
+    }
+
     // Login information
     async getUserForLoginId(loginId: string, userType: string): Promise<string | undefined> {
         // split loginId into first and last name
@@ -720,13 +786,18 @@ export class SingleData implements IDatabase {
         return retArray;
     }
     async getEnergyPlanDetails(planId: string): Promise<EnergyPlanDetailV3 | null> {
-
-        let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
-        const query = { planId: planId };
-        let plans: EnergyPlanDetailV3[] = await this.getPlans(allData, query);
-        if (plans.length > 0)
-            return plans[0];
-        else
+        let allDataCollection: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
+        let allData: mongoDB.WithId<mongoDB.Document> | null = await allDataCollection.findOne();
+        if (allData?.holders != null) {
+            let allPlans = allData?.holders[0]?.holder?.unauthenticated?.energy?.plans
+            const query = { planId: planId };
+            let plans = allPlans.filter((x: any) => x.planId == planId)
+            // let plans: EnergyPlanDetailV3[] = await this.getPlans(allData, query);
+            if (plans.length > 0)
+                return plans[0];
+            else
+                return null;
+        } else 
             return null;
     }
 
@@ -767,7 +838,7 @@ export class SingleData implements IDatabase {
 
         let spList: EnergyServicePoint[] = [];
         if (cust != null) {
-            let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetail[];
+            let spDetailList = cust?.energy?.servicePoints as EnergyServicePointDetailV2[];
             if (spDetailList != null) {
                 spDetailList?.forEach((sp: any) => {
                     let newSP: EnergyServicePoint = {
@@ -1045,14 +1116,14 @@ export class SingleData implements IDatabase {
         return acc?.account as EnergyAccountDetailV4;
     }
 
-    async getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetail> {
+    async getServicePointDetails(customerId: string, servicePointId: string): Promise<EnergyServicePointDetailV2> {
         let ret: any = {};
         let allData: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);
         let cust: any = await this.getCustomer(allData, customerId);
         let acc: any = cust?.energy.servicePoints.find((x: any) => x.servicePoint.servicePointId == servicePointId);
-        //ret.data = acc?.servicePoint ? acc?.servicePoint : [];
         return acc?.servicePoint;
     }
+
     async loadCustomer(customer: any): Promise<boolean> {
         if (customer == null) return false;
         let customers: mongoDB.Collection = this.dsbData.collection(process.env.SINGLE_COLLECTION_NAME as string);

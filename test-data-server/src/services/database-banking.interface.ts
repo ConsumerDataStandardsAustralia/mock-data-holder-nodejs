@@ -1,7 +1,7 @@
 import { BankingAccountV2, BankingAccountDetailV3, BankingProductV4, BankingTransaction, BankingBalance, BankingDirectDebit, 
     BankingScheduledPaymentFrom, BankingScheduledPaymentV2, BankingPayeeV2, BankingPayeeDetailV2, BankingTransactionDetailV2,
     BankingAccountV3, BankingTransactionDetailV3, BankingAccountDetailV5, BankingTransactionV2, BankingProductV6, BankingProductV5,
-    BankingAccountDetailV4, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7 } from "consumer-data-standards/banking";
+    BankingAccountDetailV4, BankingProductDetailV5, BankingProductDetailV6, BankingProductDetailV7, BankingInstalmentPlan } from "consumer-data-standards/banking";
 import { CustomerModel } from "../models/login";
 
 export interface IBankingData {
@@ -44,5 +44,9 @@ export interface IBankingData {
 
     // This method is used when the server is run without authentication and a user is set in the env file
     getAllBankingAccountsForCustomer(customerId: string, version?: number) : Promise<BankingAccountV2[] | BankingAccountV3[]> | undefined;
+
+    getInstallmentPlans(customerId: string, query: any, version?: number) : Promise<BankingInstalmentPlan[]> ;
+
+    getInstallmentPlansForAccount(customerId: string, accountId: string, queryParameters: any, version?: number): Promise<BankingInstalmentPlan[]>;
 
 }
