@@ -146,7 +146,6 @@ export class AcccAuthService implements IAuthService {
         return httpsAgent;
     }
 
-
     private async buildUser(req: Request) : Promise<DsbCdrUser | undefined> {
         let token = req.headers?.authorization;
         // First the JWT access token must be decoded and the signature verified

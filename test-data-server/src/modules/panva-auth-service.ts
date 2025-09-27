@@ -35,7 +35,6 @@ export class PanvaAuthService implements IAuthService {
 
     public getUser(req: Request): DsbCdrUser | undefined {
         return req.session.cdrUser;
-
     }
 
     public async setUser(req: Request, accessTokenObject: Introspection): Promise<DsbCdrUser | undefined> {

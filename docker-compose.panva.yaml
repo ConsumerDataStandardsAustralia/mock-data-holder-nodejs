@@ -1,18 +1,14 @@
-version: '3.8'
+
 name: panva
 services:
   panva-oidc:
     container_name: panva-oidc
-    image: consumerdatastandardsaustralia/panva-oidc:0.1
-    build:
-      context: . 
-      dockerfile: dockerfile 
+    image: consumerdatastandardsaustralia/panva-oidc:SNAPSHOT
     restart: unless-stopped
     env_file: .env.panva
     extra_hosts:
       - host.docker.internal:host-gateway
-      - dsb-nodejs-resource-api:host-gateway
-      - dsb-sample-adr:host-gateway   
+      - nodejs-data-holder:host-gateway
     networks:
       - dsb
     ports:
@@ -31,18 +27,17 @@ services:
     networks:
       - dsb     
   
-  dsb-nodejs-resource-api:
-    container_name: mock-data-holder
+  nodejs-data-holder:
+    container_name: nodejs-data-holder
     image: consumerdatastandardsaustralia/nodejs-data-holder:0.5
     build:
       context: . 
-      dockerfile: dockerfile.dsb-data-server       
+      dockerfile: dockerfile.dsb-test-data-server       
     restart: unless-stopped
-    env_file: .env.panva
+    env_file: .env.dh
     extra_hosts:
       - host.docker.internal:host-gateway
       - panva-oidc:host-gateway 
-      - dsb-sample-adr:host-gateway     
     ports:
        - "3005:3005"
     networks:
@@ -57,7 +52,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile.dsb-data-loader    
-    env_file: .env.panva
+    env_file: .env.loader
     depends_on:
       - mongodb
     networks:
