@@ -3,7 +3,7 @@ name: panva
 services:
   panva-oidc:
     container_name: panva-oidc
-    image: consumerdatastandardsaustralia/panva-oidc:SNAPSHOT
+    image: consumerdatastandardsaustralia/panva-oidc:0.2
     restart: unless-stopped
     env_file: .env.panva
     extra_hosts:
