@@ -10,7 +10,7 @@ The Mock Data Holder (NodeJS) is a reference implementation of a CDR Data Holder
 
 The Data Standards Body provides relevant docker images in the DockerHub. You can skip the local setup and run the images to get a Mock CDR Environment running on your computer, including a Mock Data Holder (NodeJS), an auth server, a Mock Data Recipient and a Mock Register. For more information, refer to the [Quick Start with Docker Compose](#quick-start-with-docker-compose) section below.
 
-You can also set up a local instance of the Mock Data Holder (NodeJS) for customised and extended use cases. For more information, refer to the [Local Setup and Customisation](#local-setup-and-customisation) section below. 
+You can also set up a local instance of the Mock Data Holder (NodeJS) for customised and extended use cases. For more information, refer to the [Local Setup and Customisation](#local-setup-and-customisation) section below.
 
 You can easily interact with and explore CDR APIs using the Mock ADR, or using our comprehensive Postman collection.
 
@@ -46,13 +46,13 @@ This solution:
 1. Use the compose file in `docker/compose/docker-compose.yaml`.
 2. Use the matching environment file in `docker/env/.env.accc`.
 3. Open a terminal at the repo root and run the following command:
-    
+
     ```bash
     docker compose -f docker/compose/docker-compose.yaml up -d
     ```
-    
+
     This command will automatically pull the necessary Docker images and create the containers required for the Mock Data Holder, setting up everything you need to get started without manually handling the code repository.
-    
+
 4. Open your web browser and navigate to the desired API endpoints using [https://localhost:8082](https://localhost:8082/) as the base URL for the Mock Data Holder (NodeJS) application. For example, you can obtain a list of energy plans from [https://localhost:8082/cds-au/v1/energy/plans](https://localhost:8082/cds-au/v1/energy/plans).
 5. To obtain a new access token required to call the resource APIs, navigate to [https://localhost:9001](https://localhost:9001/) to initiate the PAR login sequence. This access token can then be used for API access, for instance, with the DSB Postman collection.
 
@@ -71,6 +71,7 @@ To run in this mode
     ```bash
     docker compose -f docker/compose/docker-compose.noauth.yaml up -d
     ```
+
 *Note the additional setting `NO_AUTH_SERVER="true"` in the .env.noauth file*
 
 ## Local Setup and Customisation
@@ -81,15 +82,15 @@ To run in this mode
     - Docker installed (verified with v 24.0.2)
     - Docker Compose installed (verified with v2.19.1)
 2. Trusted Certificates
-    
+
     All certificates used with this ecosystem have been generated with the CA which can be found in `security\\cdr-auth-server\\nginx\\ssl`.
-    
+
     The CA certificate in this folder needs to be trusted by your browser, ie be a "Trusted CA". Dependent on which OS, what security settings, and other parameters this may differ for each user.
-    
+
 3. Host file entries
-    
+
     A number of entries are required in the `host` file. These entries typically are in *C:\Windows\System32\drivers\etc\hosts* on Windows platforms, */etc/hosts* on UNIX/Linux and */private/etc/hosts* on MacOS (although this may be different).
-    
+
     - 127.0.0.1 mock-data-holder
     - 127.0.0.1 mock-data-recipient
     - 127.0.0.1 mock-data-holder-energy
@@ -104,55 +105,54 @@ To run in this mode
 
 1. Create a fork of this repository. To do this, click the "Fork" button on the top right corner of this page.
 2. After forking the repository, clone it to your local machine. You can do this by running the following command in your terminal or command prompt:
-    
+
     ```bash
     git clone <https://github.com/your-username/project-name.git>
     ```
-    
+
     Replace **`your-username`** with your GitHub username and **`project-name`** with the name of your repository.
-    
+
 3. Once the repository is cloned, navigate to the project directory by running:
-    
+
     ```bash
     cd project-name
     ```
-    
+
     Replace **`project-name`** with the name of the repository.
-    
 
 ### Build
 
-1. Customise the data holder project as needed for your specific use case. 
+1. Customise the data holder project as needed for your specific use case.
 2. Navigate to the project directory and execute the following command:
 
 ```bash
 npm run build
 ```
 
-Note: A custom build can be run from any debug environment and will interact with the other containers (eg databases). 
+Note: A custom build can be run from any debug environment and will interact with the other containers (eg databases).
 
 ### Run
 
 1. Navigate to the root directory of the repository and the run the following command to start the services defined in the Docker Compose file:
-    
+
     ```bash
     docker-compose up
     ```
-    
-    This command will automatically pull the necessary Docker images and create the containers required for the Mock Data Holder, setting up everything you need to get started without manually handling the code repository. 
-    
+
+    This command will automatically pull the necessary Docker images and create the containers required for the Mock Data Holder, setting up everything you need to get started without manually handling the code repository.
+
 2. Now **stop** the Mock data holder container by running the following command:
-    
+
     ```bash
     docker stop mock-data-holder
     ```
-    
+
 3. Start the development server by running the following command in the project directory:
-    
+
     ```bash
     npm start
     ```
-    
+
 4. Open your web browser and navigate to [https://localhost:9001](https://localhost:9001/) to access the Mock Data Recipient application. This application can be used to generate an access token required to access the API.
 
 ## Contribution Process
@@ -160,11 +160,11 @@ Note: A custom build can be run from any debug environment and will interact wit
 We welcome contributions from the community! If you'd like to contribute to this project, please follow these simple steps:
 
 1. Create a new branch for your work from the `master` branch:
-    
+
     ```bash
     git checkout -b feature/your-feature-name
     ```
-    
+
 2. Begin making your changes or contributions.
 3. Follow the instructions in the project repository to run and test your changes locally.
 4. Commit your changes with clear and concise commit messages.
@@ -173,14 +173,13 @@ We welcome contributions from the community! If you'd like to contribute to this
 7. Engage in the discussion on your PR and make any necessary adjustments based on feedback from maintainers and other contributors.
 8. Once your PR is approved and all tests pass, it will be merged into the project.
 
-### Note:
+### Note
 
 1. Please ensure your contributions align with our project's objectives and [guidelines](https://d61cds.notion.site/Contribution-Guidelines-8b99d030fea946668fbc75444197e68b?pvs=4).
 
 ## Using Postman to call the Data holder APIs
 
 Our Postman collection includes pre-configured environments and requests that mirror typical interactions with our Mock Data Holder's APIs, and allows us to test functionality, response formats, and error handling seamlessly.
-
 
 ## Reporting Issues
 
