@@ -5,7 +5,7 @@ This folder keeps certificate generation split into two containers:
 - `step-cert` creates root CAs and leaf certs with `step`
 - `openssl-pfx` converts generated cert/key pairs to `.pfx`
 
-The scripts now generate parity outputs for the legacy `security/` structure under:
+The scripts generate outputs under:
 
 - `security/output/tls-gateway`
 - `security/output/mtls-gateway`
@@ -19,14 +19,14 @@ The scripts now generate parity outputs for the legacy `security/` structure und
 From repo root:
 
 ```bash
-sudo ./security/generate-certs.sh
+./security/generate-certs.sh
 ```
 
 Or run each stage directly:
 
 ```bash
-sudo docker compose -f security/docker-compose.yaml run --rm step-cert
-sudo docker compose -f security/docker-compose.yaml run --rm openssl-pfx
+docker compose -f security/docker-compose.yaml run --rm step-cert
+docker compose -f security/docker-compose.yaml run --rm openssl-pfx
 ```
 
 ## PFX passwords
@@ -40,10 +40,9 @@ sudo docker compose -f security/docker-compose.yaml run --rm openssl-pfx
 Example:
 
 ```bash
-HOLDER_PFX_PASSWORD='custom' sudo ./security/generate-certs.sh
+HOLDER_PFX_PASSWORD='custom' ./security/generate-certs.sh
 ```
 
 ## Notes
 
-- Trust domains remain separated (matching the legacy layout).
-- Generated files are written only under `security/output`.
+- Trust domains are kept separate to mirror the actual real-world deployment boundaries.
