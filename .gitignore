@@ -68,3 +68,6 @@ scratch/**/*
 # compiled output
 dist
 .vscode
+
+# Security output
+security/output

@@ -1,0 +1,35 @@
+FROM docker.io/consumerdatastandardsaustralia/authserver-ui:0.5
+
+COPY test-data-server/resources/cdr-logo.png /usr/share/nginx/html
+
+COPY security/output/cdr-auth-server/mtls/ca.crt /usr/local/share/ca-certificates/ca.crt
+
+RUN cat <<'EOF' > /etc/nginx/conf.d/nginx.conf
+server {
+
+  listen              3000 ssl;
+  # MDHE uses 3100
+  listen              3100 ssl;
+  server_name         authserver-ui localhost;
+  ssl_certificate     /etc/nginx/ssl/authserver-ui.crt;
+  ssl_certificate_key /etc/nginx/ssl/authserver-ui.key;
+  ssl_protocols       TLSv1.2;
+  ssl_ciphers         HIGH:!aNULL:!MD5;
+
+  location / {
+    root   /usr/share/nginx/html;
+    index  index.html index.htm;
+    try_files $uri $uri/ /index.html;
+  }
+
+  error_page   500 502 503 504  /50x.html;
+
+  location = /50x.html {
+    root   /usr/share/nginx/html;
+  }
+
+}
+EOF
+
+COPY security/output/cdr-auth-server/nginx/ssl/authserver-ui.crt /etc/nginx/ssl/authserver-ui.crt
+COPY security/output/cdr-auth-server/nginx/ssl/authserver-ui.key /etc/nginx/ssl/authserver-ui.key

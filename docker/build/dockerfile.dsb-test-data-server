@@ -1,0 +1,30 @@
+FROM docker.io/library/node:22
+
+ENV NODE_ENV=docker
+# create app directory
+WORKDIR /app
+
+COPY test-data-server/. .
+
+RUN npm install
+
+# Bundle app source
+RUN npm run build:docker
+
+COPY security/output/mock-data-holder/tls/ /app/dist/src/security/
+# The ACCC auth server is served from the tls-gateway trust domain; use that as the outbound TLS trust anchor.
+COPY security/output/tls-gateway/ca.crt /app/dist/src/security/ca.crt
+
+COPY security/output/mtls-gateway/ca.crt /usr/local/share/ca-certificates/ca.crt
+RUN  update-ca-certificates
+
+# These can be disabled for ssh debugging purposes
+# RUN apt-get update
+# RUN apt-get -y install -y iputils-ping
+# RUN apt-get -y install -y ssh
+# RUN apt-get -y install vim
+
+CMD [ "node", "dist/src/app.js"]
+
+
+EXPOSE 3005

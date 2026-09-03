@@ -14,6 +14,23 @@ You can also set up a local instance of the Mock Data Holder (NodeJS) for custom
 
 You can easily interact with and explore CDR APIs using the Mock ADR, or using our comprehensive Postman collection.
 
+## Docker runtime layout
+
+Docker-related files live under the `docker/` directory, and the script entry points live in `docker/scripts/`.
+The repo root keeps a thin wrapper for convenience.
+
+The default profile is `accc`, and if you run a Docker image build without explicitly requesting a cert generation step, the script will generate certs first.
+
+Before running the script, make sure the control scripts are executable:
+
+```bash
+chmod +x docker-control.sh docker/scripts/docker-control.sh security/*.sh
+./docker-control.sh --build-certs
+./docker-control.sh --profile accc --build-images --up
+./docker-control.sh --profile noauth --up
+./docker-control.sh
+```
+
 This solution:
 
 - is maintained regularly to ensure compatibility with the latest Consumer Data Standards.
@@ -26,13 +43,12 @@ This solution:
 
 ## Quick Start with Docker Compose
 
-1. Download the Docker Compose file from this [link](https://github.com/ConsumerDataStandardsAustralia/mock-data-holder-nodejs/blob/master/docker-compose.yaml).
-2. Download the Docker environment file from this [link](https://github.com/ConsumerDataStandardsAustralia/mock-data-holder-nodejs/blob/master/.env.docker) into the same folder.
-3. Open a terminal and navigate to the directory where the Docker Compose file is located.
-4. Navigate to the root directory of the repository and the run the following command to start the services defined in the Docker Compose file:
+1. Use the compose file in `docker/compose/docker-compose.yaml`.
+2. Use the matching environment file in `docker/env/.env.accc`.
+3. Open a terminal at the repo root and run the following command:
     
     ```bash
-    docker-compose -f docker-compose.yaml up -d
+    docker compose -f docker/compose/docker-compose.yaml up -d
     ```
     
     This command will automatically pull the necessary Docker images and create the containers required for the Mock Data Holder, setting up everything you need to get started without manually handling the code repository.
@@ -49,11 +65,11 @@ If an access token is found the request header and a `scopes` property (space de
 
 To run in this mode
 
-1. Download the Docker Compose file (noauth) from this [link](https://github.com/ConsumerDataStandardsAustralia/mock-data-holder-nodejs/blob/master/docker-compose.noauth.yaml).
-2. Download the Docker environment (noauth) file from this [link](https://github.com/ConsumerDataStandardsAustralia/mock-data-holder-nodejs/blob/master/.env.noauth) into the same folder.
+1. Use the compose file in `docker/compose/docker-compose.noauth.yaml`.
+2. Use the environment file in `docker/env/.env.noauth`.
 
     ```bash
-    docker-compose -f docker-compose.noauth.yaml up -d
+    docker compose -f docker/compose/docker-compose.noauth.yaml up -d
     ```
 *Note the additional setting `NO_AUTH_SERVER="true"` in the .env.noauth file*
 

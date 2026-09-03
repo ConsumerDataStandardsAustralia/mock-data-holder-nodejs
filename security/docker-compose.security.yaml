@@ -1,0 +1,24 @@
+services:
+  step-cert:
+    image: smallstep/step-cli:latest
+    user: root
+    working_dir: /workspace
+    network_mode: "none"
+    volumes:
+      - ..:/workspace:Z
+    restart: no
+    entrypoint:
+      - /bin/bash
+      - /workspace/security/generate-step-certs.sh
+
+  openssl-pfx:
+    image: docker.io/alpine/openssl:latest
+    user: root
+    working_dir: /workspace
+    network_mode: "none"
+    volumes:
+      - ..:/workspace:Z
+    restart: no
+    entrypoint:
+      - /bin/sh
+      - /workspace/security/generate-pfx.sh
